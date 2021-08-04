@@ -1,0 +1,19 @@
+{{- if .Values.servicemonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+spec:
+  endpoints:
+    - path: {{ .Values.servicemonitor.metricsPath | default "/metrics" }}
+      targetPort: {{ .Values.servicemonitor.port | default .Values.service.port }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  jobLabel: "app.kubernetes.io/instance"
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}

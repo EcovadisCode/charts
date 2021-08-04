@@ -1,0 +1,126 @@
+{{- if .Values.defaultNetworkPolicyEnabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "charts-core.fullname" . }}
+  labels:
+    {{- include "charts-core.labels" . | nindent 4 }}
+    networkPolicyType: default
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "charts-core.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Egress
+  - Ingress
+  ingress:
+    - from: #any pod in current namespace
+        - podSelector: {}
+    - from: #any pod from *-infra, *-backend, *-frontend namespace
+        - namespaceSelector:
+            matchLabels:
+              environment: {{ (split "-" .Release.Namespace)._0 }}
+{{- if .Values.servicemonitor.enabled }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              environment: prometheus-operator
+{{- end }}
+    - from: #outside world - sentry, optimizely, etc
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - port: 443
+        - port: 80
+        - port: 8443
+        - port: 8000
+{{- if .Values.servicebusNetworkPolicyEnabled }}
+        - port: 5671  #servicebus
+{{- end }}
+    - from: #vnet addressspace
+        - ipBlock:
+            cidr: {{ .Values.vnetCidr }}
+      ports:
+        - port: 443
+        - port: 80
+  egress:
+    - to: #any pod in current namespace
+        - podSelector: {}
+    - to: #kube-dns
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+    - to: #any pod from *-infra, *-backend, *-frontend namespace, which has label app.kubernetes.io/name
+        - namespaceSelector:
+            matchLabels:
+              environment: {{ (split "-" .Release.Namespace)._0 }}
+          podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: Exists
+      ports:
+        - port: 8443
+        - port: 8000
+        - port: 80
+        - port: 443
+{{- if .Values.elasticNetworkPolicyEnabled }} 
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: {{ .Values.elasticNamespace }}
+      ports:
+        - port: 9200
+{{- end }}
+    - to: #any pod in monitroing namespace
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - port: 9200
+{{- if .Values.redisNetworkPolicyEnabled }}
+    - to: #redis
+        - ipBlock:
+            cidr: {{ .Values.redisCidr }}
+      ports:
+        - port: 6379
+        - port: 6380
+        - port: 6381
+        - port: 6382
+        - port: 6383
+        - port: 6384
+        - port: 6385
+{{- end }}
+    - to: #outside world - sentry, optimizely, etc
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - port: 443
+        - port: 80
+{{- if .Values.servicebusNetworkPolicyEnabled }}
+        - port: 5671  #servicebus
+{{ end }}
+    - to: #vnet addressspace - mssql, servicebus
+        - ipBlock:
+            cidr: {{ .Values.vnetCidr }}
+      ports:
+{{- if .Values.sqlNetworkPolicyEnabled }}
+        - port: 1433  #mssql
+{{- end }}
+{{- if .Values.mongodbNetworkPolicyEnabled }}
+        - port: 25015  #mongodb
+        - port: 27017
+{{- end }}
+{{- if .Values.lnmElasticNetworkPolicyEnabled }}
+        - port: 9201
+{{- end}}
+        - port: 8433
+        - port: 8000
+        - port: 433
+        - port: 80
+        - port: 53
+          protocol: UDP
+{{- end -}}

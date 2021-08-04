@@ -1,0 +1,46 @@
+{{- if .Values.ingressRoutes.enabled -}}
+{{- range .Values.ingressRoutes.routes }}
+{{- $rangeItem := . -}}
+{{- with $ }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "charts-core.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ $rangeItem.entrypoint | default "websecure" }}
+  routes:
+    - kind: Rule  
+      match: {{ $rangeItem.rule | default (include "defaultIngressRule" (dict "root" .Values "sub" $rangeItem )) }}
+      services:
+        - kind: Service
+          name: {{ $rangeItem.serviceName | default ( include "charts-core.fullname" . ) }}
+          namespace: {{ $rangeItem.serviceNamespace | default .Release.Namespace | quote}}
+          port: {{ $rangeItem.servicePort | default 80 }}
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes }}
+      middlewares:
+        - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-stripprefix
+{{- end }}
+{{- if kindIs "invalid" $rangeItem.isTlsEnabled }}
+  tls: {}
+{{ else if eq $rangeItem.isTlsEnabled true }}
+  tls: {}
+{{- end }}
+---
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes -}}
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      {{- toYaml $rangeItem.stripPrefixes | nindent 6 }}
+{{- end }}
+---
+{{- end }}
+{{ end -}}
+{{- end -}}
