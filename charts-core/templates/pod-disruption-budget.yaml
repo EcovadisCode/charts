@@ -1,10 +1,10 @@
-{{- if and (.Values.podDisruptionBudget.enabled) (gt (int $.Values.replicaCount) 1) -}}
+{{- if and (.Values.global.podDisruptionBudget.enabled) (gt (int $.Values.global.replicaCount) 1) -}}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "charts-core.fullname" . }}-pdb
 spec:
-  minAvailable: {{ .Values.podDisruptionBudget.minAvailable | default 1 }}
+  minAvailable: {{ .Values.global.podDisruptionBudget.minAvailable | default 1 }}
   selector:
     matchLabels:
       {{- include "charts-core.selectorLabels" . | nindent 6 }}

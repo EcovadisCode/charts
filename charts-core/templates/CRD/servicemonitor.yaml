@@ -1,4 +1,4 @@
-{{- if .Values.servicemonitor.enabled -}}
+{{- if .Values.global.servicemonitor.enabled -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/name: {{ .Release.Name }}
 spec:
   endpoints:
-    - path: {{ .Values.servicemonitor.metricsPath | default "/metrics" }}
-      targetPort: {{ .Values.servicemonitor.port | default .Values.service.port }}
+    - path: {{ .Values.global.servicemonitor.metricsPath | default "/metrics" }}
+      targetPort: {{ .Values.global.servicemonitor.port | default .Values.global.service.port }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}

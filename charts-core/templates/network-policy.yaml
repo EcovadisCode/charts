@@ -1,4 +1,4 @@
-{{- if .Values.defaultNetworkPolicyEnabled -}}
+{{- if .Values.global.defaultNetworkPolicyEnabled -}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -20,7 +20,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               environment: {{ (split "-" .Release.Namespace)._0 }}
-{{- if .Values.servicemonitor.enabled }}
+{{- if .Values.global.servicemonitor.enabled }}
     - from:
         - namespaceSelector:
             matchLabels:
@@ -34,12 +34,12 @@ spec:
         - port: 80
         - port: 8443
         - port: 8000
-{{- if .Values.servicebusNetworkPolicyEnabled }}
+{{- if .Values.global.servicebusNetworkPolicyEnabled }}
         - port: 5671  #servicebus
 {{- end }}
     - from: #vnet addressspace
         - ipBlock:
-            cidr: {{ .Values.vnetCidr }}
+            cidr: {{ .Values.global.vnetCidr }}
       ports:
         - port: 443
         - port: 80
@@ -67,11 +67,11 @@ spec:
         - port: 8000
         - port: 80
         - port: 443
-{{- if .Values.elasticNetworkPolicyEnabled }} 
+{{- if .Values.global.elasticNetworkPolicyEnabled }} 
     - to:
         - namespaceSelector:
             matchLabels:
-              name: {{ .Values.elasticNamespace }}
+              name: {{ .Values.global.elasticNamespace }}
       ports:
         - port: 9200
 {{- end }}
@@ -81,10 +81,10 @@ spec:
               name: monitoring
       ports:
         - port: 9200
-{{- if .Values.redisNetworkPolicyEnabled }}
+{{- if .Values.global.redisNetworkPolicyEnabled }}
     - to: #redis
         - ipBlock:
-            cidr: {{ .Values.redisCidr }}
+            cidr: {{ .Values.global.redisCidr }}
       ports:
         - port: 6379
         - port: 6380
@@ -100,21 +100,21 @@ spec:
       ports:
         - port: 443
         - port: 80
-{{- if .Values.servicebusNetworkPolicyEnabled }}
+{{- if .Values.global.servicebusNetworkPolicyEnabled }}
         - port: 5671  #servicebus
 {{ end }}
     - to: #vnet addressspace - mssql, servicebus
         - ipBlock:
-            cidr: {{ .Values.vnetCidr }}
+            cidr: {{ .Values.global.vnetCidr }}
       ports:
-{{- if .Values.sqlNetworkPolicyEnabled }}
+{{- if .Values.global.sqlNetworkPolicyEnabled }}
         - port: 1433  #mssql
 {{- end }}
-{{- if .Values.mongodbNetworkPolicyEnabled }}
+{{- if .Values.global.mongodbNetworkPolicyEnabled }}
         - port: 25015  #mongodb
         - port: 27017
 {{- end }}
-{{- if .Values.lnmElasticNetworkPolicyEnabled }}
+{{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
         - port: 9201
 {{- end}}
         - port: 8433

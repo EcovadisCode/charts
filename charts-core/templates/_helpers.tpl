@@ -2,7 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "charts-core.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name .Values.global.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -11,10 +11,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "charts-core.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- if .Values.global.fullnameOverride }}
+{{- .Values.global.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- $name := default .Chart.Name .Values.global.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -54,37 +54,37 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use
 */}}
 {{- define "charts-core.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "charts-core.fullname" .) .Values.serviceAccount.name }}
+{{- if .Values.global.serviceAccount.create }}
+{{- default (include "charts-core.fullname" .) .Values.global.serviceAccount.name }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- default "default" .Values.global.serviceAccount.name }}
 {{- end }}
 {{- end }}
 
 {{- define "defaultIngressRule" -}}
 {{- $isCorrect := false -}}
-{{- if .root.envVars -}}
-{{ range $key, $val := .root.envVars }}
+{{- if .root.global.envVars -}}
+{{ range $key, $val := .root.global.envVars }}
 {{- if eq $key "ASPNETCORE_ENVIRONMENT"}}
 {{- $isCorrect := true -}}
 {{- if not $.sub.isStripprefixEnabled }}
-{{- printf "Host(`%s.%s`)" ($val | lower) $.root.ingressRoutes.domain }}
+{{- printf "Host(`%s.%s`)" ($val | lower) $.root.global.ingressRoutes.domain }}
 {{- range $.sub.stripPrefixes }}
 {{- printf " && PathPrefix(`%s`)" . }}
 {{- end -}}
 {{- else -}}
-{{- printf "Host(`%s.%s`)" ($val | lower) $.root.ingressRoutes.domain -}}
+{{- printf "Host(`%s.%s`)" ($val | lower) $.root.global.ingressRoutes.domain -}}
 {{- end -}}
 {{ end -}}
 {{ end -}}
 {{- else -}}
 {{- if kindIs "invalid" .sub.rule -}}
-{{- fail ".Values.envVars must be enabled and not empty in order to create ingress rule" }}
+{{- fail ".Values.global.envVars must be enabled and not empty in order to create ingress rule" }}
 {{- end }}
 {{- end }}
 {{- if $isCorrect -}}
 {{- if kindIs "invalid" .sub.rule -}}
-{{- fail ".Values.envVars is present, bud does not contain ASPNETCORE_ENVIRONMENT" }}
+{{- fail ".Values.global.envVars is present, bud does not contain ASPNETCORE_ENVIRONMENT" }}
 {{- end }}
 {{- end }}
 {{- end }}
