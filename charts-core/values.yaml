@@ -107,14 +107,6 @@ global:
   secEnvVarsEnabled: true
   secEnvVars: {}
       #APP_INSIGHT_KEY: TEST
-
-  appConfigFilesEnabled: true
-  appConfigFiles:
-    globPattern: "**.json"
-    dir: "/app/"
-    filesList: []
-      #- "appsettings.json"
-
   nodeSelector: {}
 
   tolerations: []

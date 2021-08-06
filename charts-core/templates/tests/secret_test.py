@@ -48,28 +48,3 @@ class SecretTemplateFileTest(unittest.TestCase):
                 "data", docs[0])
         )
 
-    def test_files_added_when_glob_pattern_is_used(self):
-        filename1 = get_random_json_file_name()
-        filename2 = get_random_json_file_name()
-
-        create_test_json_file(filename1)
-        create_test_json_file(filename2)
-
-        docs = render_chart(
-            values={
-                "global": {
-                    "appConfigFilesEnabled": True,
-                    "appConfigFiles": {
-                        "globPattern": "**.json",
-                        "dir": "/app/",
-                        "filesList": []
-                    }
-                }
-            },
-            name=".",
-            show_only=["templates/appsettings-secret.yaml"]
-        )
-        self.assertIsNotNone(docs[0]["stringData"][filename1], docs[0])
-        self.assertIsNotNone(docs[0]["stringData"][filename2], docs[0])
-        remove(filename1)
-        remove(filename2)
