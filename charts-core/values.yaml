@@ -107,6 +107,19 @@ global:
   secEnvVarsEnabled: true
   secEnvVars: {}
       #APP_INSIGHT_KEY: TEST
+
+  additionalSecretsEnabled: false
+  additionalSecrets: {}
+  # - metadata:
+  #     name: "secret1"
+  #   data:
+  #     secretkey1: secrevalue1
+  #     secretkey2: secrevalue1
+  # - metadata:
+  #     name: "secret2"
+  #   data:
+  #     secretkey1: "secret-content"
+  #     secretkey2: "secret-content-2"
   nodeSelector: {}
 
   tolerations: []
