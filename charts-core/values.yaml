@@ -61,7 +61,8 @@ global:
   mongodbNetworkPolicyEnabled: false
   automountServiceAccountToken: false
   lnmElasticNetworkPolicyEnabled: false
-
+  allowAllInternalClusterTrafficNetworkPolicy: false
+  
   service:
     enabled: true
     type: ClusterIP

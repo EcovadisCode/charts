@@ -16,10 +16,15 @@ spec:
   ingress:
     - from: #any pod in current namespace
         - podSelector: {}
+{{- if not .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
     - from: #any pod from *-infra, *-backend, *-frontend namespace
         - namespaceSelector:
             matchLabels:
               environment: {{ (split "-" .Release.Namespace)._0 }}
+{{ else }}
+    - from:
+        - namespaceSelector: {}
+{{- end }}
 {{- if .Values.global.servicemonitor.enabled }}
     - from:
         - namespaceSelector:
@@ -54,14 +59,15 @@ spec:
       ports:
         - port: 53
           protocol: UDP
-    - to: #any pod from *-infra, *-backend, *-frontend namespace, which has label app.kubernetes.io/name
+{{- if not .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
+    - to: #any pod from *-infra, *-backend, *-frontend namespace
         - namespaceSelector:
             matchLabels:
               environment: {{ (split "-" .Release.Namespace)._0 }}
-          podSelector:
-            matchExpressions:
-              - key: app.kubernetes.io/name
-                operator: Exists
+{{ else }}
+    - to:
+        - namespaceSelector: {}
+{{- end }}
       ports:
         - port: 8443
         - port: 8000
