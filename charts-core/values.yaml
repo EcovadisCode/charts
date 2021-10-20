@@ -110,7 +110,7 @@ global:
       #APP_INSIGHT_KEY: TEST
 
   additionalSecretsEnabled: false
-  additionalSecrets: {}
+  additionalSecrets: []
   # - metadata:
   #     name: "secret1"
   #   data:
