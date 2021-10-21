@@ -123,6 +123,9 @@ spec:
 {{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
         - port: 9201
 {{- end}}
+{{- if .Values.global.cosmosNetworkPolicyEnabled }}
+        - port: 10255
+{{- end}}
         - port: 8433
         - port: 8000
         - port: 433

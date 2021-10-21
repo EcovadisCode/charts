@@ -109,6 +109,7 @@ global:
   secEnvVars: {}
       #APP_INSIGHT_KEY: TEST
 
+  cosmosNetworkPolicyEnabled: false
   additionalSecretsEnabled: false
   additionalSecrets: []
   # - metadata:
