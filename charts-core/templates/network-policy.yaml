@@ -90,15 +90,9 @@ spec:
 {{- if .Values.global.redisNetworkPolicyEnabled }}
     - to: #redis
         - ipBlock:
-            cidr: {{ .Values.global.redisCidr }}
+            cidr: {{ .Values.global.vnetCidr }}
       ports:
-        - port: 6379
         - port: 6380
-        - port: 6381
-        - port: 6382
-        - port: 6383
-        - port: 6384
-        - port: 6385
 {{- end }}
     - to: #outside world - sentry, optimizely, etc
         - ipBlock:
