@@ -87,6 +87,7 @@ spec:
               name: monitoring
       ports:
         - port: 9200
+        - port: 8200
 {{- if .Values.global.redisNetworkPolicyEnabled }}
     - to: #redis
         - ipBlock:
