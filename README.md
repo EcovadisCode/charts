@@ -25,4 +25,4 @@ We'd love to have you contribute! Please refer to our  for details.
 ## License
 
 <!-- Keep full URL links to repo files because this README syncs from main to gh-pages.  -->
-[MIT](https://github.com/git/git-scm.com/blob/main/MIT-LICENSE.txt).
+[MIT](https://github.com/git/git-scm.com/blob/main/MIT-LICENSE.txt)
