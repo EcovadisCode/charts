@@ -52,16 +52,15 @@ global:
   elasticNetworkPolicyEnabled: true
   elasticNamespace: develop
 
-  redisNetworkPolicyEnabled: true
-  redisCidr: "#{redisCidr}#"
-  sqlNetworkPolicyEnabled: true
-  servicebusNetworkPolicyEnabled: true
-  vnetCidr: "#{vnetCidr}#"
-
   mongodbNetworkPolicyEnabled: false
   automountServiceAccountToken: false
   lnmElasticNetworkPolicyEnabled: false
   allowAllInternalClusterTrafficNetworkPolicy: false
+  sqlNetworkPolicyEnabled: true
+  servicebusNetworkPolicyEnabled: true
+  redisNetworkPolicyEnabled: true
+  redisCidr: ""
+  vnetCidr: ""
   
   service:
     enabled: true
