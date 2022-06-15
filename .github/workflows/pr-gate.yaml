@@ -22,7 +22,7 @@ jobs:
     - name: Install PyTest
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
+        pip install jsonschema pytest jmespath kubernetes
     - name: Helm - Lint Chart
       run: helm lint
     - name: Helm - Render chart
