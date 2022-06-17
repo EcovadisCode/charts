@@ -1,0 +1,54 @@
+name: Release a chart
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Helm tool installer
+        uses: azure/setup-helm@v1
+        with:
+          version: '3.5.4' # default is latest stable
+        id: install
+
+      - name: Parse Chart.yaml
+        id: parse-chart
+        run: |
+          name=$(yq ".name" < Chart.yaml)
+          version=$(yq ".version" < Chart.yaml)
+          echo "::set-output name=tagname::${name}-${version}"
+
+      - uses: mukunku/tag-exists-action@v1.0.0
+        id: checkTag
+        with: 
+          tag: 'v1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run chart-releaser
+        if: ${{ steps.checkTag.outputs.exists == 'false' }} 
+        uses: helm/chart-releaser-action@v1.4.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          charts_dir: "packages"
+
+      - name: Push release tag on origin
+        run: |
+          if: ${{ steps.checkTag.outputs.exists == 'false' }} 
+          echo "Pushing tag ${{ steps.parse-chart.outputs.tagname }}"
+          git push origin "${{ steps.parse-chart.outputs.tagname }}"
