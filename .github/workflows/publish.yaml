@@ -36,7 +36,7 @@ jobs:
       - uses: mukunku/tag-exists-action@v1.0.0
         id: checkTag
         with: 
-          tag: 'v1'
+          tag: '${{ steps.parse-chart.outputs.tagname }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -47,8 +47,7 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           charts_dir: "packages"
 
-      - name: Push release tag on origin
-        if: ${{ steps.checkTag.outputs.exists == 'false' }} 
-        run: |
-          echo "Pushing tag ${{ steps.parse-chart.outputs.tagname }}"
-          git push origin "${{ steps.parse-chart.outputs.tagname }}"
+      - uses: actions-ecosystem/action-push-tag@v1
+        with:
+          tag: "${{ steps.parse-chart.outputs.tagname }}"
+          message: "${{ steps.parse-chart.outputs.tagname }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
