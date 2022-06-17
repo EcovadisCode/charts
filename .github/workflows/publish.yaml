@@ -33,7 +33,15 @@ jobs:
           version=$(yq ".version" < Chart.yaml)
           echo "::set-output name=tagname::${name}-${version}"
 
+      - uses: mukunku/tag-exists-action@v1.0.0
+        id: checkTag
+        with: 
+          tag: 'v1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run chart-releaser
+        if: ${{ steps.checkTag.outputs.exists == 'false' }} 
         uses: helm/chart-releaser-action@v1.4.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -41,5 +49,6 @@ jobs:
 
       - name: Push release tag on origin
         run: |
+          if: ${{ steps.checkTag.outputs.exists == 'false' }} 
           echo "Pushing tag ${{ steps.parse-chart.outputs.tagname }}"
           git push origin "${{ steps.parse-chart.outputs.tagname }}"
