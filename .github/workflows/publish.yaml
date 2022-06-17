@@ -36,7 +36,6 @@ jobs:
           echo "::set-output name=tagname::${name}-${version}"
       
       - name: Run chart-releaser
-        if: ${{ steps.checkTag.outputs.exists == 'false' }} 
         uses: helm/chart-releaser-action@v1.4.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
