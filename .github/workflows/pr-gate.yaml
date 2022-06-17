@@ -24,8 +24,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install jsonschema pytest jmespath kubernetes
     - name: Helm - Lint Chart
+      working-directory: ./charts/core
       run: helm lint
     - name: Helm - Render chart
+      working-directory: ./charts/core
       run: helm template .
     - name: Python - Run Unit Test
       run: pytest
+      working-directory: ./charts/core
