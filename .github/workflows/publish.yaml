@@ -40,3 +40,4 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           charts_dir: "."
+          CR_PACKAGE_PATH: "packages"
