@@ -1,6 +1,6 @@
 global:
   replicaCount: 2
-  nameOverride: "hello-world" # app name, may be the same as image.name
+  nameOverride: "" # app name, may be the same as image.name
 
   additionalLabelsEnabled: false
   additionalLabels: {}
