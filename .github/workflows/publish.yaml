@@ -48,7 +48,7 @@ jobs:
           charts_dir: "packages"
 
       - name: Push release tag on origin
+        if: ${{ steps.checkTag.outputs.exists == 'false' }} 
         run: |
-          if: ${{ steps.checkTag.outputs.exists == 'false' }} 
           echo "Pushing tag ${{ steps.parse-chart.outputs.tagname }}"
           git push origin "${{ steps.parse-chart.outputs.tagname }}"
