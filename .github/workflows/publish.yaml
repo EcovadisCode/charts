@@ -34,18 +34,6 @@ jobs:
           name=$(yq ".name" < Chart.yaml)
           version=$(yq ".version" < Chart.yaml)
           echo "::set-output name=tagname::${name}-${version}"
-
-      - uses: mukunku/tag-exists-action@v1.0.0
-        id: checkTag
-        with: 
-          tag: '${{ steps.parse-chart.outputs.tagname }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: "${{ steps.parse-chart.outputs.tagname }}"
-          message: "${{ steps.parse-chart.outputs.tagname }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
       
       - name: Run chart-releaser
         if: ${{ steps.checkTag.outputs.exists == 'false' }} 

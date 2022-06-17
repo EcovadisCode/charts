@@ -1,6 +1,6 @@
 global:
   replicaCount: 2
-  nameOverride: # app name, may be the same as image.name
+  nameOverride: "" # app name, may be the same as image.name
 
   additionalLabelsEnabled: false
   additionalLabels: {}
@@ -46,7 +46,7 @@ global:
     # readOnlyRootFilesystem: true
 
   #Automates creation of default network policy, which is responsible for handling traffic between pod - service - traefik 
-  defaultNetworkPolicyEnabled: true
+  defaultNetworkPolicyEnabled: false
 
   #Additional Network Polices configuration
   elasticNetworkPolicyEnabled: true
