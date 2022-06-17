@@ -1,5 +1,7 @@
 # Charts-Core
 
+[![Release a chart](https://github.com/EcovadisCode/charts-core/actions/workflows/publish.yaml/badge.svg)](https://github.com/EcovadisCode/charts-core/actions/workflows/publish.yaml)
+
 The code is provided as-is with no warranties.
 
 ## Usage
