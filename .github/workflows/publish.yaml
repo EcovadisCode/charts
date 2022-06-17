@@ -3,7 +3,7 @@ name: Release a chart
 on:
   push:
     branches:
-      - main
+      - master
 
 
 jobs:
