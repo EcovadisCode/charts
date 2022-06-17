@@ -16,6 +16,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          ref: master
 
       - name: Configure Git
         run: |
@@ -28,12 +29,12 @@ jobs:
           version: '3.5.4' # default is latest stable
         id: install
 
-      - name: Parse Chart.yaml
-        id: parse-chart
-        run: |
-          name=$(yq ".name" < Chart.yaml)
-          version=$(yq ".version" < Chart.yaml)
-          echo "::set-output name=tagname::${name}-${version}"
+      # - name: Parse Chart.yaml
+      #   id: parse-chart
+      #   run: |
+      #     name=$(yq ".name" < Chart.yaml)
+      #     version=$(yq ".version" < Chart.yaml)
+      #     echo "::set-output name=tagname::${name}-${version}"
       
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0
