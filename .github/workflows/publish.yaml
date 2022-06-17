@@ -9,6 +9,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -40,14 +42,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: actions-ecosystem/action-push-tag@v1
+        with:
+          tag: "${{ steps.parse-chart.outputs.tagname }}"
+          message: "${{ steps.parse-chart.outputs.tagname }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
+      
       - name: Run chart-releaser
         if: ${{ steps.checkTag.outputs.exists == 'false' }} 
         uses: helm/chart-releaser-action@v1.4.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           charts_dir: "packages"
-
-      - uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: "${{ steps.parse-chart.outputs.tagname }}"
-          message: "${{ steps.parse-chart.outputs.tagname }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
