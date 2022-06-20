@@ -37,17 +37,21 @@ jobs:
       run: |
         changed=$(ct list-changed --config .github/linters/ct.yaml)
         if [[ -n "$changed" ]]; then
-          echo "::set-output name=changed::true"
+          echo "::set-output name=isChanged::true"
+          echo "::set-output name=changed::$changed"
         fi
 
     - name: Helm - Lint Chart
-      working-directory: ./charts/${changed}
+      if: ${{ steps.list-changed.outputs.isChanged }}
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
       run: helm lint
 
     - name: Helm - Render chart
-      working-directory: ./charts/${changed}
+      if: ${{ steps.list-changed.outputs.isChanged }}
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
       run: helm template .
 
     - name: Python - Run Unit Test
       run: pytest
-      working-directory: ./charts/${changed}
+      if: ${{ steps.list-changed.outputs.isChanged }}
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
