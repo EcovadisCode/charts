@@ -35,7 +35,11 @@ jobs:
       #     name=$(yq ".name" < Chart.yaml)
       #     version=$(yq ".version" < Chart.yaml)
       #     echo "::set-output name=tagname::${name}-${version}"
-      
+
+      - name: Add dependency chart repos
+        run: |
+          helm repo add ecovadis https://ecovadiscode.github.io/charts/
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0
         with:
