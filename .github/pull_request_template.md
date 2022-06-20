@@ -1,0 +1,5 @@
+- [ ] Description provided
+- [ ] Linked issue
+- [ ] Chart version bumped
+- [ ] README.md updated with any new values or changes
+- [ ] Updated template tests in `${CHART}/tests/*.py`
