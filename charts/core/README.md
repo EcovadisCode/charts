@@ -12,7 +12,7 @@ Please refer to Helm's [documentation](https://helm.sh/docs/) to get started.
 Once Helm is set up properly, add the repo as follows:
 
 ```console
-helm repo add ecovadis https://ecovadiscode.github.io/charts-core/
+helm repo add ecovadis https://ecovadiscode.github.io/core/
 ```
 
 You can then run `helm search repo ecovadis` to see the charts.
