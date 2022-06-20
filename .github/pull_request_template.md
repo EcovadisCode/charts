@@ -1,3 +1,15 @@
+## Description
+
+Briefly describe the problem and solution.
+
+## Chart
+
+Select the chart that you are modifying:
+- [ ] core
+- [ ] dotnet-template
+- [ ] azure-functions
+
+## Checklist
 - [ ] Description provided
 - [ ] Linked issue
 - [ ] Chart version bumped
