@@ -55,9 +55,6 @@ The steps in release pipeline:
  - update version variable in release
  - push helm chart with tag "latest" to ACR if approved 
 
-Build definition: [link](https://azuredevops.ecovadis.com/EcoVadisApp_TeamProjectCollection/EcoVadisOps/_apps/hub/ms.vss-ciworkflow.build-ci-hub?_a=edit-build-definition&id=854&view=Tab_Triggers)
-Release definition: [link](https://azuredevops.ecovadis.com/EcoVadisApp_TeamProjectCollection/EcoVadisOps/_releaseDefinition?definitionId=121&_a=environments-editor-preview)
-
 ###Unit testing helm chart
 In order to minimize probability of faulty helm chart being deployed to ACR we have written set of unit tests which are being run during PRs. We are using python 3.9.1 and pyTest. To run the unit tests locally install needed packages with pip.
 
@@ -71,15 +68,3 @@ Then run in charts-dotnet-core directory command:
 `pytest`
 
 And see the results for yourself.
-
-###Application deployment
-
-####Build
-During the build phase, we are traditionally running build process (we are not running powershell scripts / dotnet commmands within container).
-Afterwards, we have created a task group called ["Docker - build, scan and push"](https://azuredevops.ecovadis.com/EcoVadisApp_TeamProjectCollection/EcoVadisApp/_taskgroup/472257c6-3652-462e-9cf3-bc7099c784f0). The name is pretty self-explainatory, but in short it builds an image, runs Trivy Vulnerability scan and pushes the image to the ACR. After that, we are creating artifact with only config files (e.g. appsettings.json). The crucial point here is the name of the artifact - the image tag and config files are named the same.
-
-####Release
-During the release process we are benefiting from the fact, that the config files and image tag is the same. With this knowledge, we can always use proper image from ACR. First, we pull helm chart and export it. Then is the part that will be decided soon, either we will use Azure App Configuration or base on traditional values.yaml files, but we are somehow supplying the configuration for the app. Then we copy application's json files to the chart directory and replace tokens. Finally, we are installing the chart with `helm upgrade --install` command.
-
-Note:
-We do not want to use `--create-namespace` flag. We want to have a separate release, which will create namespace, set-up image-pull-secrts and other infrastructure that will be used.
