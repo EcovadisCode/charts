@@ -13,7 +13,7 @@ jobs:
       uses: rowi1de/auto-assign-review-teams@v1.1.3
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        teams: "EcovadisCode/EV.DevOps"
+        teams: "EV.DevOps"
 
     - uses: actions/checkout@v2
       with:
