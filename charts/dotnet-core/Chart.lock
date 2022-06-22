@@ -1,0 +1,6 @@
+dependencies:
+- name: charts-core
+  repository: https://ecovadiscode.github.io/charts/
+  version: 1.0.3
+digest: sha256:f9f916597e15c596a3b2170eff6b7af6efa593015f77b913dfc1cb43e9b61b07
+generated: "2022-06-22T14:08:26.1453051+02:00"
