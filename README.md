@@ -1,6 +1,6 @@
 # Official Ecovadis Helm Chart Repository
 
-[![Release a chart](https://github.com/EcovadisCode/charts-core/actions/workflows/publish.yaml/badge.svg)](https://github.com/EcovadisCode/charts-core/actions/workflows/publish.yaml)
+[![Release Status](https://github.com/EcovadisCode/charts/actions/workflows/publish.yaml/badge.svg)](https://github.com/EcovadisCode/charts/actions/workflows/publish.yaml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 The code is provided as-is with no warranties.
 
