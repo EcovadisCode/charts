@@ -2,3 +2,5 @@
 .vs/VSWorkspaceState.json
 .vs/charts-dotnet-core/v16/.suo
 *.pyc
+*.tgz
+*.lock
