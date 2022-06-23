@@ -41,6 +41,15 @@ jobs:
           echo "::set-output name=changed::$changed"
         fi
 
+    - name: Add dependency chart repos
+      run: |
+        helm repo add ecovadis https://ecovadiscode.github.io/charts/
+
+    - name: Update dependencies
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
+      run: |
+        helm dependency update
+
     - name: Helm - Lint Chart
       if: ${{ steps.list-changed.outputs.isChanged }}
       working-directory: ./${{ steps.list-changed.outputs.changed }}

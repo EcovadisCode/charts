@@ -1,0 +1,192 @@
+global:
+  replicaCount: 2
+  rollingUpdate:
+    maxSurge: "50%"
+    maxUnavailable: "50%"
+
+  image:
+    repository: "labacreco.azurecr.io"
+    imagePullSecret: "labacreco-pull-secret"
+    name: ""
+    tag: ""
+    pullPolicy: IfNotPresent
+    command: []
+    args: []
+    ports:
+      - name: http
+        containerPort: 8000
+        protocol: TCP
+    livenessProbe:
+      httpGet:
+        path: /
+        port: http
+      periodSeconds: 60
+      timeoutSeconds: 15
+      successThreshold: 1
+    readinessProbe:
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 20
+      periodSeconds: 10
+      timeoutSeconds: 3
+      successThreshold: 1  
+  mockingServer:
+    enabled: false
+    repository: "docker.io"
+    imagePullSecret: "dockerhub-pull-secret" # can be labacreco-pull-secret or dockerhub-pull-secret
+    name: "mockserver/mockserver"
+    tag: "5.13.2"
+    pullPolicy: IfNotPresent
+    envEnabled: true
+    env:
+    - name: MOCKSERVER_SERVER_PORT
+      value: "1080"
+    ports:
+      - name: http-mock
+        containerPort: 1080
+        protocol: TCP
+    livenessProbe:
+      tcpSocket:
+        port: http-mock
+      periodSeconds: 60
+      timeoutSeconds: 15
+      successThreshold: 1
+    readinessProbe:
+      tcpSocket:
+        port: http-mock
+      initialDelaySeconds: 3
+      periodSeconds: 3
+      timeoutSeconds: 3
+      successThreshold: 1
+
+  nameOverride: # app name, may be the same as image.name
+  
+  additionalLabelsEnabled: false
+  additionalLabels: {}
+  
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    annotations: {}
+    name: ""
+    rules:
+    - apiGroups: []
+      resources: []
+      verbs: []
+
+  podAnnotations: {}
+
+  podSecurityContext: 
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - SYS_ADMIN
+        - SYS_PTRACE
+        - SYS_MODULE
+        - DAC_READ_SEARCH
+        - DAC_OVERRIDE
+        - CHOWN
+        - SETFCAP
+        - KILL
+        - NET_ADMIN
+        - NET_RAW
+    # readOnlyRootFilesystem: true
+
+  #Automates creation of default network policy, which is responsible for handling traffic between pod - service - traefik 
+  defaultNetworkPolicyEnabled: true
+
+  #Additional Network Polices configuration
+  elasticNetworkPolicyEnabled: true
+  elasticNamespace: #{elasticNamespace}#
+
+  redisNetworkPolicyEnabled: true
+  redisCidr: "#{redisCidr}#"
+  sqlNetworkPolicyEnabled: true
+  servicebusNetworkPolicyEnabled: true
+  vnetCidr: "#{vnetCidr}#"
+
+  mongodbNetworkPolicyEnabled: false
+  automountServiceAccountToken: false
+  lnmElasticNetworkPolicyEnabled: false
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: "50%"
+
+  #Algoritgm for creation ingress rule (ingressRoutes.routes.rule)
+  #1. If the value ingressRoutes.routes[x].rule is present, use it
+  #2. If ingressRoutes.routes[x].rule is absent:
+  # - check if envVars exists, if not  - fail with communicate: ".Values.envVars must be enabled and not empty in order to create ingress rule"
+  # - check if ASPNETCORE_ENVIRONMENT is defined within envVars, if not - fail with communicate: ".Values.envVars is present, bud does not contain ASPNETCORE_ENVIRONMENT"
+  # - depending on isStipPrefixEnabled create either "Host(envVars[ASPNETCORE_ENVIRONMENT].$ingressRoutes.domain)" or "Host(envVars[ASPNETCORE_ENVIRONMENT].$ingressRoutes.domain) && PathPrefix($ingressRoutes.routes[x].stripPrefixes[y])" rule
+  ingressRoutes: 
+    enabled: true
+    domain: ecovadis-itlab.com
+    routes:
+    - ruleName: http
+      #rule: Host(`svcint.ecovadis-itlab.com`) 
+      #stripPrefixes:
+      #  - /vadisservice
+    # - ruleName: http-public
+    #   rule: Host(`svc.ecovadis-itlab.com`) 
+    #   stripPrefixes:
+    #     - /vadisservice
+  envVarsEnabled: true
+  envVars: 
+    ASPNETCORE_ENVIRONMENT: Develop
+    ELASTIC_APM_TRANSACTION_IGNORE_URLS: '/VAADIN/*, /heartbeat*, /favicon.ico, *.js, *.css, *.jpg, *.jpeg, *.png, *.gif, *.webp, *.svg, *.woff, *.woff2, /readyz'
+
+  secEnvVarsEnabled: true
+  secEnvVars: {}
+
+  appConfigFilesEnabled: true
+  appConfigFiles:
+    globPattern: "**.json"
+    dir: "/app/"
+    filesList: []
+      #- "appsettings.json"
+
+  additionalValumesEnabled: false
+  additionalVolumes: {}
+  #   - name: azurefileshare
+  #     azureFile:
+  #       secretName: storage-secret
+  #       shareName: fileshare-name
+  #       readOnly: false
+  additionalVolumesMount: {} 
+    # - name: azurefileshare
+    #   mountPath: /app
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  servicemonitor:
+    enabled: false
+
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 80
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70

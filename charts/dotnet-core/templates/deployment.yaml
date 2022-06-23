@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "charts-dotnet-core.fullname" . }}
+  labels:
+    {{- include "charts-dotnet-core.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.global.autoscaling.enabled }}
+  replicas: {{ .Values.global.replicaCount }}
+{{- end }}
+  progressDeadlineSeconds: {{ .Values.global.progressDeadlineSeconds | default "30"}}
+  revisionHistoryLimit: {{ .Values.global.revisionHistoryLimit | default "3" }}
+  minReadySeconds: {{ .Values.global.minReadySeconds | default "0"}}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.global.rollingUpdate.maxSurge | default "50%" }}
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default "50" }} 
+  selector:
+    matchLabels:
+      {{- include "charts-dotnet-core.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/appsettings-secret: {{ include (print $.Template.BasePath "/appsettings-secret.yaml") . | sha256sum }}
+    {{- with .Values.global.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "charts-dotnet-core.selectorLabels" . | nindent 8 }}
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: failure-domain.beta.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "charts-dotnet-core.name" . }}  
+      imagePullSecrets:
+        - name: "{{ .Values.global.image.imagePullSecret }}"
+      {{- if .Values.global.serviceAccount.create }}
+      serviceAccountName: {{ include "charts-dotnet-core.serviceAccountName" . }}
+      {{- else }}
+      serviceAccountName: null
+      serviceAccount: null
+      {{- end }}
+      automountServiceAccountToken: {{ .Values.global.automountServiceAccountToken | default false }}
+      securityContext:
+        {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.global.securityContext | nindent 12 }}
+          image: "{{ .Values.global.image.repository }}/{{ .Values.global.image.name}}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          {{- if .Values.global.image.command }}
+          command: {{- toYaml .Values.global.image.command | nindent 12 }}
+          {{- end }}
+          {{- if .Values.global.image.args }}
+          args: {{- toYaml .Values.global.image.args | nindent 12 }}
+          {{- end }}
+          ports:
+            {{- toYaml .Values.global.image.ports | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.global.image.readinessProbe | nindent 12 }}
+          {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
+          envFrom:
+          {{- if .Values.global.envVarsEnabled }}
+            - configMapRef:
+                name: "{{ include "charts-dotnet-core.fullname" . }}"
+          {{- end }}
+          {{- if .Values.global.secEnvVarsEnabled }}
+            - secretRef:
+                name: "{{ include "charts-dotnet-core.fullname" . }}-secure"
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.global.resources | nindent 12 }}
+          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalValumesEnabled }}
+          volumeMounts:
+          {{- if .Values.global.appConfigFilesEnabled -}}
+          {{- $currentScope := .}}
+            {{- range $path, $_ :=  .Files.Glob .Values.global.appConfigFiles.globPattern }}
+            {{- with $currentScope}}
+          - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $path }}"
+            name: configuration-volume
+            subPath: "{{ $path }}"
+            {{- end }}
+            {{- end }}
+          {{- if .Values.global.appConfigFiles.filesList -}}
+            {{- $files := .Files }}
+            {{- range .Values.global.appConfigFiles.filesList }}
+            {{- $rangeItem := . -}}
+            {{- with $ }}
+          - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $rangeItem }}"
+            name: configuration-volume
+            subPath: "{{ $rangeItem }}"
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.global.additionalValumesEnabled -}}
+            {{- with .Values.global.additionalVolumesMount }}
+              {{- toYaml . | nindent 10 }}
+            {{- end }}
+            {{- end }}
+        {{ if .Values.global.mockingServer.enabled -}}
+        - name: mockserver
+          securityContext:
+            {{- toYaml .Values.global.securityContext | nindent 12 }}
+          image: "{{ .Values.global.mockingServer.repository }}/{{ .Values.global.mockingServer.name}}:{{ .Values.global.mockingServer.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.mockingServer.pullPolicy }}
+          ports:
+            {{- toYaml .Values.global.mockingServer.ports | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.global.mockingServer.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.global.mockingServer.readinessProbe | nindent 12 }}
+          {{- if .Values.global.mockingServer.envEnabled -}}
+            {{- with .Values.global.mockingServer.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- end }}          
+      volumes:
+      {{ if .Values.global.appConfigFilesEnabled -}}
+      - name: "configuration-volume"
+        secret:
+          secretName: {{ include "charts-dotnet-core.fullname" . }}-files
+      {{- end }}
+      {{- if .Values.global.additionalValumesEnabled -}}
+      {{- with .Values.global.additionalVolumes }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+	    {{- end }}
+      {{- end }}
+      {{- with .Values.global.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ toYaml . }}
+      {{- end }}
+      {{- with .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
