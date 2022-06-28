@@ -31,6 +31,20 @@ entries:
   charts-dotnet-core:
   - apiVersion: v2
     appVersion: 1.18.0
+    created: "2022-06-28T13:02:24.005515218Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 1.0.3
+    description: A Helm chart for Kubernetes
+    digest: 293581a31c16ea76d407a7f5b790e5a80d5dcf3f542f4de99e4f1377f61be046
+    name: charts-dotnet-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-2.0.1/charts-dotnet-core-2.0.1.tgz
+    version: 2.0.1
+  - apiVersion: v2
+    appVersion: 1.18.0
     created: "2022-06-23T14:15:04.699062469Z"
     dependencies:
     - name: charts-core
@@ -43,4 +57,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-2.0.0/charts-dotnet-core-2.0.0.tgz
     version: 2.0.0
-generated: "2022-06-23T14:15:04.699350075Z"
+generated: "2022-06-28T13:02:24.005528418Z"
