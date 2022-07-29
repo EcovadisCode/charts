@@ -1,0 +1,155 @@
+# -- Pact Broker image information
+image:
+  # -- Pact Broker image registry
+  registry: docker.io
+  # -- Pact Broker image repository
+  repository: pactfoundation/pact-broker
+  # -- Pact Broker image tag (immutable tags are recommended)
+  tag: 2.100.0.1
+  # -- Specify a imagePullPolicy
+  # Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+  # more info [here](https://kubernetes.io/docs/user-guide/images/#pre-pulling-images)
+  #
+  pullPolicy: IfNotPresent
+  # -- Array of imagePullSecrets to allow pulling the Pact Broker image from private registries.
+  # PS: Secret's must exist in the namespace to which you deploy the Pact Broker.
+  # more info [here](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/)
+  #
+  # Example:
+  #   pullSecrets:
+  #    - mySecretName
+  #
+  pullSecrets: []
+
+envVars:
+  PACT_BROKER_DATABASE_ADAPTER: "postgres" # -- Database engine to use.
+  PACT_BROKER_DATABASE_HOST: "pact-psql01-weu-lab.postgres.database.azure.com" # -- Database host
+  PACT_BROKER_DATABASE_PORT: "5432" # -- Database port number
+  PACT_BROKER_DATABASE_NAME: "pact_broker" # -- Database name  
+  PACT_BROKER_PUBLIC_HEARTBEAT: true # -- Set to true if you want the heartbeat endpoint to be publicly accessible.
+  PACT_BROKER_PORT: 9292 # -- http port
+  PACT_BROKER_DISABLE_SSL_VERIFICATION: false # -- If set to true, SSL verification will be disabled for the HTTP requests made by the webhooks
+  PACT_BROKER_ALLOW_PUBLIC_READ: false # -- Set to true if you want public read access, but still require credentials for writing.
+  PACT_BROKER_ENABLE_PUBLIC_BADGE_ACCESS: false       # -- Set this to true to allow status badges to be embedded in README files without requiring a hardcoded password.
+
+secEnvVars:
+  PACT_BROKER_DATABASE_USERNAME: "pact_broker@pact-psql01-weu-lab" # -- Non-root username for the Pact Broker
+  PACT_BROKER_DATABASE_PASSWORD: "hgPCyNyW7nn^P7" # -- Non-root user password for the Pact Broker
+  PACT_BROKER_BASIC_AUTH_USERNAME: "evPbWrite" # -- Usermame for write access to the Pact Broker
+  PACT_BROKER_BASIC_AUTH_PASSWORD: "DR9kVEVfKn9&vt" # -- Password for write access to the Pact Broker
+  PACT_BROKER_BASIC_AUTH_READ_ONLY_USERNAME: "evPbRead" # -- Usermame for read access to the Pact Broker
+  PACT_BROKER_BASIC_AUTH_READ_ONLY_PASSWORD: "FSX@zgpQk9gDbc" # -- Password for read access to the Pact Broker
+
+# -- Broker configuration
+#
+broker:
+  # -- Additional labels that can be added to the Broker deployment
+  labels: {}
+  # -- Additional annotations that can be added to the Broker deployment
+  annotations: {}
+  # -- Number of Pact Broker replicas to deploy
+  replicaCount: 1
+  # -- Container port configuration
+  containerPorts:
+    # -- http port
+    https: 8443
+
+  # -- Pact Broker pods' [SecurityContext](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+  podSecurityContext:
+    # -- Enable Pact Broker pods' Security Context
+    enabled: true
+    # -- Set Pact Broker pod's Security Context fsGroup
+    fsGroup: 1001
+
+  # -- Pact Broker containers' [Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+  containerSecurityContext:
+    # -- Enable Pact Broker containers' Security Context
+    enabled: true
+    # -- Set Pact Broker container's Security Context runAsUser
+    runAsUser: 1001
+    # -- Set Pact Broker container's Security Context runAsNonRoot
+    runAsNonRoot: true
+
+  # -- Pact Broker [Affinity](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity)
+  affinity: {}
+  # -- Pact Broker [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
+  tolerations: []
+  # -- Pact Broker [Node Selector](https://kubernetes.io/docs/user-guide/node-selection/)
+  nodeSelector: {}
+  # -- Pact Broker [resource requests and limits](https://kubernetes.io/docs/user-guide/compute-resources/)
+
+  resources:
+    # -- The resources limits for the Pact Broker containers
+    limits:
+      memory: 1024Mi
+      cpu: 2500m
+    # -- The requested resources for the Pact Broker containers
+    requests:
+      memory: 512Mi
+      cpu: 100m
+
+  # -- Pact Broker [Liveness Probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+  livenessProbe:
+
+    # -- Enable livenessProbe on Pact Broker containers
+    enabled: true
+    # -- Initial delay seconds for livenessProbe
+    initialDelaySeconds: 300
+    # -- Period seconds for livenessProbe
+    periodSeconds: 1
+    # -- Timeout seconds for livenessProbe
+    timeoutSeconds: 5
+    # -- Failure threshold for livenessProbe
+    failureThreshold: 3
+    # -- Success threshold for livenessProbe
+    successThreshold: 1
+
+  # -- Pact Broker [Readiness Probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+  readinessProbe:
+    # -- Enable readinessProbe on Pact Broker containers
+    enabled: true
+    # -- Initial delay seconds for readinessProbe
+    initialDelaySeconds: 30
+    # -- Period seconds for readinessProbe
+    periodSeconds: 10
+    # -- Timeout seconds for readinessProbe
+    timeoutSeconds: 1
+    # -- Failure threshold for readinessProbe
+    failureThreshold: 3
+    # -- Success threshold for readinessProbe
+    successThreshold: 1
+
+# -- Service configuration
+service:
+  # -- Kubernetes service type
+  type: "ClusterIP"
+  # -- Service port configuration
+  ports:
+    # -- Pact service HTTP port
+    http: 80
+    # -- Pact service HTTPS port
+    https: 443
+  # -- Service [NodePort configuration](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
+  nodePorts:
+    # -- http nodePort
+    http: ""
+    # -- https nodePort
+    https: ""
+  # -- Pact Broker service clusterIP
+  clusterIP: ""
+  # -- Pact Broker Service [loadBalancerIP](https://kubernetes.io/docs/user-guide/services/#type-loadbalancer)
+  loadBalancerIP: ""
+
+# -- Service Account Configuration
+serviceAccount:
+  # -- Enable the creation of a ServiceAccount for Pact Broker pods
+  create: true
+  # -- Name of the created ServiceAccount
+  # If not set and `serviceAccount.create` is true, a name is generated
+  name: broker-sa
+  # -- Additional custom labels to the service ServiceAccount.
+  labels: {}
+  # -- Additional custom annotations for the ServiceAccount.
+  annotations: {}
+  # -- Auto-mount the service account token in the pod
+  automountServiceAccountToken: true
