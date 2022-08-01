@@ -2,7 +2,7 @@
 image:
   registry: docker.io # -- Pact Broker image registry
   repository: pactfoundation/pact-broker # -- Pact Broker image repository
-  tag: 2.102.1.0 # -- Pact Broker image tag (immutable tags are recommended) https://hub.docker.com/r/pactfoundation/pact-broker/tags
+  tag: 2.102.2.0 # -- Pact Broker image tag (immutable tags are recommended) https://hub.docker.com/r/pactfoundation/pact-broker/tags
   pullPolicy: IfNotPresent # -- Specify a imagePullPolicy
 
 envVars:
