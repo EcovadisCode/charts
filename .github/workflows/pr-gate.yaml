@@ -51,10 +51,12 @@ jobs:
         fi
 
     - name: Add dependency chart repos
+      if: ${{ steps.list-changed.outputs.isChanged }}
       run: |
         helm repo add ecovadis https://ecovadiscode.github.io/charts/
 
     - name: Update dependencies
+      if: ${{ steps.list-changed.outputs.isChanged }}
       working-directory: ./${{ steps.list-changed.outputs.changed }}
       run: |
         helm dependency update
