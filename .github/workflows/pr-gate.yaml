@@ -43,8 +43,9 @@ jobs:
 
     - name: Check if Py tests exist
       id: tests-check
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
       run: |
-        [ -d ./${{ steps.list-changed.outputs.changed }}/templates/tests ] && echo "Directory with tests exists." && echo "::set-output name=testsExist::true"
+        [ -d ./templates/tests ] && echo "Directory with tests exists." && echo "::set-output name=testsExist::true"
 
     - name: Add dependency chart repos
       run: |
