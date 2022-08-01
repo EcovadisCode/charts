@@ -45,7 +45,10 @@ jobs:
       id: tests-check
       working-directory: ./${{ steps.list-changed.outputs.changed }}
       run: |
-        [ -d ./templates/tests ] && echo "Directory with tests exists." && echo "::set-output name=testsExist::true"
+        if [[ -d templates/tests ]]; then
+          echo "Directory with tests exists."
+          echo "::set-output name=testsExist::true"
+        fi
 
     - name: Add dependency chart repos
       run: |
