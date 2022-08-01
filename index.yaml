@@ -57,4 +57,17 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-2.0.0/charts-dotnet-core-2.0.0.tgz
     version: 2.0.0
-generated: "2022-06-28T13:02:24.005528418Z"
+  pact-broker:
+  - apiVersion: v2
+    appVersion: 2.102.2.0
+    created: "2022-08-01T11:45:09.55565679Z"
+    description: EcoVadis public Helm chart for Pact Broker
+    digest: c757b6d7c6a94b6ea410e0ff17236fc9065d7130ebde207ad166266b2613a79d
+    name: pact-broker
+    sources:
+    - https://github.com/pact-foundation/pact_broker
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
+    version: 0.1.0
+generated: "2022-08-01T11:45:09.55567439Z"
