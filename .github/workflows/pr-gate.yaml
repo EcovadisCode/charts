@@ -71,5 +71,5 @@ jobs:
 
     - name: Python - Run Unit Test
       run: pytest
-      if: steps.list-changed.outputs.isChanged || steps.tests-check.outputs.testsExist
+      if: steps.list-changed.outputs.isChanged && steps.tests-check.outputs.testsExist
       working-directory: ./${{ steps.list-changed.outputs.changed }}
