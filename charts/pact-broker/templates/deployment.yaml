@@ -27,12 +27,6 @@ spec:
         {{- end }}
       {{- end }}
     spec:
-      {{- if .Values.image.pullSecrets }}
-      imagePullSecrets:
-      {{- range .Values.image.pullSecrets }}
-        - name: {{ . }}
-      {{- end }}
-      {{- end }}
       {{- if .Values.broker.podSecurityContext.enabled }}
       securityContext: {{- omit .Values.broker.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
@@ -57,18 +51,6 @@ spec:
                 name: "{{ include "chart.fullname" . }}-secure"
           resources:
             {{- toYaml .Values.broker.resources | nindent 12 }}
-          {{- if .Values.nodeSelector }}
-          nodeSelector:
-          {{ toYaml .Values.nodeSelector | indent 8 }}
-          {{- end }}
-          {{- if .Values.tolerations }}
-          tolerations:
-          {{ toYaml .Values.tolerations | indent 8 }}
-          {{- end }}
-          {{- if .Values.affinity }}
-          affinity:
-          {{ toYaml .Values.affinity | indent 8 }}
-          {{- end }}
           {{- if .Values.broker.livenessProbe.enabled }}
           livenessProbe: {{- omit .Values.broker.livenessProbe "enabled" | toYaml | nindent 12 }}
             httpGet:
