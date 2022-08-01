@@ -7,6 +7,7 @@ Briefly describe the problem and solution.
 Select the chart that you are modifying:
 - [ ] core
 - [ ] dotnet-template
+- [ ] pact-broker
 - [ ] azure-functions
 
 ## Checklist
