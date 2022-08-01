@@ -41,6 +41,11 @@ jobs:
           echo "::set-output name=changed::$changed"
         fi
 
+    - name: Check if Py tests exist
+      id: tests-check
+      run: |
+        [ -d ./${{ steps.list-changed.outputs.changed }}/templates/tests ] && echo "Directory with tests exists." && echo "::set-output name=testsExist::true"
+
     - name: Add dependency chart repos
       run: |
         helm repo add ecovadis https://ecovadiscode.github.io/charts/
@@ -62,5 +67,5 @@ jobs:
 
     - name: Python - Run Unit Test
       run: pytest
-      if: ${{ steps.list-changed.outputs.isChanged }}
+      if: steps.list-changed.outputs.isChanged || steps.tests-check.outputs.testsExist
       working-directory: ./${{ steps.list-changed.outputs.changed }}
