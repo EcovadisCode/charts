@@ -1,0 +1,25 @@
+{{- if .Values.ingressRoute.enabled -}}
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "chart.fullname" . }}-http
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule  
+      match: Host(`{{ .Values.ingressRoute.host }}`)
+      services:
+        - kind: Service
+          name: {{ include "chart.fullname" . }}
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.ingressRoute.port }}
+{{- if kindIs "invalid" .Values.ingressRoute.isTlsEnabled }}
+  tls: {}
+{{ else if .Values.ingressRoute.isTlsEnabled }}
+  tls: {}
+{{- end }}
+{{- end -}}
