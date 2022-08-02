@@ -20,12 +20,14 @@ spec:
         {{- with .Values.broker.labels }}
         {{ toYaml . | trim | indent 8 }}
         {{- end }}
-      {{- if .Values.broker.annotations }}
       annotations:
+        checksum/envconfig: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
+        checksum/secretconfig: {{ include (print $.Template.BasePath "/env-secret.yaml") . | sha256sum }}
+        {{- if .Values.broker.annotations }}
         {{- with .Values.broker.annotations }}
         {{ toYaml . | trim | indent 8 }}
         {{- end }}
-      {{- end }}
+        {{- end }}
     spec:
       {{- if .Values.broker.podSecurityContext.enabled }}
       securityContext: {{- omit .Values.broker.podSecurityContext "enabled" | toYaml | nindent 8 }}
