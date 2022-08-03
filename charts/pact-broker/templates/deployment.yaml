@@ -36,9 +36,6 @@ spec:
             - name: http
               containerPort: {{ .Values.envVars.PACT_BROKER_PORT }}
               protocol: TCP
-            # - name: https
-            #   containerPort: {{ .Values.broker.containerPorts.https }}
-            #   protocol: TCP
           envFrom:
             - configMapRef:
                 name: "{{ include "chart.fullname" . }}"
