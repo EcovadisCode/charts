@@ -3,11 +3,7 @@ kind: Service
 metadata:
   name: {{ include "chart.fullname" . }}
   labels:
-    name: {{ include "chart.fullname" . }}
-    app.kubernetes.io/name: {{ include "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "chart.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -23,12 +19,11 @@ spec:
     - name: https
       port: {{ .Values.service.ports.https }}
       protocol: TCP
-      targetPort: https
+      targetPort: http
       {{- if (and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.https))) }}
       nodePort: {{ .Values.service.nodePorts.https }}
       {{- else if eq .Values.service.type "ClusterIP" }}
       nodePort: null
       {{- end }}
   selector:
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/name: {{ include "chart.name" . }}
+    {{- include "chart.selectorLabels" . | nindent 4 }}
