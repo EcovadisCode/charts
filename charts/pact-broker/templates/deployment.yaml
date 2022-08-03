@@ -22,6 +22,10 @@ spec:
         {{- end }}
         {{- end }}
     spec:
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end }}
       {{- if .Values.broker.podSecurityContext.enabled }}
       securityContext: {{- omit .Values.broker.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
