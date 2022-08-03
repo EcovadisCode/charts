@@ -2,7 +2,8 @@ apiVersion: v2
 name: pact-broker
 description: EcoVadis public Helm chart for Pact Broker
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: 2.102.2.0
 sources:
   - https://github.com/pact-foundation/pact_broker
+  - https://github.com/ChrisJBurns/pact-broker-chart
