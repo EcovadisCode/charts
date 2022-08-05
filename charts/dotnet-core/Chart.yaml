@@ -7,4 +7,4 @@ dependencies:
 - name: charts-core
   version: 1.0.3
   repository: "https://ecovadiscode.github.io/charts/"
-version: 2.0.1
+version: 2.0.2
