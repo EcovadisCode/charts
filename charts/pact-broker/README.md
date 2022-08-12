@@ -52,7 +52,7 @@ There is a special entry at `image.pullSecrets` in v`alues.yaml` file that passe
 
 It is recommended to [create](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) and use this secret and not to use anonymous image pulling because there is an issue with dockerhub repos when you may face image pull errors from public repos.
 
-Disable imagePullSecrets:
+To disable imagePullSecrets:
 ```
 image:
   pullSecrets: []
