@@ -1,4 +1,27 @@
-{{- if .Values.ingressRoute.enabled -}}
+{{- if .Values.ingressRoutes.enabled -}}
+{{ if .Values.ingressRoutes.isTlsRouteEnabled }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "chart.fullname" . }}-https
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule  
+      match: Host(`{{ .Values.ingressRoutes.host }}`)
+      services:
+        - kind: Service
+          name: {{ include "chart.fullname" . }}
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.ingressRoutes.port }}
+  tls: {}
+{{- end }}
+{{ if and .Values.ingressRoutes.isNonTlsRouteEnabled }}
+---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
@@ -11,15 +34,30 @@ spec:
     - web
   routes:
     - kind: Rule  
-      match: Host(`{{ .Values.ingressRoute.host }}`)
+      match: Host(`{{ .Values.ingressRoutes.host }}`)
+      {{- if and .Values.ingressRoutes.redirectToHttps .Values.ingressRoutes.isTlsRouteEnabled }}
+      middlewares:
+        - name: redirect-https
+      {{- end }}
       services:
         - kind: Service
           name: {{ include "chart.fullname" . }}
           namespace: {{ .Release.Namespace }}
-          port: {{ .Values.ingressRoute.port }}
-{{- if kindIs "invalid" .Values.ingressRoute.isTlsEnabled }}
-  tls: {}
-{{ else if .Values.ingressRoute.isTlsEnabled }}
-  tls: {}
+          port: {{ .Values.ingressRoutes.port }}
+{{- if and .Values.ingressRoutes.redirectToHttps .Values.ingressRoutes.isTlsRouteEnabled }}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  redirectScheme:
+    permanent: true
+    port: '443'
+    scheme: https
 {{- end }}
-{{- end -}}
+{{- end }}
+{{- end }}

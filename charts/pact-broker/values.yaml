@@ -18,6 +18,7 @@ envVars:
   PACT_BROKER_ALLOW_PUBLIC_READ: false # -- Set to true if you want public read access, but still require credentials for writing.
   PACT_BROKER_ENABLE_PUBLIC_BADGE_ACCESS: false       # -- Set this to true to allow status badges to be embedded in README files without requiring a hardcoded password.
   PACT_BROKER_HIDE_PACTFLOW_MESSAGES: true # -- Set to true to hide the messages in the logs about Pactflow
+  PACT_BROKER_DATABASE_SSLMODE: require # -- The Postgresql ssl mode. Allowed values: disable, allow, prefer, require, verify-ca, verify-full.
 
 secEnvVars:
   PACT_BROKER_DATABASE_USERNAME: "#{pbDbUser}#" # -- Non-root username for the Pact Broker
@@ -31,8 +32,6 @@ secEnvVars:
 broker:
   annotations: {} # -- Additional annotations that can be added to the Broker deployment
   replicaCount: 1 # -- Number of Pact Broker replicas to deploy
-  containerPorts:
-    https: 8443 # -- https port
 
   # -- Pact Broker pods' [SecurityContext](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
   podSecurityContext:
@@ -77,7 +76,6 @@ service:
   type: "ClusterIP" # -- Kubernetes service type
   ports:
     http: 80 # -- Pact service HTTP port
-    https: 443 # -- Pact service HTTPS port
 
   # -- Service [NodePort configuration](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport or [LoadBalancer configuration](https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer))
   nodePorts:
@@ -91,9 +89,11 @@ serviceAccount:
   annotations: {} # -- Additional custom annotations for the ServiceAccount.
   automountServiceAccountToken: true # -- Auto-mount the service account token in the pod
 
-# -- Traefik ingress route configuration
-ingressRoute:
-  enabled: true
-  isTlsEnabled: false
-  host: "pact-broker.ecovadis-itlab.com"
+# -- Traefik ingress routes configuration
+ingressRoutes:
+  enabled: true # -- Enables or disables all Traefik CRDs: Ingress routes, middleware.
+  isNonTlsRouteEnabled: false # -- Non-TLS Traefik route for pact-broker. You can consider turning this off if you are redirecting your traffic from http to https on different load balancer etc. Use case - redirecting traffic on Azure AppGateway that stands before Traefik.
+  isTlsRouteEnabled: true # -- TLS Traefik route. Your Traefik instance should be preconfigured with certificate to terminate TLS for pact-broker.
+  redirectToHttps: false # -- Enable or disable redirecting traffic from http to https with Traefik middleware. Takes effect only when isTlsRouteEnabled is true.
+  host: "#{pactBrokerHost}#" # -- Full pact-broker host URL like 'pact-broker.your-domain.com'. WIll be used for matching routes in Traefik.
   port: 80
