@@ -27,7 +27,7 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "charts-dotnet-core.selectorLabels" . | nindent 8 }}
+        {{- include "charts-dotnet-core.labels" . | nindent 8 }}
     spec:
       topologySpreadConstraints:
         - maxSkew: 1
