@@ -16,7 +16,7 @@ What is [Traefik](https://traefik.io/)?
   - deployment.yaml
   - env-configmap.yaml
   - env-secret.yaml
-  - ingressroutes.yaml
+  - ingress.yaml
   - service.yaml
   - serviceaccount.yaml
 - Chart.yaml
@@ -34,7 +34,7 @@ SQL adapter `postgres` is used by default as an adapter which is recommended by 
 ### **Exposing Pact-Broker to the outside of cluster**
 Pact-Broker deployment is exposed by `ClusterIP` type service to port 80 by default.
 
-If you have Traefik as reverse proxy - there is an ability to expose your installation of Pact-Broker with set of Traefik IngressRoute CRD resources. You should set `ingressRoutes.enabled` to 'true' in order to enable creation of any Traefik resources. 
+If you have Traefik as reverse proxy - there is an ability to expose your installation of Pact-Broker with set of Traefik IngressRoute CRD resources. You should set `ingress.enabled` to 'true' in order to enable creation of any Traefik resources. 
 
 You have next options for creating routes:
 - Create HTTP route

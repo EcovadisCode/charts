@@ -85,7 +85,7 @@ serviceAccount:
   automountServiceAccountToken: true # -- Auto-mount the service account token in the pod
 
 # -- Traefik ingress routes configuration
-ingressRoutes:
+ingress:
   enabled: true # -- Enables or disables all Traefik CRDs: Ingress routes, middleware.
   nonTlsRouteEnabled: false # -- Non-TLS Traefik route for pact-broker. You can consider turning this off if you are redirecting your traffic from http to https on different load balancer etc. Use case - redirecting traffic on Azure AppGateway that stands before Traefik.
   tlsRouteEnabled: true # -- TLS Traefik route. Your Traefik instance should be preconfigured with certificate to terminate TLS for pact-broker.
