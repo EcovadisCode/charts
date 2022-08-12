@@ -1,4 +1,4 @@
-#Dotnet Core Helm Chart
+# Dotnet Core Helm Chart
 
 Kubernetes is a system for automating deployment and management of applications.
 As with each system it comes up with its infrastructure and object definitions. Those objects defintions can be supplied in either *yaml* or *json* files. Furthermore, those objects can be separated into multiple categories.
@@ -8,7 +8,7 @@ There are many ways to deploy application to Kubernetes, however we have decided
 It has the widest community and its CLI offers a lot of functionalities which enable teams to implement CD process in different ways.
 To see what Helm 3 has to offer, check out [this site](https://helm.sh/blog/helm-3-released/).
 
-##Chart structure
+## Chart structure
 
 As you can see in this repository, each chart must consist of a directory which represents its name.
 Every yaml file which is located within this directory is taken into consideration during the deployment.
@@ -39,12 +39,12 @@ Then, in any yaml file you can refer to this variable with `{{ .Values.autoscali
 
 *_helpers.tpl* - a file which contains a set of "functions" which usually implement common functionalities. Not required file, but helps to keep chart cleaner. 
 
-##Process
+## Process
 
 We would like to implement a solution that will be general and can be used among many projects which are using similar technology.
 That is why, we have created a "general" helm chart for all dotnet core applications. It was written in such a way, that we will be able just to overwrite some entries in *values.yaml* file and then deploy it to AKS.
 
-###Chart CI/CD and versioning
+### Chart CI/CD and versioning
 
 As mentioned, we want to follow semantic versioning standard and that is why, whenever there is a change in templates, there also must be a change in *Chart.yaml* file. Otherwise a chart will not be released after the merge is done. A build definition has CI enabled, but only when there was a change in *Chart.yaml* file. Once the build is completed, release is automatically created.
 

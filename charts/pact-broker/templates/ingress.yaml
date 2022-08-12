@@ -17,10 +17,10 @@ spec:
         - kind: Service
           name: {{ include "chart.fullname" . }}
           namespace: {{ .Release.Namespace }}
-          port: {{ .Values.ingressRoutes.port }}
+          port: {{ .Values.service.ports.http }}
   tls: {}
 {{- end }}
-{{ if and .Values.ingressRoutes.nonTlsRouteEnabled }}
+{{ if .Values.ingressRoutes.nonTlsRouteEnabled }}
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -43,7 +43,7 @@ spec:
         - kind: Service
           name: {{ include "chart.fullname" . }}
           namespace: {{ .Release.Namespace }}
-          port: {{ .Values.ingressRoutes.port }}
+          port: {{ .Values.service.ports.http }}
 {{- if and .Values.ingressRoutes.redirectToHttps .Values.ingressRoutes.tlsRouteEnabled }}
 ---
 apiVersion: traefik.containo.us/v1alpha1
