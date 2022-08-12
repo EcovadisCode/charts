@@ -1,5 +1,5 @@
 {{- if .Values.ingressRoutes.enabled -}}
-{{ if .Values.ingressRoutes.isTlsRouteEnabled }}
+{{ if .Values.ingressRoutes.tlsRouteEnabled }}
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
@@ -20,7 +20,7 @@ spec:
           port: {{ .Values.ingressRoutes.port }}
   tls: {}
 {{- end }}
-{{ if and .Values.ingressRoutes.isNonTlsRouteEnabled }}
+{{ if and .Values.ingressRoutes.nonTlsRouteEnabled }}
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -35,7 +35,7 @@ spec:
   routes:
     - kind: Rule  
       match: Host(`{{ .Values.ingressRoutes.host }}`)
-      {{- if and .Values.ingressRoutes.redirectToHttps .Values.ingressRoutes.isTlsRouteEnabled }}
+      {{- if and .Values.ingressRoutes.redirectToHttps .Values.ingressRoutes.tlsRouteEnabled }}
       middlewares:
         - name: redirect-https
       {{- end }}
@@ -44,7 +44,7 @@ spec:
           name: {{ include "chart.fullname" . }}
           namespace: {{ .Release.Namespace }}
           port: {{ .Values.ingressRoutes.port }}
-{{- if and .Values.ingressRoutes.redirectToHttps .Values.ingressRoutes.isTlsRouteEnabled }}
+{{- if and .Values.ingressRoutes.redirectToHttps .Values.ingressRoutes.tlsRouteEnabled }}
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
