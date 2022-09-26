@@ -88,6 +88,12 @@ spec:
       ports:
         - port: 9200
         - port: 8200
+    - to: #any elastic or apm outside of the cluster
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - port: 9200
+        - port: 8200
 {{- if .Values.global.redisNetworkPolicyEnabled }}
     - to: #redis
         - ipBlock:
