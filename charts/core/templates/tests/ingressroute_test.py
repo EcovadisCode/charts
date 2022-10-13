@@ -174,3 +174,113 @@ class IngressRouteTemplateFileTest(unittest.TestCase):
         )
         self.assertIsNone(jmespath.search(
             "spec.routes[0].middlewares", docs[0]))
+
+    def test_host_rule_and_retry_middleware_created(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "domain": "ecovadis-itlab.com",
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": True
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertEqual(
+            "RELEASE-NAME-charts-core-http-retry",
+            jmespath.search(
+                "spec.routes[0].middlewares[0].name", docs[0])
+        )
+    
+    def test_host_rule_and_retry_middleware_configured(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "domain": "ecovadis-itlab.com",
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": True,
+                                "retry": {
+                                    "attempts": 5,
+                                    "initialInterval": "500ms"
+                                    }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertRegex(docs[1]["kind"], "Middleware")
+        self.assertEqual(
+            "500ms",
+            jmespath.search(
+                "spec.retry.initialInterval", docs[1])
+        )
+
+    def test_host_rule_and_circuitbreaker_middleware_created(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "domain": "ecovadis-itlab.com",
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isCircuitBreakerEnabled": True
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertEqual(
+            "RELEASE-NAME-charts-core-http-circuitbreaker",
+            jmespath.search(
+                "spec.routes[0].middlewares[0].name", docs[0])
+        )
+
+
+    def test_host_rule_and_circuitbreaker_middleware_configured(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "domain": "ecovadis-itlab.com",
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isCircuitBreakerEnabled": True,
+                                "circuitBreaker": {
+                                    "expression": "NetworkErrorRatio() > 0.10"
+                                    }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertRegex(docs[1]["kind"], "Middleware")
+        self.assertEqual(
+            "NetworkErrorRatio() > 0.10",
+            jmespath.search(
+                "spec.circuitBreaker.expression", docs[1])
+        )
