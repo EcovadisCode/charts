@@ -57,7 +57,7 @@ metadata:
   name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-retry
 spec:
   retry:
-    attempts: {{ if $rangeItem.retry -}} {{ default "3" $rangeItem.retry.attempts | quote }} {{- else -}} "3" {{- end }}
+    attempts: {{ if $rangeItem.retry -}} {{ default 3 $rangeItem.retry.attempts | quote }} {{- else -}} 3 {{- end }}
     initialInterval: {{ if $rangeItem.retry -}} {{ default "100ms" $rangeItem.retry.initialInterval | quote }} {{- else -}} "100ms" {{- end }}
 {{- end }}
 {{- if (default $rangeItem.isCircuitBreakerEnabled false)}}
