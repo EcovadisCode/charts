@@ -68,7 +68,7 @@ metadata:
   name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-circuitbreaker
 spec:
   circuitBreaker:
-    expression: {{ if $rangeItem.circuitBreaker -}} {{ default "ResponseCodeRatio(500, 600, 0, 600) > 0.50 || LatencyAtQuantileMS(50.0) > 60000" $rangeItem.circuitBreaker.expression | quote }} {{- else -}} "ResponseCodeRatio(500, 600, 0, 600) > 0.50 || LatencyAtQuantileMS(50.0) > 60000" {{- end }}
+    expression: {{ if $rangeItem.circuitBreaker -}} {{ default "ResponseCodeRatio(500, 600, 0, 600) > 0.50 || LatencyAtQuantileMS(50.0) > 30000" $rangeItem.circuitBreaker.expression | quote }} {{- else -}} "ResponseCodeRatio(500, 600, 0, 600) > 0.50 || LatencyAtQuantileMS(50.0) > 60000" {{- end }}
 {{- end }}
 ---
 {{- end }}
