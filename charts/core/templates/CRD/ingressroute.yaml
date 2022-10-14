@@ -20,17 +20,26 @@ spec:
           name: {{ $rangeItem.serviceName | default ( include "charts-core.fullname" . ) }}
           namespace: {{ $rangeItem.serviceNamespace | default .Release.Namespace | quote}}
           port: {{ $rangeItem.servicePort | default 80 }}
-{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes }}
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes $rangeItem.isRetryEnabled $rangeItem.isCircuitBreakerEnabled }}
       middlewares:
+{{- end }}
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes}}
         - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-stripprefix
 {{- end }}
+{{- if (default $rangeItem.isRetryEnabled false)}}
+        - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-retry
+{{- end }}
+{{- if (default $rangeItem.isCircuitBreakerEnabled false)}}
+        - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-circuitbreaker
+{{- end }}
+
 {{- if kindIs "invalid" $rangeItem.isTlsEnabled }}
   tls: {}
 {{ else if eq $rangeItem.isTlsEnabled true }}
   tls: {}
 {{- end }}
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes}}
 ---
-{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes -}}
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
@@ -39,6 +48,27 @@ spec:
   stripPrefix:
     prefixes:
       {{- toYaml $rangeItem.stripPrefixes | nindent 6 }}
+{{- end }}
+{{- if (default $rangeItem.isRetryEnabled false)}}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-retry
+spec:
+  retry:
+    attempts: {{ if $rangeItem.retry -}} {{ default "3" $rangeItem.retry.attempts | quote }} {{- else -}} "3" {{- end }}
+    initialInterval: {{ if $rangeItem.retry -}} {{ default "100ms" $rangeItem.retry.initialInterval | quote }} {{- else -}} "100ms" {{- end }}
+{{- end }}
+{{- if (default $rangeItem.isCircuitBreakerEnabled false)}}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-circuitbreaker
+spec:
+  circuitBreaker:
+    expression: {{ if $rangeItem.circuitBreaker -}} {{ default "ResponseCodeRatio(500, 600, 0, 600) > 0.50 || LatencyAtQuantileMS(50.0) > 30000" $rangeItem.circuitBreaker.expression | quote }} {{- else -}} "ResponseCodeRatio(500, 600, 0, 600) > 0.50 || LatencyAtQuantileMS(50.0) > 60000" {{- end }}
 {{- end }}
 ---
 {{- end }}
