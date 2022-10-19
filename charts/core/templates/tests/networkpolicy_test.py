@@ -33,7 +33,8 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
             values={
                 "global": {
                     "defaultNetworkPolicyEnabled": True,
-                    "redisNetworkPolicyEnabled": True
+                    "redisNetworkPolicyEnabled": True,
+                    "postgresNetworkPolicyEnabled": True
                 }
             },
             name=".",
@@ -108,6 +109,11 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
         self.assertEqual(
             {'port': 53, 'protocol': 'UDP'},
             jmespath.search("spec.egress[1].ports[0]", docs[0])
+        )
+
+        self.assertEqual(
+            {'port': 5432},
+            jmespath.search("spec.egress[4].ports[0]", docs[0])
         )
 
         self.assertEqual(
