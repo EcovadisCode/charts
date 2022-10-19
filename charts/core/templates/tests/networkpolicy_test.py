@@ -113,7 +113,7 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
 
         self.assertEqual(
             {'port': 5432},
-            jmespath.search("spec.egress[4].ports[0]", docs[0])
+            jmespath.search("spec.egress[8].ports[0]", docs[0])
         )
 
         self.assertEqual(
