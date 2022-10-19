@@ -94,6 +94,8 @@ global:
       #rule: Host(`develop.ecovadis-itlab.com`) 
       #stripPrefixes:
       #  - /vadisservice
+      #isRetryEnabled: true
+      #isCircuitBreakerEnabled: true
 
   envVarsEnabled: true
   envVars: 
