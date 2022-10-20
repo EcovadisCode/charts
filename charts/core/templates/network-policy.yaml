@@ -114,6 +114,9 @@ spec:
         - ipBlock:
             cidr: {{ .Values.global.vnetCidr }}
       ports:
+{{- if .Values.global.postgresNetworkPolicyEnabled }}
+        - port: 5432  #postgres
+{{- end }}
 {{- if .Values.global.sqlNetworkPolicyEnabled }}
         - port: 1433  #mssql
 {{- end }}

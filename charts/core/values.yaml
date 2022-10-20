@@ -57,6 +57,7 @@ global:
   lnmElasticNetworkPolicyEnabled: false
   allowAllInternalClusterTrafficNetworkPolicy: false
   sqlNetworkPolicyEnabled: true
+  postgresNetworkPolicyEnabled: false
   servicebusNetworkPolicyEnabled: true
   redisNetworkPolicyEnabled: true
   redisCidr: ""
