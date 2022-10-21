@@ -167,7 +167,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             show_only=["templates/deployment.yaml"]
         )
         self.assertEqual(
-            "release-name-charts-dotnet-core",
+            "RELEASE-NAME-charts-dotnet-core",
             jmespath.search(
                 "spec.template.spec.containers[0].envFrom[0].configMapRef.name", docs[0])
         )
@@ -193,7 +193,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             show_only=["templates/deployment.yaml"]
         )
         self.assertEqual(
-            "release-name-charts-dotnet-core-secure",
+            "RELEASE-NAME-charts-dotnet-core-secure",
             jmespath.search(
                 "spec.template.spec.containers[0].envFrom[0].secretRef.name", docs[0])
         )
@@ -460,7 +460,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            "release-name-charts-dotnet-core-files",
+            "RELEASE-NAME-charts-dotnet-core-files",
             jmespath.search(
                 "spec.template.spec.volumes[0].secret.secretName", docs[0])
         )
