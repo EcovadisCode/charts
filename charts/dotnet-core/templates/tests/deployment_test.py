@@ -167,7 +167,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             show_only=["templates/deployment.yaml"]
         )
         self.assertEqual(
-            "RELEASE-NAME-charts-dotnet-core",
+            "release-name-charts-dotnet-core",
             jmespath.search(
                 "spec.template.spec.containers[0].envFrom[0].configMapRef.name", docs[0])
         )
@@ -193,7 +193,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             show_only=["templates/deployment.yaml"]
         )
         self.assertEqual(
-            "RELEASE-NAME-charts-dotnet-core-secure",
+            "release-name-charts-dotnet-core-secure",
             jmespath.search(
                 "spec.template.spec.containers[0].envFrom[0].secretRef.name", docs[0])
         )
@@ -262,10 +262,11 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                     "path": "/test/path",
                     "port": "443"
                 },
-                "periodSeconds": 10,
-                'initialDelaySeconds': 20,
-                "successThreshold": 1,
-                "timeoutSeconds": 3
+                # must be set separately with new probe switch
+                # "periodSeconds": 10,
+                # 'initialDelaySeconds': 20,
+                # "successThreshold": 1,
+                # "timeoutSeconds": 3
             },
             jmespath.search(
                 "spec.template.spec.containers[0].readinessProbe", docs[0])
@@ -295,9 +296,10 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                     "path": "/test/path",
                     "port": "443"
                 },
-                "periodSeconds": 60,
-                "successThreshold": 1,
-                "timeoutSeconds": 15
+                # must be set separately with new probe switch
+                # "periodSeconds": 60,
+                # "successThreshold": 1,
+                # "timeoutSeconds": 15
             },
             jmespath.search(
                 "spec.template.spec.containers[0].livenessProbe", docs[0])
@@ -458,7 +460,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            "RELEASE-NAME-charts-dotnet-core-files",
+            "release-name-charts-dotnet-core-files",
             jmespath.search(
                 "spec.template.spec.volumes[0].secret.secretName", docs[0])
         )
