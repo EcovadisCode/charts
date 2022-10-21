@@ -61,10 +61,32 @@ spec:
           {{- end }}
           ports:
             {{- toYaml .Values.global.image.ports | nindent 12 }}
+          
           livenessProbe:
+          {{- if .Values.global.image.livenessProbe }}
             {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
+          {{- else }}
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 60
+            timeoutSeconds: 15
+            successThreshold: 1
+          {{- end }}
+          
           readinessProbe:
+          {{- if .Values.global.image.readinessProbe }}
             {{- toYaml .Values.global.image.readinessProbe | nindent 12 }}
+          {{- else }}
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+          {{- end }}
+            
           {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
           envFrom:
           {{- if .Values.global.envVarsEnabled }}
