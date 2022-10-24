@@ -263,7 +263,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                     "port": "443"
                 },
                 "periodSeconds": 10,
-                'initialDelaySeconds': 20,
+                "initialDelaySeconds": 20,
                 "successThreshold": 1,
                 "timeoutSeconds": 3
             },

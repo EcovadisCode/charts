@@ -6,3 +6,4 @@
 *.lock
 **/*.lock
 .pytest_cache
+charts
