@@ -64,7 +64,20 @@ spec:
           
           livenessProbe:
           {{- if .Values.global.image.livenessProbe }}
-            {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
+          {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
+
+          {{- if not .Values.global.image.livenessProbe.periodSeconds }}
+            periodSeconds: 60
+          {{- end }}
+
+          {{- if not .Values.global.image.livenessProbe.timeoutSeconds }}
+            timeoutSeconds: 15
+          {{- end }}
+
+          {{- if not .Values.global.image.livenessProbe.successThreshold }}
+            successThreshold: 1
+          {{- end }}
+
           {{- else }}
             httpGet:
               path: /
@@ -76,16 +89,34 @@ spec:
           
           readinessProbe:
           {{- if .Values.global.image.readinessProbe }}
-            {{- toYaml .Values.global.image.readinessProbe | nindent 12 }}
+          {{- toYaml .Values.global.image.readinessProbe | nindent 12 }}
+
+          {{- if not .Values.global.image.initialDelaySeconds }}
+            initialDelaySeconds: 20
+          {{- end }}
+
+          {{- if not .Values.global.image.periodSeconds }}
+            periodSeconds: 10
+          {{- end }}
+
+          {{- if not .Values.global.image.timeoutSeconds }}
+            timeoutSeconds: 3
+          {{- end }}
+
+          {{- if not .Values.global.image.successThreshold }}
+            successThreshold: 1
+          {{- end }}
+
           {{- else }}
             httpGet:
               path: /
               port: http
             initialDelaySeconds: 20
-            periodSeconds: 10
+            periodSeconds: 3
             timeoutSeconds: 3
             successThreshold: 1
           {{- end }}
+
             
           {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
           envFrom:

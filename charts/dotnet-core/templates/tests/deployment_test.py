@@ -262,11 +262,10 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                     "path": "/test/path",
                     "port": "443"
                 },
-                # must be set separately with new probe switch
-                # "periodSeconds": 10,
-                # 'initialDelaySeconds': 20,
-                # "successThreshold": 1,
-                # "timeoutSeconds": 3
+                "periodSeconds": 10,
+                "initialDelaySeconds": 20,
+                "successThreshold": 1,
+                "timeoutSeconds": 3
             },
             jmespath.search(
                 "spec.template.spec.containers[0].readinessProbe", docs[0])
@@ -296,10 +295,9 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                     "path": "/test/path",
                     "port": "443"
                 },
-                # must be set separately with new probe switch
-                # "periodSeconds": 60,
-                # "successThreshold": 1,
-                # "timeoutSeconds": 15
+                "periodSeconds": 60,
+                "successThreshold": 1,
+                "timeoutSeconds": 15
             },
             jmespath.search(
                 "spec.template.spec.containers[0].livenessProbe", docs[0])
