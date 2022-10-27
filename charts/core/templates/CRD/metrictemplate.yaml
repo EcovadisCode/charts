@@ -1,0 +1,43 @@
+{{- if .Values.global.canary.enabled }}
+apiVersion: flagger.app/v1beta1
+kind: MetricTemplate
+metadata:
+  name: error-rate
+spec:
+  provider: 
+    address: {{ include "charts-core.prometheusServer" . | quote }}
+    type: prometheus
+  query: |
+{{- if .Values.global.monitoring.servicemonitor.enabled }}
+    100 - sum by (job) 
+      (rate(http_requests_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary",status!~"5.*"}[20s]))
+        / ignoring(status) group_left
+    sum by (job) 
+      (rate(http_requests_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[20s])) * 100
+{{- else }}
+    100 - sum by (exported_service) 
+      (rate(traefik_service_requests_total{exported_service=~"{{ .Release.Namespace }}-{{ include "charts-core.fullname" . }}-canary.*",code!~"5.*"}[2m]))
+        / ignoring(code) group_left
+    sum by (exported_service) 
+      (rate(traefik_service_requests_total{exported_service=~"{{ .Release.Namespace }}-{{ include "charts-core.fullname" . }}-canary.*"}[2m])) * 100
+{{- end }}
+---
+apiVersion: flagger.app/v1beta1
+kind: MetricTemplate
+metadata:
+  name: response-time
+spec:
+  provider:
+    address: {{ include "charts-core.prometheusServer" . | quote }}
+    type: prometheus
+  query: |
+{{- if .Values.global.monitoring.servicemonitor.enabled }}
+    sum by (job) (
+      (rate(http_request_duration_seconds_sum {namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[2m] ) /
+        rate(http_request_duration_seconds_count {namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[2m] )) > 0 )
+{{- else }}
+    sum by (exported_service) (
+      (rate(traefik_service_request_duration_seconds_sum{exported_service=~"{{ .Release.Namespace }}-{{ include "charts-core.fullname" . }}-canary.*"}[2m]) /
+        rate(traefik_service_requests_total{exported_service=~"{{ .Release.Namespace }}-{{ include "charts-core.fullname" . }}-canary.*"}[2m])) > 0)    
+{{- end }}
+{{- end }}

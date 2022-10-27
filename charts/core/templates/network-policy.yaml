@@ -25,11 +25,11 @@ spec:
     - from:
         - namespaceSelector: {}
 {{- end }}
-{{- if .Values.global.servicemonitor.enabled }}
+{{- if .Values.global.monitoring.servicemonitor.enabled }}
     - from:
         - namespaceSelector:
             matchLabels:
-              environment: prometheus-operator
+              environment: {{ .Values.global.monitoring.prometheusNamespace }}
 {{- end }}
     - from: #outside world - sentry, optimizely, etc
         - ipBlock:
@@ -81,7 +81,7 @@ spec:
       ports:
         - port: 9200
 {{- end }}
-    - to: #any pod in monitroing namespace
+    - to: #any pod in monitoring namespace
         - namespaceSelector:
             matchLabels:
               name: monitoring

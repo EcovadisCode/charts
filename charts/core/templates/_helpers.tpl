@@ -61,6 +61,13 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{/*
+Construct Prometheus host with port
+*/}}
+{{- define "charts-core.prometheusServer" -}}
+{{- printf "http://%s.%s:%s" .Values.global.monitoring.prometheusService .Values.global.monitoring.prometheusNamespace (.Values.global.monitoring.prometheusPort | toString) }}
+{{- end }}
+
 {{- define "defaultIngressRule" -}}
 {{- $isCorrect := false -}}
 {{- if .root.global.envVars -}}
