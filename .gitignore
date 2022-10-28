@@ -6,4 +6,5 @@
 *.lock
 **/*.lock
 .pytest_cache
-charts
+charts/dotnet-core/charts
+charts/dotnet-core/charts/temp*.json
