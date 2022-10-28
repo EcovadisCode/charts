@@ -176,3 +176,38 @@ global:
     minReplicas: 2
     maxReplicas: 4
     targetCPUUtilizationPercentage: 70
+
+  canary:
+    enabled: true
+    progressDeadlineSeconds: 90
+    analysis:
+      interval: 20s
+      threshold: 20
+      maxWeight: 60
+      stepWeight: 5
+      errorRate:
+        threshold: 1
+        interval: 5s
+      responseTime:
+        threshold: 0.5
+        interval: 10s
+
+    portDiscovery:
+      enabled: true
+
+    acceptanceTest:
+      enabled: true
+      endpoint: readyz
+
+    loadTesting:
+      enabled: true
+      endpoint: readyz
+      serviceName: flagger-loadtester
+      namespace: flagger-system
+      duraion: 6m
+      queries: 10
+      workers: 2
+
+  traefik:
+    serviceName: traefik-breaking-infra
+    namespace: breaking-infra

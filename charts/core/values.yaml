@@ -124,5 +124,12 @@ global:
 
   affinity: {}
 
-  servicemonitor:
+  monitoring:
+    servicemonitor:
+      enabled: false
+    prometheusService: prometheus-operator-kube-p-prometheus
+    prometheusPort: 9090
+    prometheusNamespace: prometheus-operator
+
+  canary:
     enabled: false
