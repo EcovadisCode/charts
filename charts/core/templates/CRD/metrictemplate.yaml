@@ -2,7 +2,7 @@
 apiVersion: flagger.app/v1beta1
 kind: MetricTemplate
 metadata:
-  name: error-rate
+  name: error-rate-{{ include "charts-core.fullname" . }}
 spec:
   provider: 
     address: {{ include "charts-core.prometheusServer" . | quote }}
@@ -25,7 +25,7 @@ spec:
 apiVersion: flagger.app/v1beta1
 kind: MetricTemplate
 metadata:
-  name: response-time
+  name: response-time-{{ include "charts-core.fullname" . }}
 spec:
   provider:
     address: {{ include "charts-core.prometheusServer" . | quote }}

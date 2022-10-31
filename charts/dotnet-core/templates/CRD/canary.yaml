@@ -21,18 +21,18 @@ spec:
     targetPort: {{ (index .Values.global.image.ports 0).containerPort | default "http" }}
     portDiscovery: {{ .Values.global.canary.portDiscovery.enabled }}
   analysis:
-    {{- toYaml .Values.global.canary.analysis | nindent 4}}
+    {{- toYaml .Values.global.canary.analysis.settings | nindent 4}}
     metrics:
     - name: error-rate
       templateRef:
-        name: error-rate
+        name: error-rate-{{ include "charts-core.fullname" . }}
         namespace: {{ .Release.Namespace }}
       thresholdRange:
         max: {{ .Values.global.canary.analysis.errorRate.threshold }}
       interval: {{ .Values.global.canary.analysis.errorRate.interval }}
     - name: response-time
       templateRef:
-        name: response-time
+        name: response-time-{{ include "charts-core.fullname" . }}
         namespace: {{ .Release.Namespace }}
       thresholdRange:
         max: {{ .Values.global.canary.analysis.responseTime.threshold }}

@@ -181,10 +181,11 @@ global:
     enabled: true
     progressDeadlineSeconds: 90
     analysis:
-      interval: 20s
-      threshold: 20
-      maxWeight: 60
-      stepWeight: 5
+      settings:
+        interval: 20s
+        threshold: 20
+        maxWeight: 60
+        stepWeight: 5
       errorRate:
         threshold: 1
         interval: 5s
