@@ -37,7 +37,9 @@ spec:
       thresholdRange:
         max: {{ .Values.global.canary.analysis.responseTime.threshold }}
       interval: {{ .Values.global.canary.analysis.responseTime.interval }}
+    {{- if or .Values.global.canary.acceptanceTest.enabled .Values.global.canary.loadTesting.enabled }}
     webhooks:
+    {{- end }}
     {{- if .Values.global.canary.acceptanceTest.enabled }}
       - name: acceptance-test
         type: pre-rollout
