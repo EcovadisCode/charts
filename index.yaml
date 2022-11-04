@@ -85,6 +85,20 @@ entries:
   charts-dotnet-core:
   - apiVersion: v2
     appVersion: 1.18.0
+    created: "2022-11-04T14:44:44.629557603Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.0.0
+    description: A Helm chart for Kubernetes
+    digest: 3d087975b5abbc1e794b51de2f95dcbed79ae94523d1b712a78c21a429097b90
+    name: charts-dotnet-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-3.0.0/charts-dotnet-core-3.0.0.tgz
+    version: 3.0.0
+  - apiVersion: v2
+    appVersion: 1.18.0
     created: "2022-11-04T10:17:16.02603214Z"
     dependencies:
     - name: charts-core
@@ -287,4 +301,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2022-11-04T14:04:47.816758067Z"
+generated: "2022-11-04T14:44:44.629634805Z"
