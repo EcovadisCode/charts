@@ -218,6 +218,20 @@ global:
       queries: 10 # queries per second
       workers: 2 # number of concurrent workers
 
-  traefik: # currently this traefik settings are needed in order to run load tests for Flagger
+    webhooks: # https://docs.flagger.app/usage/webhooks
+      # - name: "load test" # name of webhook
+      #   type: rollout # webhook type, can be: confirm-rollout, pre-rollout, rollout, confirm-traffic-increase, confirm-promotion, post-rollout, rollback, event
+      #   url: http://flagger-loadtester-service.namespace/ # webhook Url
+      #   timeout: 15s
+      #   metadata:
+      #     cmd: "hey -z 1m -q 5 -c 2 http://deployment-service-name.namespace:9898/" 
+      # - name: "send to Slack"
+      #   type: event
+      #   url: http://event-recevier.notifications/slack
+      #   metadata:
+      #     environment: "test"
+      #     cluster: "flagger-test"
+
+  traefik: # traefik settings are needed in order to run load tests for Flagger
     serviceName: traefik-breaking-infra
     namespace: breaking-infra

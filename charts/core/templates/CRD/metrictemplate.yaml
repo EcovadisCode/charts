@@ -10,10 +10,10 @@ spec:
   query: |
 {{- if .Values.global.monitoring.servicemonitor.enabled }}
     100 - sum by (job) 
-      (rate(http_requests_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary",status!~"5.*"}[20s]))
+      (rate(http_requests_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary",status!~"5.*"}[30s]))
         / ignoring(status) group_left
     sum by (job) 
-      (rate(http_requests_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[20s])) * 100
+      (rate(http_requests_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[30s])) * 100
 {{- else }}
     100 - sum by (exported_service) 
       (rate(traefik_service_requests_total{exported_service=~"{{ .Release.Namespace }}-{{ include "charts-core.fullname" . }}-canary.*",code!~"5.*"}[2m]))
