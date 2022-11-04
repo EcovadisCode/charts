@@ -1,0 +1,80 @@
+{{- if .Values.global.canary.enabled }}
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: {{ include "charts-dotnet-core.fullname" . }}
+  labels:
+    {{- include "charts-dotnet-core.labels" . | nindent 4 }}
+spec:
+  provider: traefik
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "charts-dotnet-core.fullname" . }}
+  autoscalerRef:
+    apiVersion: autoscaling/v2
+    kind: HorizontalPodAutoscaler
+    name: {{ include "charts-dotnet-core.fullname" . }}
+  progressDeadlineSeconds: {{ .Values.global.canary.progressDeadlineSeconds }}
+  service:
+    port: {{ .Values.global.service.port }}
+    targetPort: {{ (index .Values.global.image.ports 0).containerPort | default "http" }}
+    portDiscovery: {{ .Values.global.canary.portDiscovery.enabled }}
+  analysis:
+    {{- toYaml .Values.global.canary.analysis.settings | nindent 4}}
+    metrics:
+    - name: error-rate
+      templateRef:
+        name: error-rate-{{ include "charts-core.fullname" . }}
+        namespace: {{ .Release.Namespace }}
+      thresholdRange:
+        max: {{ .Values.global.canary.analysis.errorRate.threshold }}
+      interval: {{ .Values.global.canary.analysis.errorRate.interval }}
+    - name: response-time
+      templateRef:
+        name: response-time-{{ include "charts-core.fullname" . }}
+        namespace: {{ .Release.Namespace }}
+      thresholdRange:
+        max: {{ .Values.global.canary.analysis.responseTime.threshold }}
+      interval: {{ .Values.global.canary.analysis.responseTime.interval }}
+    {{- if or .Values.global.canary.acceptanceTest.enabled .Values.global.canary.loadTesting.enabled .Values.global.canary.webhooks }}
+    webhooks:
+    {{- end }}
+    {{- if .Values.global.canary.acceptanceTest.enabled }}
+      - name: acceptance-test
+        type: pre-rollout
+        url: http://{{ .Values.global.canary.loadTesting.serviceName }}.{{ .Values.global.canary.loadTesting.namespace }}/
+        timeout: 10s
+        metadata:
+          type: bash
+          {{- if or (eq "443" (.Values.global.service.port | toString)) (eq "8443" (.Values.global.service.port | toString)) }}
+          cmd: "curl -k https://{{ include "charts-dotnet-core.fullname" . }}-canary.{{ .Release.Namespace }}/{{ .Values.global.canary.acceptanceTest.endpoint }}"
+          {{- else }}
+          cmd: "curl http://{{ include "charts-dotnet-core.fullname" . }}-canary.{{ .Release.Namespace }}/{{ .Values.global.canary.acceptanceTest.endpoint }}"
+          {{- end }}
+    {{- end }}
+    {{- if .Values.global.canary.loadTesting.enabled }}
+      - name: load-test
+        type: rollout
+        url: http://{{ .Values.global.canary.loadTesting.serviceName }}.{{ .Values.global.canary.loadTesting.namespace }}/
+        timeout: 5s
+        metadata:
+          type: cmd
+          cmd: "hey -z {{ .Values.global.canary.loadTesting.duraion }} -q {{ .Values.global.canary.loadTesting.queries }} -c {{ .Values.global.canary.loadTesting.workers }} -host {{ include "serviceHost" . }} https://{{ .Values.global.traefik.serviceName }}.{{ .Values.global.traefik.namespace }}{{ include "servicePathPrefix" . }}/{{ .Values.global.canary.loadTesting.endpoint }}"
+          logCmdOutput: "true"
+    {{- end }}
+    {{- range .Values.global.canary.webhooks }}
+      - name: {{ .name | quote }}
+        type: {{ .type }}
+        url: {{ .url }}
+        {{- if .timeout }}
+        timeout: {{ .timeout }}
+        {{- end }}
+        {{- if .metadata }}
+        metadata:
+          {{- range $key, $value := .metadata }}
+          {{ $key }}: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
+    {{- end }}
+{{- end }}
