@@ -130,9 +130,6 @@ spec:
 {{- if .Values.global.cosmosNetworkPolicyEnabled }}
         - port: 10255
 {{- end}}
-{{- if .Values.global.elasticNetworkPolicyEnabled }} 
-        - port: 9243 #elastic cloud
-{{- end}}
         - port: 8433
         - port: 8000
         - port: 433

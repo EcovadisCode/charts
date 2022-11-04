@@ -1,4 +1,4 @@
-{{- if and .Values.global.service.enabled (not .Values.global.canary.enabled) -}}
+{{- if .Values.global.service.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:

@@ -64,13 +64,3 @@ Create the name of the service account to use
 {{- default "default" .Values.global.serviceAccount.name }}
 {{- end }}
 {{- end }}
-
-{{/*
-Extract service's host and path prefix to separate values
-*/}}
-{{- define "serviceHost" -}}
-{{ printf (regexFind "[a-zA-Z.-]+.com" (index .Values.global.ingressRoutes.routes 0).rule ) }}
-{{- end }}
-{{- define "servicePathPrefix" -}}
-{{ printf (regexFind "/[a-z/]+" (index .Values.global.ingressRoutes.routes 0).rule ) }}
-{{- end }}
