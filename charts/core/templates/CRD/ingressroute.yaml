@@ -16,7 +16,11 @@ spec:
     - kind: Rule  
       match: {{ $rangeItem.rule | default (include "defaultIngressRule" (dict "root" .Values "sub" $rangeItem )) }}
       services:
+      {{- if .Values.global.canary.enabled }}
+        - kind: TraefikService
+      {{- else }}
         - kind: Service
+      {{- end }}
           name: {{ $rangeItem.serviceName | default ( include "charts-core.fullname" . ) }}
           namespace: {{ $rangeItem.serviceNamespace | default .Release.Namespace | quote}}
           port: {{ $rangeItem.servicePort | default 80 }}
