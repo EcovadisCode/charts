@@ -185,7 +185,7 @@ global:
     targetCPUUtilizationPercentage: 70
 
   canary:
-    enabled: true # Setting to enable or disable canary deployments with Flagger.
+    enabled: false # Setting to enable or disable canary deployments with Flagger.
 
     progressDeadlineSeconds: 90 # the maximum time in seconds for the canary deployment to make progress before it is rollback
 
