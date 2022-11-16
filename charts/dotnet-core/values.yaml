@@ -203,15 +203,15 @@ global:
         interval: 10s
 
     portDiscovery:
-      enabled: true # auto discover pod ports from deployment spec and add them to k8s service that created by Flagger
+      enabled: true # [bool] auto discover pod ports from deployment spec and add them to k8s service that created by Flagger
 
     acceptanceTest:
-      enabled: true # enable or disable acceptance test. Canary rollout will not happen if it fails.
-      endpoint: readyz # service endpoint to do acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
+      enabled: true # [bool] enable or disable acceptance test. Canary rollout will not happen if it fails.
+      endpoint: /readyz # service endpoint to do an acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
 
     loadTesting:
-      enabled: true # enable or disable load testing with Flagger load tester based on 'hey' tool.
-      endpoint: readyz # service endpoint to do acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
+      enabled: #{canaryLoadTestingEnabled}# # [bool] enable or disable load testing with Flagger load tester based on 'hey' tool.
+      endpoint: /readyz # service endpoint to do a load test. Readiness health probe is default, so load test Url looks like http://service.namespace/readyz/ by default.
       serviceName: flagger-loadtester # name of Flagger load tester k8s service
       namespace: flagger-system # namespace of Flagger load tester k8s service
       duraion: 6m # duration of load test
@@ -232,6 +232,9 @@ global:
       #     environment: "test"
       #     cluster: "flagger-test"
 
+    forceDeploy:
+      enabled: false # [bool] enable to bypass error-rate and latency metrics. They are set == 100 if enabled.
+
   traefik: # traefik settings are needed in order to run load tests for Flagger
-    serviceName: traefik-breaking-infra
-    namespace: breaking-infra
+    serviceName: #{traefikServiceName}# # k8s service name under which traefik is accessible
+    namespace: #{traefikServiceNamespace}# # namespace where traefik k8s service is installed
