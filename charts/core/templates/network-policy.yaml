@@ -39,10 +39,13 @@ spec:
         - port: 80
         - port: 8443
         - port: 8000
+{{- if .Values.global.monitoring.metrics.enabled }}
+        - port: {{ .Values.global.monitoring.metrics.port }}  #metrics port
+{{- end }}
 {{- if .Values.global.servicebusNetworkPolicyEnabled }}
         - port: 5671  #servicebus
 {{- end }}
-    - from: #vnet addressspace
+    - from: #vnet address space
         - ipBlock:
             cidr: {{ .Values.global.vnetCidr }}
       ports:

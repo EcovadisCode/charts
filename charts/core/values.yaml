@@ -125,9 +125,12 @@ global:
   affinity: {}
 
   monitoring:
+    metrics:
+      enabled: false
+      port: 9100
+      path: /metrics
     servicemonitor:
       enabled: false # setting to enable or disable monitoring of service on endpoint /metrics. Service should support exporting metrics to that endpoint first
-      # port: 9999 # scrap prometheus metrics from this port. Defaulted to .global.service.port value if not specified
 
     # prometheus server settings for existing prometheus installation. Currently needed only for canary deployments.
     prometheusService: prometheus-operator-kube-p-prometheus
