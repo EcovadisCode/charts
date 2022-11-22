@@ -20,12 +20,7 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
             values={
                 "global": {
                     "defaultNetworkPolicyEnabled": True,
-                    "redisNetworkPolicyEnabled": False,
-                    "image": {
-                        "ports": [
-                            { "containerPort": 8000 }
-                        ]
-                    }
+                    "redisNetworkPolicyEnabled": False
                 }
             },
             name=".",
@@ -39,12 +34,7 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
                 "global": {
                     "defaultNetworkPolicyEnabled": True,
                     "redisNetworkPolicyEnabled": True,
-                    "postgresNetworkPolicyEnabled": True,
-                    "image": {
-                        "ports": [
-                            { "containerPort": 8000 }
-                        ]
-                    }
+                    "postgresNetworkPolicyEnabled": True
                 }
             },
             name=".",
@@ -79,8 +69,13 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            {"port": 8000},
+            {"port": 8443},
             jmespath.search("spec.ingress[2].ports[2]", docs[0])
+        )
+
+        self.assertEqual(
+            {"port": 8000},
+            jmespath.search("spec.ingress[2].ports[3]", docs[0])
         )
 
         self.assertIsNotNone(
