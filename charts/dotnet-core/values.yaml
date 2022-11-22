@@ -164,9 +164,12 @@ global:
   affinity: {}
 
   monitoring:
+    metrics:
+      enabled: false # enable if service exposes metrics, so they will be routed to k8s service on specified port, allowing network policy will be created etc
+      port: 9100
+      path: /metrics
     servicemonitor:
-      enabled: false # setting to enable or disable monitoring of service on endpoint /metrics. Service should support exporting metrics to that endpoint first
-      # port: 9999 # scrap prometheus metrics from this port. Defaulted to .global.service.port value if not specified
+      enabled: false # setting to enable or disable monitoring of service on endpoint /metrics. Service should support exporting metrics to that endpoint first. NOTE: global.monitoring.metrics should be enabled as well.
 
     # prometheus server settings for existing prometheus installation. Currently needed only for canary deployments.
     prometheusService: prometheus-operator-kube-p-prometheus
@@ -207,11 +210,11 @@ global:
 
     acceptanceTest:
       enabled: true # enable or disable acceptance test. Canary rollout will not happen if it fails.
-      endpoint: readyz # service endpoint to do acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
+      endpoint: /readyz # service endpoint to do an acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
 
     loadTesting:
-      enabled: true # enable or disable load testing with Flagger load tester based on 'hey' tool.
-      endpoint: readyz # service endpoint to do acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
+      enabled: #{canaryLoadTestingEnabled}# # [bool] enable or disable load testing with Flagger load tester based on 'hey' tool.
+      endpoint: /readyz # service endpoint to do a load test. Readiness health probe is default, so load test Url looks like http://service.namespace/readyz/ by default.
       serviceName: flagger-loadtester # name of Flagger load tester k8s service
       namespace: flagger-system # namespace of Flagger load tester k8s service
       duraion: 6m # duration of load test
@@ -232,6 +235,9 @@ global:
       #     environment: "test"
       #     cluster: "flagger-test"
 
+    forceDeploy:
+      enabled: false # enable to bypass error-rate and latency metrics. They are set == 100 if enabled.
+
   traefik: # traefik settings are needed in order to run load tests for Flagger
-    serviceName: traefik-breaking-infra
-    namespace: breaking-infra
+    serviceName: #{traefikServiceName}# # k8s service name under which traefik is accessible
+    namespace: #{traefikServiceNamespace}# # namespace where traefik k8s service is installed

@@ -60,8 +60,12 @@ spec:
           args: {{- toYaml .Values.global.image.args | nindent 12 }}
           {{- end }}
           ports:
-            {{- toYaml .Values.global.image.ports | nindent 12 }}
-          
+          {{- toYaml .Values.global.image.ports | nindent 12 }}
+          {{- if .Values.global.monitoring.metrics.enabled }}
+            - containerPort: {{ .Values.global.monitoring.metrics.port }}
+              name: metrics
+              protocol: TCP
+          {{- end }}
           livenessProbe:
           {{- if .Values.global.image.livenessProbe }}
           {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
