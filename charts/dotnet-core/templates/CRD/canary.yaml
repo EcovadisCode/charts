@@ -68,7 +68,7 @@ spec:
         timeout: 5s
         metadata:
           type: cmd
-          cmd: "hey -z {{ .Values.global.canary.loadTesting.duraion }} -q {{ .Values.global.canary.loadTesting.queries }} -c {{ .Values.global.canary.loadTesting.workers }} -host {{ include "serviceHost" . }} https://{{ .Values.global.traefik.serviceName }}.{{ .Values.global.traefik.namespace }}{{ include "servicePathPrefix" . }}{{ .Values.global.canary.loadTesting.endpoint }}"
+          cmd: "hey -z {{ .Values.global.canary.loadTesting.duraion }} -q {{ .Values.global.canary.loadTesting.queries }} -c {{ .Values.global.canary.loadTesting.workers }} -host {{ include "serviceHost" . }} https://{{ include "traefikService" . }}.{{ include "traefikNamespace" . }}{{ include "servicePathPrefix" . }}{{ .Values.global.canary.loadTesting.endpoint }}"
           logCmdOutput: "true"
     {{- end }}
     {{- range .Values.global.canary.webhooks }}

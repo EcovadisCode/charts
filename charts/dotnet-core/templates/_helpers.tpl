@@ -74,3 +74,22 @@ Extract service's host and path prefix to separate values
 {{- define "servicePathPrefix" -}}
 {{ printf (regexFind "/[a-z/]+" (index .Values.global.ingressRoutes.routes 0).rule ) }}
 {{- end }}
+
+{{/*
+Get traefik service name and namespace name
+*/}}
+{{- define "traefikService" -}}
+{{- if .Values.global.traefik.serviceName }}
+{{- .Values.global.traefik.serviceName }}
+{{- else }}
+{{- printf "traefik-%s-infra" (split "-" .Release.Namespace)._0 }}
+{{- end }}
+{{- end }}
+
+{{- define "traefikNamespace" -}}
+{{- if .Values.global.traefik.namespace }}
+{{- .Values.global.traefik.namespace }}
+{{- else }}
+{{- printf "%s-infra" (split "-" .Release.Namespace)._0 }}
+{{- end }}
+{{- end }}
