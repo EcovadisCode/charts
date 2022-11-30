@@ -14,26 +14,6 @@ spec:
       - {{ .Release.Namespace }}
   jobLabel: "app.kubernetes.io/name"
   selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ .Release.Name }}
-{{- if .Values.global.canary.enabled }}
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: {{ .Release.Name }}-canary
-  labels:
-    app.kubernetes.io/name: {{ .Release.Name }}-canary
-spec:
-  endpoints:
-    - path: {{ .Values.global.monitoring.metrics.path }}
-      targetPort: {{ .Values.global.monitoring.metrics.port }}
-  namespaceSelector:
-    matchNames:
-      - {{ .Release.Namespace }}
-  jobLabel: "app.kubernetes.io/name"
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ .Release.Name }}-canary
-{{- end }}
+    matchExpressions:
+    - {key: app.kubernetes.io/name, operator: In, values: [{{ .Release.Name }},{{ .Release.Name }}-canary]}
 {{- end }}
