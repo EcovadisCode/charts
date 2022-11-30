@@ -20,6 +20,15 @@ spec:
     port: {{ .Values.global.service.port }}
     targetPort: {{ (index .Values.global.image.ports 0).containerPort | default "http" }}
     portDiscovery: {{ .Values.global.canary.portDiscovery.enabled }}
+    canary:
+      labels:
+        {{- include "charts-dotnet-core.labels" . | nindent 8 }}
+    primary:
+      labels:
+        {{- include "charts-dotnet-core.labels" . | nindent 8 }}
+    apex:
+      labels:
+        {{- include "charts-dotnet-core.labels" . | nindent 8 }}
   analysis:
     {{- toYaml .Values.global.canary.analysis.settings | nindent 4}}
     metrics:
