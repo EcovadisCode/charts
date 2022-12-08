@@ -24,13 +24,13 @@ spec:
           name: {{ $rangeItem.serviceName | default ( include "charts-core.fullname" . ) }}
           namespace: {{ $rangeItem.serviceNamespace | default .Release.Namespace | quote}}
           port: {{ $rangeItem.servicePort | default 80 }}
-{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes $rangeItem.isRetryEnabled $rangeItem.isCircuitBreakerEnabled }}
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes (ne "false" ($rangeItem.isRetryEnabled | toString)) $rangeItem.isCircuitBreakerEnabled }}
       middlewares:
 {{- end }}
 {{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes}}
         - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-stripprefix
 {{- end }}
-{{- if (default $rangeItem.isRetryEnabled false)}}
+{{- if ne "false" ($rangeItem.isRetryEnabled | toString)}}
         - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-retry
 {{- end }}
 {{- if (default $rangeItem.isCircuitBreakerEnabled false)}}
@@ -53,7 +53,7 @@ spec:
     prefixes:
       {{- toYaml $rangeItem.stripPrefixes | nindent 6 }}
 {{- end }}
-{{- if (default $rangeItem.isRetryEnabled false)}}
+{{- if ne "false" ($rangeItem.isRetryEnabled | toString)}}
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
