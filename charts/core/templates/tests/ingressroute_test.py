@@ -159,6 +159,7 @@ class IngressRouteTemplateFileTest(unittest.TestCase):
                         "routes": [
                             {
                                 "isStripprefixEnabled": False,
+                                "isRetryEnabled": False,
                                 "ruleName": "http"
                             }
                         ]
@@ -240,6 +241,7 @@ class IngressRouteTemplateFileTest(unittest.TestCase):
                         "routes": [
                             {
                                 "ruleName": "http",
+                                "isRetryEnabled": False,
                                 "isCircuitBreakerEnabled": True
                             }
                         ]
@@ -266,6 +268,7 @@ class IngressRouteTemplateFileTest(unittest.TestCase):
                         "routes": [
                             {
                                 "ruleName": "http",
+                                "isRetryEnabled": False,
                                 "isCircuitBreakerEnabled": True,
                                 "circuitBreaker": {
                                     "expression": "NetworkErrorRatio() > 0.10"
