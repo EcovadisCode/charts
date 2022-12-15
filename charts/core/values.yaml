@@ -58,6 +58,7 @@ global:
   allowAllInternalClusterTrafficNetworkPolicy: false
   sqlNetworkPolicyEnabled: true
   postgresNetworkPolicyEnabled: false
+  zyteProxyNetworkPolicyEnabled: false
   servicebusNetworkPolicyEnabled: true
   redisNetworkPolicyEnabled: true
   redisCidr: ""
