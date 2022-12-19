@@ -15,6 +15,32 @@ ROOT_FOLDER = realpath(dirname(realpath(__file__)) + "/..")
 
 class NetworkPolicyTemplateFileTest(unittest.TestCase):
 
+    def test_networkpolicy_rendering_zyte(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "defaultNetworkPolicyEnabled": True,
+                    "redisNetworkPolicyEnabled": False,
+                    "zyteProxyNetworkPolicyEnabled": True
+                }
+            },
+            name=".",
+            show_only=["templates/network-policy.yaml"]
+        )
+        self.assertRegex(docs[0]["kind"], "NetworkPolicy")
+        self.assertEqual(
+            {"port": 8010},
+            jmespath.search("spec.egress[-1].ports[0]", docs[0])
+        )
+        self.assertEqual(
+            {"port": 8011},
+            jmespath.search("spec.egress[-1].ports[1]", docs[0])
+        )
+        self.assertEqual(
+            {"port": 8014},
+            jmespath.search("spec.egress[-1].ports[2]", docs[0])
+        )
+
     def test_networkpolicy_rendering(self):
         docs = render_chart(
             values={

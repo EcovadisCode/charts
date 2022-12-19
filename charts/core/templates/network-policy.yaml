@@ -117,6 +117,11 @@ spec:
         - ipBlock:
             cidr: {{ .Values.global.vnetCidr }}
       ports:
+{{- if .Values.global.zyteProxyNetworkPolicyEnabled }}
+        - port: 8010   #Zyte Proxy
+        - port: 8011
+        - port: 8014
+{{- end }}
 {{- if .Values.global.postgresNetworkPolicyEnabled }}
         - port: 5432  #postgres
 {{- end }}
