@@ -247,7 +247,12 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                             "httpGet": {
                                 "path": "/test/path",
                                 "port": "443"
-                            }
+                            },
+                            "periodSeconds": 42,
+                            "initialDelaySeconds": 42,
+                            "successThreshold": 42,
+                            "timeoutSeconds": 42,
+                            "failureThreshold": 42,
                         }
                     }
                 }
@@ -262,14 +267,16 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                     "path": "/test/path",
                     "port": "443"
                 },
-                "periodSeconds": 10,
-                "initialDelaySeconds": 20,
-                "successThreshold": 1,
-                "timeoutSeconds": 3
+                "periodSeconds": 42,
+                "initialDelaySeconds": 42,
+                "successThreshold": 42,
+                "timeoutSeconds": 42,
+                "failureThreshold": 42,
             },
             jmespath.search(
                 "spec.template.spec.containers[0].readinessProbe", docs[0])
         )
+
 
     def test_should_overwrite_livenessProbe_probe(self):
         docs = render_chart(
@@ -280,7 +287,12 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                             "httpGet": {
                                 "path": "/test/path",
                                 "port": "443"
-                            }
+                            },
+                            "periodSeconds": 42,
+                            "successThreshold": 42,
+                            "failureThreshold": 42,
+                            "timeoutSeconds": 42,
+                            "initialDelaySeconds": 42
                         }
                     }
                 }
@@ -295,9 +307,11 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                     "path": "/test/path",
                     "port": "443"
                 },
-                "periodSeconds": 60,
-                "successThreshold": 1,
-                "timeoutSeconds": 15
+                "initialDelaySeconds": 42,
+                "periodSeconds": 42,
+                "successThreshold": 42,
+                "failureThreshold": 42,
+                "timeoutSeconds": 42
             },
             jmespath.search(
                 "spec.template.spec.containers[0].livenessProbe", docs[0])

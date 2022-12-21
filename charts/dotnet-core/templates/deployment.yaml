@@ -70,6 +70,10 @@ spec:
           {{- if .Values.global.image.livenessProbe }}
           {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
 
+          {{- if not .Values.global.image.livenessProbe.initialDelaySeconds }}
+            initialDelaySeconds: 60
+          {{- end }}
+
           {{- if not .Values.global.image.livenessProbe.periodSeconds }}
             periodSeconds: 60
           {{- end }}
@@ -82,6 +86,10 @@ spec:
             successThreshold: 1
           {{- end }}
 
+          {{- if not .Values.global.image.livenessProbe.failureThreshold }}
+            failureThreshold: 3
+          {{- end }}
+
           {{- else }}
             httpGet:
               path: /
@@ -89,26 +97,31 @@ spec:
             periodSeconds: 60
             timeoutSeconds: 15
             successThreshold: 1
+            failureThreshold: 3
           {{- end }}
           
           readinessProbe:
           {{- if .Values.global.image.readinessProbe }}
           {{- toYaml .Values.global.image.readinessProbe | nindent 12 }}
 
-          {{- if not .Values.global.image.initialDelaySeconds }}
+          {{- if not .Values.global.image.readinessProbe.initialDelaySeconds }}
             initialDelaySeconds: 20
           {{- end }}
 
-          {{- if not .Values.global.image.periodSeconds }}
+          {{- if not .Values.global.image.readinessProbe.periodSeconds }}
             periodSeconds: 10
           {{- end }}
 
-          {{- if not .Values.global.image.timeoutSeconds }}
+          {{- if not .Values.global.image.readinessProbe.timeoutSeconds }}
             timeoutSeconds: 3
           {{- end }}
 
-          {{- if not .Values.global.image.successThreshold }}
+          {{- if not .Values.global.image.readinessProbe.successThreshold }}
             successThreshold: 1
+          {{- end }}
+
+          {{- if not .Values.global.image.readinessProbe.failureThreshold }}
+            failureThreshold: 3
           {{- end }}
 
           {{- else }}
@@ -119,9 +132,9 @@ spec:
             periodSeconds: 3
             timeoutSeconds: 3
             successThreshold: 1
+            failureThreshold: 3
           {{- end }}
 
-            
           {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
           envFrom:
           {{- if .Values.global.envVarsEnabled }}
