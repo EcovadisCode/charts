@@ -23,9 +23,9 @@ spec:
     metadata:
       annotations:
         checksum/appsettings-secret: {{ include (print $.Template.BasePath "/appsettings-secret.yaml") . | sha256sum }}
-    {{- with .Values.global.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+      {{- range $key,$value := .Values.global.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
       labels:
         {{- include "charts-dotnet-core.labels" . | nindent 8 }}
     spec:
