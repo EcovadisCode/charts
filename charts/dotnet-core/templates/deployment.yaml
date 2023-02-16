@@ -146,6 +146,19 @@ spec:
                 name: "{{ include "charts-dotnet-core.fullname" . }}-secure"
           {{- end }}
           {{- end }}
+          env:
+          {{- if .Values.global.envEnabled }}
+          {{- range $env := .Values.global.env }}
+          {{- if $env.valueFrom }}
+          - name: {{ $env.name }}
+            valueFrom:
+              {{ $env.valueFrom | toYaml | nindent 4 }}
+          {{- else }}
+          - name: {{ $env.name }}
+            value: {{ $env.value }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
           {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalValumesEnabled }}

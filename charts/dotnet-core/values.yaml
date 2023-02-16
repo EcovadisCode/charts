@@ -139,6 +139,8 @@ global:
   secEnvVarsEnabled: true
   secEnvVars: {}
 
+  envEnabled: false
+
   appConfigFilesEnabled: true
   appConfigFiles:
     globPattern: "**.json"
