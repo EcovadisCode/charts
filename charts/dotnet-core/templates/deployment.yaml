@@ -218,7 +218,7 @@ spec:
       {{- with .Values.global.additionalVolumes }}
         {{- toYaml . | nindent 6 }}
       {{- end }}
-	    {{- end }}
+      {{- end }}
       {{- end }}
       {{- with .Values.global.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ toYaml . }}

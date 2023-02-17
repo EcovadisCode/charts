@@ -139,16 +139,7 @@ global:
   secEnvVarsEnabled: true
   secEnvVars: {}
 
-  envEnabled: true
-  env:
-    - name: POD_NAME
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.name
-    - name: POD_NAMESPACE
-      valueFrom:
-        fieldRef:
-          fieldPath: metadata.namespace
+  envEnabled: false
 
   appConfigFilesEnabled: true
   appConfigFiles:
