@@ -238,6 +238,83 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                 "spec.template.spec.containers[0].envFrom", docs[0])
         )
 
+    def test_should_not_add_env(self):
+        """ Using 'env:' not 'envFrom:' """
+        docs = render_chart(
+            values={
+                "global": {
+                    "envEnabled": False,
+                    "env": [
+                        {
+                        "name": "POD_NAMESPACE",
+                        "valueFrom": {
+                            "fieldRef": {
+                                "fieldPath": "metadata.namespace"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            name=".",
+            show_only=["templates/deployment.yaml"]
+        )
+        self.assertIsNone(
+            jmespath.search(
+                "spec.template.spec.containers[0].env[0]", docs[0])
+        )
+
+
+    def test_add_env(self):
+        """ Kubernetes downward API example using 'env:' not 'envFrom:' """
+        docs = render_chart(
+            values={
+                "global": {
+                    "envEnabled": True,
+                    "env": [
+                        {
+                        "name": "POD_NAMESPACE",
+                        "valueFrom": {
+                            "fieldRef": {
+                                "fieldPath": "metadata.namespace"
+                                }
+                            }
+                        },
+                        {
+                        "name": "POD_NODE",
+                        "valueFrom": {
+                            "fieldRef": {
+                                "fieldPath": "spec.nodeName"
+                                }
+                            }
+                        },
+                    ]
+                }
+            },
+            name=".",
+            show_only=["templates/deployment.yaml"]
+        )
+        self.assertEqual(
+            "POD_NAMESPACE",
+            jmespath.search(
+                "spec.template.spec.containers[0].env[0].name", docs[0])
+        )
+        self.assertEqual(
+            "metadata.namespace",
+            jmespath.search(
+                "spec.template.spec.containers[0].env[0].valueFrom.fieldRef.fieldPath", docs[0])
+        )
+        self.assertEqual(
+            "POD_NODE",
+            jmespath.search(
+                "spec.template.spec.containers[0].env[1].name", docs[0])
+        )
+        self.assertEqual(
+            "spec.nodeName",
+            jmespath.search(
+                "spec.template.spec.containers[0].env[1].valueFrom.fieldRef.fieldPath", docs[0])
+        )
+
     def test_should_overwrite_readiness_probe(self):
         docs = render_chart(
             values={
