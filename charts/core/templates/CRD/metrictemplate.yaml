@@ -10,8 +10,8 @@ spec:
   query: |
 {{- if .Values.global.monitoring.servicemonitor.enabled }}
     100 - sum by (job) 
-      (rate(http_requests_received_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary",status!~"5.*"}[1m]))
-        / ignoring(status) group_left
+      (rate(http_requests_received_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary",code!~"5.*"}[1m]))
+        / ignoring(code) group_left
     sum by (job) 
       (rate(http_requests_received_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[1m])) * 100
 {{- else }}
