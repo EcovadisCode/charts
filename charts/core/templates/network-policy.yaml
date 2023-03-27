@@ -129,7 +129,11 @@ spec:
         - port: 1433  #mssql
 {{- end }}
 {{- if .Values.global.mongodbNetworkPolicyEnabled }}
+        - port: 1024  #mongodb shards 
+        - port: 1025
+        - port: 1026
         - port: 25015  #mongodb
+        - port: 25016
         - port: 27017
 {{- end }}
 {{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
