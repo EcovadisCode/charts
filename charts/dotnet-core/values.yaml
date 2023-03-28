@@ -134,7 +134,7 @@ global:
   envVarsEnabled: true
   envVars: 
     ASPNETCORE_ENVIRONMENT: Develop
-    ELASTIC_APM_TRANSACTION_IGNORE_URLS: '/VAADIN/*, /heartbeat*, /favicon.ico, *.js, *.css, *.jpg, *.jpeg, *.png, *.gif, *.webp, *.svg, *.woff, *.woff2, /readyz'
+    ELASTIC_APM_TRANSACTION_IGNORE_URLS: '/VAADIN/*, /heartbeat*, /favicon.ico, *.js, *.css, *.jpg, *.jpeg, *.png, *.gif, *.webp, *.svg, *.woff, *.woff2, /readyz, /*/*/readyz, /metrics'
 
   secEnvVarsEnabled: true
   secEnvVars: {}
