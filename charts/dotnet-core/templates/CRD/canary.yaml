@@ -7,6 +7,7 @@ metadata:
     {{- include "charts-dotnet-core.labels" . | nindent 4 }}
 spec:
   provider: traefik
+  revertOnDeletion: true
   targetRef:
     apiVersion: apps/v1
     kind: Deployment
@@ -34,7 +35,7 @@ spec:
     metrics:
     - name: error-rate
       templateRef:
-        name: error-rate-{{ include "charts-core.fullname" . }}
+        name: error-rate-{{ include "charts-dotnet-core.fullname" . }}
         namespace: {{ .Release.Namespace }}
       thresholdRange:
         {{- if .Values.global.canary.forceDeploy.enabled }}
@@ -45,7 +46,7 @@ spec:
       interval: {{ .Values.global.canary.analysis.errorRate.interval }}
     - name: response-time
       templateRef:
-        name: response-time-{{ include "charts-core.fullname" . }}
+        name: response-time-{{ include "charts-dotnet-core.fullname" . }}
         namespace: {{ .Release.Namespace }}
       thresholdRange:
         {{- if .Values.global.canary.forceDeploy.enabled }}
