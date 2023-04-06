@@ -1,5 +1,5 @@
 apiVersion: v2
 name: charts-core
-description: A Helm chart for Kubernetes
+description: EcoVadis Helm chart with core dependencies for other charts
 type: application
-version: 2.0.7
+version: 2.0.8
