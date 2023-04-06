@@ -92,15 +92,15 @@ global:
   elasticNetworkPolicyEnabled: true
   elasticNamespace: #{elasticNamespace}#
 
+  mongodbNetworkPolicyEnabled: false
+  automountServiceAccountToken: false
+  lnmElasticNetworkPolicyEnabled: false
   redisNetworkPolicyEnabled: true
   redisCidr: "#{redisCidr}#"
   sqlNetworkPolicyEnabled: true
   servicebusNetworkPolicyEnabled: true
   vnetCidr: "#{vnetCidr}#"
 
-  mongodbNetworkPolicyEnabled: false
-  automountServiceAccountToken: false
-  lnmElasticNetworkPolicyEnabled: false
   resources: {}
     # limits:
     #   cpu: 100m
