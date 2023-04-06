@@ -3,7 +3,7 @@ entries:
   charts-core:
   - apiVersion: v2
     created: "2023-04-06T10:24:28.510649552Z"
-    description: EcoVadis Helm chart with core dependencies for other charts
+    description: A Helm chart for Kubernetes
     digest: 9a388582b503b10a359aab931c5970648d783c9bb610312c29077c6458e70d05
     name: charts-core
     type: application
