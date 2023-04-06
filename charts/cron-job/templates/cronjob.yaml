@@ -1,0 +1,96 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "charts-cron-job.fullname" . }}
+  labels:
+    {{- include "charts-cron-job.labels" . | nindent 4 }}
+spec:
+  schedule: "{{ .Values.global.schedule }}"
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ .Values.global.ttlSecondsAfterFinished }}
+      activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels:
+            {{- include "charts-cron-job.labels" . | nindent 12 }}
+        spec:
+          imagePullSecrets:
+          - name: "{{ .Values.global.image.imagePullSecret }}"
+          serviceAccountName: {{ include "charts-cron-job.serviceAccountName" . }}
+          automountServiceAccountToken: {{ .Values.global.automountServiceAccountToken }}
+          containers:
+          - name: {{ .Chart.Name }}
+            securityContext:
+              {{- toYaml .Values.global.securityContext | nindent 14 }}
+            image: "{{ .Values.global.image.repository }}/{{ .Values.global.image.name}}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
+            imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+            {{- if .Values.global.image.command }}
+            command: {{- toYaml .Values.global.image.command | nindent 14 }}
+            {{- end }}
+            {{- if .Values.global.image.args }}
+            args: {{- toYaml .Values.global.image.args | nindent 14 }}
+            {{- end }}
+            {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
+            envFrom:
+            {{- if .Values.global.envVarsEnabled }}
+              - configMapRef:
+                  name: "{{ include "charts-cron-job.fullname" . }}"
+            {{- end }}
+            {{- if .Values.global.secEnvVarsEnabled }}
+              - secretRef:
+                  name: "{{ include "charts-cron-job.fullname" . }}-secure"
+            {{- end }}
+            {{- end }}
+            resources:
+              {{- toYaml .Values.global.resources | nindent 14 }}
+            {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalValumesEnabled }}
+            volumeMounts:
+            {{- if .Values.global.additionalValumesEnabled -}}
+            {{- with .Values.global.additionalVolumesMount }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- end }}
+            {{- $currentScope := .}}
+              {{- range $path, $_ :=  .Files.Glob .Values.global.appConfigFiles.globPattern }}
+              {{- with $currentScope}}
+            - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $path }}"
+              name: configuration-volume
+              subPath: "{{ $path }}"
+              {{- end }}
+              {{- end }}
+            {{- if .Values.global.appConfigFiles.filesList -}}
+              {{- $files := .Files }}
+              {{- range .Values.global.appConfigFiles.filesList }}
+              {{- $rangeItem := . -}}
+              {{- with $ }}
+            - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $rangeItem }}"
+              name: configuration-volume
+              subPath: "{{ $rangeItem }}"
+              {{- end }}
+              {{- end }}
+            {{- end }}
+          volumes:
+          - name: "configuration-volume"
+            secret:
+              secretName: {{ include "charts-cron-job.fullname" . }}-files
+          {{- end }}
+          {{- if .Values.global.additionalValumesEnabled -}}
+          {{- with .Values.global.additionalVolumes }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- end }}
+          restartPolicy: Never
+          {{- with .Values.global.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.global.affinity }}
+          affinity:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.global.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+
