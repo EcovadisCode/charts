@@ -61,6 +61,8 @@ global:
   zyteProxyNetworkPolicyEnabled: false
   servicebusNetworkPolicyEnabled: true
   redisNetworkPolicyEnabled: true
+  cosmosNetworkPolicyEnabled: false
+  
   redisCidr: ""
   vnetCidr: ""
   
@@ -106,7 +108,6 @@ global:
   secEnvVars: {}
       #APP_INSIGHT_KEY: TEST
 
-  cosmosNetworkPolicyEnabled: false
   additionalSecretsEnabled: false
   additionalSecrets: []
   # - metadata:

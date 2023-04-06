@@ -16,21 +16,21 @@ spec:
   ingress:
     - from: #any pod in current namespace
         - podSelector: {}
-{{- if not .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
+  {{- if not .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
     - from: #any pod from *-infra, *-backend, *-frontend namespace
         - namespaceSelector:
             matchLabels:
               environment: {{ (split "-" .Release.Namespace)._0 }}
-{{ else }}
+  {{ else }}
     - from:
         - namespaceSelector: {}
-{{- end }}
-{{- if .Values.global.monitoring.servicemonitor.enabled }}
+  {{- end }}
+  {{- if .Values.global.monitoring.servicemonitor.enabled }}
     - from:
         - namespaceSelector:
             matchLabels:
               environment: {{ .Values.global.monitoring.prometheusNamespace }}
-{{- end }}
+  {{- end }}
     - from: #outside world - sentry, optimizely, etc
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -39,12 +39,12 @@ spec:
         - port: 80
         - port: 8443
         - port: 8000
-{{- if .Values.global.monitoring.metrics.enabled }}
+  {{- if .Values.global.monitoring.metrics.enabled }}
         - port: {{ .Values.global.monitoring.metrics.port }}  #metrics port
-{{- end }}
-{{- if .Values.global.servicebusNetworkPolicyEnabled }}
+  {{- end }}
+  {{- if .Values.global.servicebusNetworkPolicyEnabled }}
         - port: 5671  #servicebus
-{{- end }}
+  {{- end }}
     - from: #vnet address space
         - ipBlock:
             cidr: {{ .Values.global.vnetCidr }}
@@ -62,28 +62,28 @@ spec:
       ports:
         - port: 53
           protocol: UDP
-{{- if not .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
+  {{- if not .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
     - to: #any pod from *-infra, *-backend, *-frontend namespace
         - namespaceSelector:
             matchLabels:
               environment: {{ (split "-" .Release.Namespace)._0 }}
-{{ else }}
+  {{ else }}
     - to:
         - namespaceSelector: {}
-{{- end }}
+  {{- end }}
       ports:
         - port: 8443
         - port: 8000
         - port: 80
         - port: 443
-{{- if .Values.global.elasticNetworkPolicyEnabled }} 
+  {{- if .Values.global.elasticNetworkPolicyEnabled }} 
     - to:
         - namespaceSelector:
             matchLabels:
               name: {{ .Values.global.elasticNamespace }}
       ports:
         - port: 9200
-{{- end }}
+  {{- end }}
     - to: #any pod in monitoring namespace
         - namespaceSelector:
             matchLabels:
@@ -97,56 +97,53 @@ spec:
       ports:
         - port: 9200
         - port: 8200
-{{- if .Values.global.redisNetworkPolicyEnabled }}
+  {{- if .Values.global.redisNetworkPolicyEnabled }}
     - to: #redis
         - ipBlock:
             cidr: {{ .Values.global.vnetCidr }}
       ports:
         - port: 6380
-{{- end }}
+  {{- end }}
     - to: #outside world - sentry, optimizely, etc
         - ipBlock:
             cidr: 0.0.0.0/0
       ports:
         - port: 443
         - port: 80
-{{- if .Values.global.servicebusNetworkPolicyEnabled }}
+  {{- if .Values.global.servicebusNetworkPolicyEnabled }}
         - port: 5671  #servicebus
-{{ end }}
+  {{ end }}
     - to: #vnet addressspace - mssql, servicebus
         - ipBlock:
             cidr: {{ .Values.global.vnetCidr }}
       ports:
-{{- if .Values.global.zyteProxyNetworkPolicyEnabled }}
+  {{- if .Values.global.mongodbNetworkPolicyEnabled }}
+        - port: 1024  #mongodb
+          endPort: 65535
+  {{- else }}
+    {{- if .Values.global.zyteProxyNetworkPolicyEnabled }}
         - port: 8010   #Zyte Proxy
         - port: 8011
         - port: 8014
-{{- end }}
-{{- if .Values.global.postgresNetworkPolicyEnabled }}
+    {{- end }}
+    {{- if .Values.global.postgresNetworkPolicyEnabled }}
         - port: 5432  #postgres
-{{- end }}
-{{- if .Values.global.sqlNetworkPolicyEnabled }}
+    {{- end }}
+    {{- if .Values.global.sqlNetworkPolicyEnabled }}
         - port: 1433  #mssql
-{{- end }}
-{{- if .Values.global.mongodbNetworkPolicyEnabled }}
-        - port: 1024  #mongodb shards 
-        - port: 1025
-        - port: 1026
-        - port: 25015  #mongodb
-        - port: 25016
-        - port: 27017
-{{- end }}
-{{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
+    {{- end }}
+    {{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
         - port: 9201
-{{- end}}
-{{- if .Values.global.cosmosNetworkPolicyEnabled }}
+    {{- end }}
+    {{- if .Values.global.cosmosNetworkPolicyEnabled }}
         - port: 10255
-{{- end}}
-{{- if .Values.global.elasticNetworkPolicyEnabled }} 
+    {{- end }}
+    {{- if .Values.global.elasticNetworkPolicyEnabled }} 
         - port: 9243 #elastic cloud
-{{- end}}
+    {{- end }}
         - port: 8433
         - port: 8000
+  {{- end }}
         - port: 433
         - port: 80
         - port: 53

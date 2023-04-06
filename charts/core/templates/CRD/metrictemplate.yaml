@@ -8,7 +8,7 @@ spec:
     address: {{ include "charts-core.prometheusServer" . | quote }}
     type: prometheus
   query: |
-{{- if .Values.global.monitoring.servicemonitor.enabled }}
+{{- if and .Values.global.monitoring.servicemonitor.enabled .Values.global.monitoring.metrics.enabled }}
     100 - sum by (job) 
       (rate(http_requests_received_total{namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary",code!~"5.*"}[1m]))
         / ignoring(code) group_left
@@ -31,7 +31,7 @@ spec:
     address: {{ include "charts-core.prometheusServer" . | quote }}
     type: prometheus
   query: |
-{{- if .Values.global.monitoring.servicemonitor.enabled }}
+{{- if and .Values.global.monitoring.servicemonitor.enabled .Values.global.monitoring.metrics.enabled }}
     sum by (job) (
       (rate(http_request_duration_seconds_sum {namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[1m] ) /
         rate(http_request_duration_seconds_count {namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[1m] )) > 0 )
