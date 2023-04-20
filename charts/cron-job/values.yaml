@@ -69,7 +69,7 @@ global:
 
   #Additional Network Polices configuration
   elasticNetworkPolicyEnabled: true
-  elasticNamespace: "#{AksNamespace}#"
+  elasticNamespace: #{elasticNamespace}#
 
   automountServiceAccountToken: false
 
