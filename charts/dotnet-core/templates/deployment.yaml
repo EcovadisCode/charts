@@ -146,6 +146,11 @@ spec:
                 name: "{{ include "charts-dotnet-core.fullname" . }}-secure"
           {{- end }}
           {{- end }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
           {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalValumesEnabled }}
