@@ -32,11 +32,11 @@ spec:
     type: prometheus
   query: |
 {{- if and .Values.global.monitoring.servicemonitor.enabled .Values.global.monitoring.metrics.enabled }}
-    sum by (job) (
+    avg by (job) (
       (rate(http_request_duration_seconds_sum {namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[1m] ) /
         rate(http_request_duration_seconds_count {namespace="{{ .Release.Namespace }}",job="{{ include "charts-core.fullname" . }}-canary"}[1m] )) > 0 )
 {{- else }}
-    sum by (exported_service) (
+    avg by (exported_service) (
       (rate(traefik_service_request_duration_seconds_sum{exported_service=~"{{ .Release.Namespace }}-{{ include "charts-core.fullname" . }}-canary.*"}[2m]) /
         rate(traefik_service_requests_total{exported_service=~"{{ .Release.Namespace }}-{{ include "charts-core.fullname" . }}-canary.*"}[2m])) > 0)    
 {{- end }}
