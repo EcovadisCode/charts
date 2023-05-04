@@ -121,10 +121,18 @@ spec:
         - port: 1024  #mongodb
           endPort: 65535
   {{- else }}
+        - port: 8433
+        - port: 8000
+  {{- end }}
     {{- if .Values.global.zyteProxyNetworkPolicyEnabled }}
         - port: 8010   #Zyte Proxy
         - port: 8011
         - port: 8014
+    {{- end }}
+    {{- if .Values.global.eventHubNetworkPolicyEnabled }} 
+        - port: 5671 # - AMQP Ports
+        - port: 5672
+        - port: 9093 # - Kafka Port
     {{- end }}
     {{- if .Values.global.postgresNetworkPolicyEnabled }}
         - port: 5432  #postgres
@@ -141,9 +149,6 @@ spec:
     {{- if .Values.global.elasticNetworkPolicyEnabled }} 
         - port: 9243 #elastic cloud
     {{- end }}
-        - port: 8433
-        - port: 8000
-  {{- end }}
         - port: 433
         - port: 80
         - port: 53
