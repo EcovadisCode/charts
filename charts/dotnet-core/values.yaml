@@ -93,6 +93,7 @@ global:
   elasticNamespace: #{elasticNamespace}#
 
   mongodbNetworkPolicyEnabled: false
+  eventHubNetworkPolicyEnabled: false
   automountServiceAccountToken: false
   lnmElasticNetworkPolicyEnabled: false
   redisNetworkPolicyEnabled: true
