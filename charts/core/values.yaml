@@ -59,6 +59,7 @@ global:
   sqlNetworkPolicyEnabled: true
   postgresNetworkPolicyEnabled: false
   zyteProxyNetworkPolicyEnabled: false
+  eventHubNetworkPolicyEnabled: false
   servicebusNetworkPolicyEnabled: true
   redisNetworkPolicyEnabled: true
   cosmosNetworkPolicyEnabled: false

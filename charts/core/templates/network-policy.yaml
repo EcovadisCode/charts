@@ -126,6 +126,11 @@ spec:
         - port: 8011
         - port: 8014
     {{- end }}
+    {{- if .Values.global.eventHubNetworkPolicyEnabled }} 
+        - port: 5671 # - AMQP Ports
+        - port: 5672
+        - port: 9093 # - Kafka Port
+    {{- end }}
     {{- if .Values.global.postgresNetworkPolicyEnabled }}
         - port: 5432  #postgres
     {{- end }}
