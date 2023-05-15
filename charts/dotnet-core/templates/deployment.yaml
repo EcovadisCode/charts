@@ -105,15 +105,15 @@ spec:
           {{- toYaml .Values.global.image.readinessProbe | nindent 12 }}
 
           {{- if not .Values.global.image.readinessProbe.initialDelaySeconds }}
-            initialDelaySeconds: 20
+            initialDelaySeconds: 40
           {{- end }}
 
           {{- if not .Values.global.image.readinessProbe.periodSeconds }}
-            periodSeconds: 10
+            periodSeconds: 60
           {{- end }}
 
           {{- if not .Values.global.image.readinessProbe.timeoutSeconds }}
-            timeoutSeconds: 3
+            timeoutSeconds: 15
           {{- end }}
 
           {{- if not .Values.global.image.readinessProbe.successThreshold }}
@@ -128,9 +128,9 @@ spec:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 20
-            periodSeconds: 3
-            timeoutSeconds: 3
+            initialDelaySeconds: 40
+            periodSeconds: 60
+            timeoutSeconds: 15
             successThreshold: 1
             failureThreshold: 3
           {{- end }}
