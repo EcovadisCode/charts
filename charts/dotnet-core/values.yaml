@@ -136,6 +136,7 @@ global:
   envVars: 
     ASPNETCORE_ENVIRONMENT: Develop
     ELASTIC_APM_TRANSACTION_IGNORE_URLS: '/VAADIN/*, /heartbeat*, /favicon.ico, *.js, *.css, *.jpg, *.jpeg, *.png, *.gif, *.webp, *.svg, *.woff, *.woff2, /readyz, /*/*/readyz, /metrics'
+    ELASTIC_APM_USE_ELASTIC_TRACEPARENT_HEADER: false
 
   secEnvVarsEnabled: true
   secEnvVars: {}
