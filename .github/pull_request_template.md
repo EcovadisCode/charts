@@ -1,13 +1,14 @@
 ## Description
 
-Briefly describe the problem and solution.
+Briefly describe the problem and solution. Please remember to create 1 PR per 1 chart in case of dependency between them, otherwise PR gate will fail.
 
 ## Chart
 
 Select the chart that you are modifying:
 - [ ] core
-- [ ] dotnet-template
+- [ ] dotnet-core
 - [ ] cron-job
+- [ ] app-reverse-proxy
 - [ ] pact-broker
 - [ ] azure-functions
 

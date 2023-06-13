@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "charts-app-reverse-proxy.fullname" . }}-reverse-proxy
+  labels:
+    {{- include "charts-app-reverse-proxy.labels" . | nindent 4 }}
+data: 
+    server_conf: |-
+        server {
+            listen      {{ .Values.global.service.port }} default_server ssl;
+            server_name {{ .Values.global.ingressRoutes.subdomainName }}.{{ .Values.global.ingressRoutes.domain }};
+            ssl_certificate /etc/ssl/ca.crt;
+            ssl_certificate_key /etc/ssl/tls.key;
+            ssl_verify_depth 2;
+            ssl_protocols TLSv1.2;
+            proxy_buffers 16 16k;  
+            proxy_buffer_size 16k;
+            
+            location / {
+                proxy_pass                           http://localhost:{{ .Values.global.image.application.containerPort }};
+                proxy_set_header X-Forwarded-For     $proxy_add_x_forwarded_for;
+                proxy_set_header X-Real-IP           $remote_addr;
+                proxy_set_header X-Forwarded-Proto   https;
+                proxy_read_timeout                   1200;
+                client_max_body_size                 256M;
+                client_body_buffer_size              128k;
+            }
+        }
