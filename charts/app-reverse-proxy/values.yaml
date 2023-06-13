@@ -1,0 +1,116 @@
+global:
+  replicaCount: 2
+
+  image:
+    application:
+      name: appwithreverseproxy
+      containerPort: 8000
+      repository: "labacreco.azurecr.io"
+      pullPolicy: IfNotPresent
+      tag: "v1.0.0"
+    nginx:
+      name: nginxinc/nginx-unprivileged
+      containerPort: 8443
+      pullPolicy: IfNotPresent
+      repository: "docker.io"
+      tag: "1.20"
+    
+  imagePullSecrets: 
+    - name: "dockerhub-pull-secret"
+    - name: "labacreco-pull-secret"
+
+  nameOverride: ""
+  fullnameOverride: ""
+
+  resources:
+    application:
+      limits:
+        memory: 800Mi
+      requests:
+        cpu: 300m
+        memory: 300Mi
+    nginx:
+      limits:
+        memory: 300Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+
+  serviceAccount:
+    create: false
+    annotations: {}
+    name: ""
+
+  podSecurityContext: 
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: "50%"
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - SYS_ADMIN
+        - SYS_PTRACE
+        - SYS_MODULE
+        - DAC_READ_SEARCH
+        - DAC_OVERRIDE
+        - CHOWN
+        - SETFCAP
+        - KILL
+        - NET_ADMIN
+        - NET_RAW
+
+  service:
+    type: ClusterIP
+    port: 443
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+
+  ingressRoutes: 
+    enabled: true
+    subdomainName: #{subdomainName}#
+    domain: #{domainName}#
+    routes:
+    - ruleName: http
+      #rule: Host(`develop.ecovadis-itlab.com`) 
+      #stripPrefixes:
+      #  - /vadisservice
+      #isRetryEnabled: true
+      #isCircuitBreakerEnabled: true
+
+  secEnvVarsEnabled: true
+  secEnvVars: {}
+      #APP_INSIGHT_KEY: TEST
+
+  envVarsEnabled: true
+  envVars: {}
+  #Automates creation of default network policy, which is responsible for handling traffic between pod - service - traefik 
+  defaultNetworkPolicyEnabled: false
+
+  #Additional Network Polices configuration
+  elasticNetworkPolicyEnabled: true
+  elasticNamespace: #{elasticNamespace}#
+  redisNetworkPolicyEnabled: false
+  redisCidr: "#{redisCidr}#"
+  sqlNetworkPolicyEnabled: true
+  servicebusNetworkPolicyEnabled: true
+  vnetCidr: "#{vnetCidr}#"
+  mongodbNetworkPolicyEnabled: false
+  automountServiceAccountToken: false
+
+  appConfigFilesEnabled: true
+  appConfigFiles:
+    globPattern: "**.json"
+    dir: "/app/"
+    filesList: []
+      #- "appsettings.json"
