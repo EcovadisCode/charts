@@ -93,4 +93,4 @@ spec:
           tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      backoffLimit: "{{ .Values.global.backoffLimit }}"
+      backoffLimit: {{ .Values.global.backoffLimit }}
