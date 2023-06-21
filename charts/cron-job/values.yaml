@@ -100,9 +100,20 @@ global:
 
   nodeSelector: {}
 
-  tolerations: []
-
-  affinity: {}
+  tolerations:
+  - key: "aksjobs"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: aksjobs
+            operator: In
+            values:
+            - true
 
   podDisruptionBudget:
     enabled: false
@@ -112,3 +123,5 @@ global:
 
   ingressRoutes:
     enabled: false
+
+  backoffLimit: 2    
