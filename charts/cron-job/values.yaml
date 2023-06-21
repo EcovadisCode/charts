@@ -113,7 +113,7 @@ global:
           - key: aksjobs
             operator: In
             values:
-            - true
+            - "true"
 
   podDisruptionBudget:
     enabled: false
