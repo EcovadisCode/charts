@@ -198,6 +198,19 @@ entries:
     version: 1.0.0
   charts-cron-job:
   - apiVersion: v2
+    created: "2023-06-21T13:27:15.357609901Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.0.11
+    description: EcoVadis Helm chart for K8s Cron Job
+    digest: 803b2b094e0593a119af33eef089574bb8333ecd0aeb355af184db3d0300b65c
+    name: charts-cron-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-cron-job-2.0.5/charts-cron-job-2.0.5.tgz
+    version: 2.0.5
+  - apiVersion: v2
     created: "2023-06-21T12:53:37.048433288Z"
     dependencies:
     - name: charts-core
@@ -711,4 +724,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2023-06-21T12:53:37.049580491Z"
+generated: "2023-06-21T13:27:15.357956805Z"
