@@ -40,6 +40,9 @@ helm.sh/chart: {{ include "charts-app-reverse-proxy.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.global.additionalLabelsEnabled }}
+{{ toYaml .Values.global.additionalLabels }}
+{{- end }}
 {{- end }}
 
 {{/*
