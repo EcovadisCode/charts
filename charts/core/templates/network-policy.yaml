@@ -113,6 +113,9 @@ spec:
   {{- if .Values.global.servicebusNetworkPolicyEnabled }}
         - port: 5671  #servicebus
   {{ end }}
+  {{- if .Values.global.elasticNetworkPolicyEnabled }}
+        - port: 9243  #elasticcloud
+  {{ end }}
     - to: #vnet addressspace - mssql, servicebus
         - ipBlock:
             cidr: {{ .Values.global.vnetCidr }}
