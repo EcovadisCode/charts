@@ -723,6 +723,20 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-2.0.0/charts-dotnet-core-2.0.0.tgz
     version: 2.0.0
+  charts-job:
+  - apiVersion: v2
+    created: "2023-08-04T13:31:41.419057799Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.0.12
+    description: EcoVadis Helm chart for K8s Cron Job
+    digest: f942fb6a737d5598a1d49e6cb59e3ecec2e34f084833a085dffdcda9100ad219
+    name: charts-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-job-2.0.0/charts-job-2.0.0.tgz
+    version: 2.0.0
   pact-broker:
   - apiVersion: v2
     appVersion: 2.102.2.0
@@ -787,4 +801,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2023-07-13T08:00:16.162763615Z"
+generated: "2023-08-04T13:31:41.419357102Z"
