@@ -1,0 +1,13 @@
+{{- if .Values.global.kedaAutoscalingEnabled -}}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "charts-job.fullname" . }}
+  labels:
+    {{- include "charts-job.labels" . | nindent 4 }}
+spec:
+  secretTargetRef:
+    - key: {{- .Values.global.keda.connectionStringSecretKey -}}
+      name: "{{ include "charts-job.fullname" . }}-secure"
+      parameter: connection
+{{- end -}}
