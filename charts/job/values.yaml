@@ -1,0 +1,147 @@
+# Default values for charts-job.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  image:
+    repository: "labacreco.azurecr.io"
+    imagePullSecret: "labacreco-pull-secret" # can be labacreco-pull-secret or dockerhub-pull-secret
+    name: # app name
+    tag: "" #"10.64.1"
+    pullPolicy: Always
+    command: []
+    args: []
+    ports:
+      - name: http
+        containerPort: 8000
+        protocol: TCP
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  #ttlSecondsAfterFinished: 86400 # Job and all pods will be deleted after this amount of time in second, regardless its result (succeeded or failed)
+  #activeDeadlineSeconds: 10800 # Limit of time in second during which job can create new pods.
+
+  redisNetworkPolicyEnabled: true
+  redisCidr: "#{redisCidr}#"
+  sqlNetworkPolicyEnabled: true
+  servicebusNetworkPolicyEnabled: true
+  vnetCidr: "#{vnetCidr}#"
+
+  secEnvVarsEnabled: true
+  secEnvVars: {}
+      #APP_INSIGHT_KEY: TEST
+
+  envVarsEnabled: true
+  envVars: 
+    ASPNETCORE_ENVIRONMENT: #{ASPNETCORE_ENVIRONMENT}#
+
+  nameOverride: # app name, may be the same as image.name
+
+  additionalLabelsEnabled: false
+  additionalLabels: {}
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - SYS_ADMIN
+        - SYS_PTRACE
+        - SYS_MODULE
+        - DAC_READ_SEARCH
+        - DAC_OVERRIDE
+        - CHOWN
+        - SETFCAP
+        - KILL
+        - NET_ADMIN
+        - NET_RAW
+    # readOnlyRootFilesystem: true
+
+  #Automates creation of default network policy, which is responsible for handling traffic between pod - service - traefik 
+  defaultNetworkPolicyEnabled: false
+
+  #Additional Network Polices configuration
+  elasticNetworkPolicyEnabled: true
+  elasticNamespace: #{elasticNamespace}#
+
+  automountServiceAccountToken: false
+
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  additionalValumesEnabled: false
+  additionalVolumes: []
+    # - name: azurefileshare
+    #   azureFile:
+    #     secretName: storage-secret
+    #     shareName: fileshare-name
+    #     readOnly: false
+  additionalVolumesMount: []  
+    # - name: azurefileshare
+    #   mountPath: /app
+
+  appConfigFilesEnabled: true
+  appConfigFiles:
+    globPattern: "**.json"
+    dir: "/app/"
+    filesList: []
+      #- "appsettings.json"
+
+  nodeSelector: {}
+
+  tolerations:
+  - key: "aksjobs"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: aksjobs
+            operator: In
+            values:
+            - "true"
+
+  podDisruptionBudget:
+    enabled: false
+
+  autoscaling:
+    enabled: false
+
+  ingressRoutes:
+    enabled: false
+
+  backoffLimit: 2    
+
+  kedaAutoscalingEnabled: false
+  keda:
+    connectionStringSecretKey: "test"
+    triggers:
+    - type: azure-servicebus
+      metadata:
+        # Required: queueName OR topicName and subscriptionName
+        queueName: functions-sbqueue
+        # or
+        #topicName: functions-sbtopic
+        #subscriptionName: sbtopic-sub1
+        # Optional, required when pod identity is used
+        namespace: service-bus-namespace
+        # Optional, can use TriggerAuthentication as well
+        #connectionFromEnv: SERVICEBUS_CONNECTIONSTRING_ENV_NAME
+        # Optional
+        messageCount: "5" # Optional. Count of messages to trigger scaling on. Default: 5 messages
+        activationMessageCount: "0" #  Target value for activating the scaler. Learn more about activation
+        cloud: AzurePublicCloud
+        
