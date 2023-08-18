@@ -240,3 +240,9 @@ global:
   traefik: {} # override traefik settings are needed in order to run load tests for Flagger
   #   serviceName: #{traefikServiceName}# # k8s service name under which traefik is accessible.
   #   namespace: #{traefikServiceNamespace}# # namespace where traefik k8s service is installed.
+
+  topologySpread:
+    # Defaults to trying to schedule pods evenly across availability zones
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+    topologyKey: topology.kubernetes.io/zone
