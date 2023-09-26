@@ -30,12 +30,13 @@ spec:
         {{- include "charts-dotnet-core.labels" . | nindent 8 }}
     spec:
       topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: topology.kubernetes.io/zone
-          whenUnsatisfiable: ScheduleAnyway
+        - maxSkew: {{ .Values.global.topologySpread.maxSkew }}
+          topologyKey: {{ .Values.global.topologySpread.topologyKey }}
+          whenUnsatisfiable: {{ .Values.global.topologySpread.whenUnsatisfiable }}
           labelSelector:
             matchLabels:
-              app.kubernetes.io/name: {{ include "charts-dotnet-core.name" . }}  
+              app.kubernetes.io/name: {{ include "charts-dotnet-core.name" . }}
+
       imagePullSecrets:
         - name: "{{ .Values.global.image.imagePullSecret }}"
       {{- if .Values.global.serviceAccount.create }}

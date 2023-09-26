@@ -574,3 +574,48 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             500,
             jmespath.search("spec.template.spec.terminationGracePeriodSeconds", docs[0])
         )
+
+    def test_default_topology_spread_constraint(self):
+        docs = render_chart(values={}, name=".", show_only=["templates/deployment.yaml"])
+        self.assertEqual(
+            [
+                {
+                    'maxSkew': 1,
+                    'topologyKey': 'topology.kubernetes.io/zone',
+                    'whenUnsatisfiable': 'ScheduleAnyway',
+                    'labelSelector': {
+                        'matchLabels': {
+                            'app.kubernetes.io/name': 'charts-dotnet-core'
+                        }
+                    }
+                }
+            ],
+            jmespath.search("spec.template.spec.topologySpreadConstraints", docs[0]))
+
+
+    def test_topology_spread_constraint_overwritten(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "topologySpread": {
+                        "maxSkew": 2,
+                        "whenUnsatisfiable": "DoNotSchedule",
+                        "topologyKey": "kubernetes.io/hostname"
+                    }
+                }
+            },
+            name=".", show_only=["templates/deployment.yaml"])
+        self.assertEqual(
+            [
+                {
+                    'maxSkew': 2,
+                    'topologyKey': 'kubernetes.io/hostname',
+                    'whenUnsatisfiable': 'DoNotSchedule',
+                    'labelSelector': {
+                        'matchLabels': {
+                            'app.kubernetes.io/name': 'charts-dotnet-core'
+                        }
+                    }
+                }
+            ],
+            jmespath.search("spec.template.spec.topologySpreadConstraints", docs[0]))
