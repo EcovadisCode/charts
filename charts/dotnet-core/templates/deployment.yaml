@@ -219,7 +219,7 @@ spec:
           readOnly: true
           volumeAttributes:
             secretProviderClass: "ecovadis-cert"
-      {{- end}}
+      {{- end }}
       {{- if .Values.global.additionalVolumesEnabled -}}
       {{- with .Values.global.additionalVolumes }}
         {{- toYaml . | nindent 6 }}
