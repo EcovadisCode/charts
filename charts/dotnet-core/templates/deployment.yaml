@@ -177,7 +177,7 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
-            {{- if .Values.global.certificateSecretStoreEnabled -}}
+          {{- if .Values.global.certificateSecretStoreEnabled -}}
           - name: ecovadis-ceritificate
             mountPath: "/app/cert"
             readOnly: true
