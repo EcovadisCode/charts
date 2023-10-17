@@ -148,7 +148,9 @@ global:
     filesList: []
       #- "appsettings.json"
 
-  additionalValumesEnabled: false
+  certificateSecretStoreEnabled: true
+  
+  additionalVolumesEnabled: false
   additionalVolumes: {}
   #   - name: azurefileshare
   #     azureFile:

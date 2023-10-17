@@ -154,7 +154,7 @@ spec:
                   fieldPath: metadata.name
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
-          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalValumesEnabled }}
+          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled }}
           volumeMounts:
           {{- if .Values.global.appConfigFilesEnabled -}}
           {{- $currentScope := .}}
@@ -177,7 +177,12 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
-            {{- if .Values.global.additionalValumesEnabled -}}
+          {{- if .Values.global.certificateSecretStoreEnabled }}
+          - name: ecovadis-ceritificate
+            mountPath: "/app/cert"
+            readOnly: true
+            {{- end }}
+            {{- if .Values.global.additionalVolumesEnabled -}}
             {{- with .Values.global.additionalVolumesMount }}
               {{- toYaml . | nindent 10 }}
             {{- end }}
@@ -207,7 +212,15 @@ spec:
         secret:
           secretName: {{ include "charts-dotnet-core.fullname" . }}-files
       {{- end }}
-      {{- if .Values.global.additionalValumesEnabled -}}
+      {{ if .Values.global.certificateSecretStoreEnabled -}}
+      - name: "ecovadis-ceritificate"
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "ecovadis-cert"
+      {{- end }}
+      {{- if .Values.global.additionalVolumesEnabled -}}
       {{- with .Values.global.additionalVolumes }}
         {{- toYaml . | nindent 6 }}
       {{- end }}
