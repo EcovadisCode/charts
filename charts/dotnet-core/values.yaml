@@ -5,8 +5,8 @@ global:
     maxUnavailable: "50%"
 
   image:
-    repository: "labacreco.azurecr.io"
-    imagePullSecret: "labacreco-pull-secret"
+    repository: "cicdcr01weuy01.azurecr.io"
+    imagePullSecret: "acr-pull-secret"
     name: ""
     tag: ""
     pullPolicy: IfNotPresent
@@ -19,9 +19,9 @@ global:
 
   mockingServer:
     enabled: false
-    repository: "docker.io"
-    imagePullSecret: "dockerhub-pull-secret" # can be labacreco-pull-secret or dockerhub-pull-secret
-    name: "mockserver/mockserver"
+    repository: "cicdcr01weuy01.azurecr.io"
+    imagePullSecret: "acr-pull-secret"
+    name: "dockerhub/mockserver/mockserver"
     tag: "5.13.2"
     pullPolicy: IfNotPresent
     envEnabled: true

@@ -5,8 +5,8 @@
 global:
   schedule: ""
   image:
-    repository: "labacreco.azurecr.io"
-    imagePullSecret: "labacreco-pull-secret" # can be labacreco-pull-secret or dockerhub-pull-secret
+    repository: "cicdcr01weuy01.azurecr.io"
+    imagePullSecret: "acr-pull-secret"
     name: # app name
     tag: "" #"10.64.1"
     pullPolicy: Always
@@ -28,6 +28,7 @@ global:
 
   ttlSecondsAfterFinished: 86400 # Job and all pods will be deleted after this amount of time in second, regardless its result (succeeded or failed)
   activeDeadlineSeconds: 10800 # Limit of time in second during which job can create new pods.
+  backoffLimit: 2 # Number of retries tu run a job. One retry is equal to one pod creation.
 
   redisNetworkPolicyEnabled: true
   redisCidr: "#{redisCidr}#"
@@ -118,10 +119,8 @@ global:
   podDisruptionBudget:
     enabled: false
 
-  autoscaling:
-    enabled: false
-
   ingressRoutes:
     enabled: false
 
-  backoffLimit: 2    
+  canary:
+    enabled: false

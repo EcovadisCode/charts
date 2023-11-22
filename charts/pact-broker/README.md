@@ -48,7 +48,7 @@ You may notice that there are many tokens like `#{variable}#` in `values.yaml` f
 
 ### **Dockerhub pull secret**
 
-There is a special entry at `image.pullSecrets` in v`alues.yaml` file that passes secret name to k8s Deployment. This secret should contain your docker.io credentials to authenticate against docker hub registry.
+There is a special entry at `image.pullSecrets` in `values.yaml` file that passes secret name to k8s Deployment. This secret should contain your docker.io credentials to authenticate against docker hub registry.
 
 It is recommended to [create](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) and use this secret and not to use anonymous image pulling because there is an issue with dockerhub repos when you may face image pull errors from public repos.
 
