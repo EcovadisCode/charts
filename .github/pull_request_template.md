@@ -8,9 +8,9 @@ Select the chart that you are modifying:
 - [ ] core
 - [ ] dotnet-core
 - [ ] cron-job
+- [ ] job
 - [ ] app-reverse-proxy
 - [ ] pact-broker
-- [ ] azure-functions
 
 ## Checklist
 - [ ] Description provided

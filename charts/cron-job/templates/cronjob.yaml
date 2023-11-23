@@ -10,6 +10,7 @@ spec:
     spec:
       ttlSecondsAfterFinished: {{ .Values.global.ttlSecondsAfterFinished }}
       activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
+      backoffLimit: {{ .Values.global.backoffLimit }}
       template:
         metadata:
           labels:
@@ -93,4 +94,3 @@ spec:
           tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      backoffLimit: {{ .Values.global.backoffLimit }}

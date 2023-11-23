@@ -5,19 +5,18 @@ global:
     application:
       name: appwithreverseproxy
       containerPort: 8000
-      repository: "labacreco.azurecr.io"
+      repository: "cicdcr01weuy01.azurecr.io"
       pullPolicy: IfNotPresent
       tag: "v1.0.0"
     nginx:
-      name: nginxinc/nginx-unprivileged
+      name: dockerhub/nginxinc/nginx-unprivileged
       containerPort: 8443
+      repository: "cicdcr01weuy01.azurecr.io"
       pullPolicy: IfNotPresent
-      repository: "docker.io"
       tag: "1.20"
     
   imagePullSecrets: 
-    - name: "dockerhub-pull-secret"
-    - name: "labacreco-pull-secret"
+    - name: "acr-pull-secret"
 
   nameOverride: ""
   fullnameOverride: ""
