@@ -10,3 +10,4 @@ charts/dotnet-core/charts
 charts/dotnet-core/charts/temp*.json
 charts/dotnet-core/charts/tmp*.json
 venv/
+.vscode/
