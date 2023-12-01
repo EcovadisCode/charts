@@ -30,15 +30,15 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
         self.assertRegex(docs[0]["kind"], "NetworkPolicy")
         self.assertEqual(
             {"port": 8010},
-            jmespath.search("spec.egress[-1].ports[0]", docs[0])
+            jmespath.search("spec.egress[5].ports[5]", docs[0])
         )
         self.assertEqual(
             {"port": 8011},
-            jmespath.search("spec.egress[-1].ports[1]", docs[0])
+            jmespath.search("spec.egress[5].ports[6]", docs[0])
         )
         self.assertEqual(
             {"port": 8014},
-            jmespath.search("spec.egress[-1].ports[2]", docs[0])
+            jmespath.search("spec.egress[5].ports[7]", docs[0])
         )
 
     def test_networkpolicy_rendering(self):
@@ -139,7 +139,7 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
 
         self.assertEqual(
             {'port': 5432},
-            jmespath.search("spec.egress[8].ports[0]", docs[0])
+            jmespath.search("spec.egress[6].ports[5]", docs[0])
         )
 
         self.assertEqual(
