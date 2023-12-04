@@ -4,6 +4,7 @@
 
 global:
   schedule: ""
+  concurrencyPolicy: Allow
   image:
     repository: "cicdcr01weuy01.azurecr.io"
     imagePullSecret: "acr-pull-secret"
@@ -27,7 +28,7 @@ global:
     name: ""
 
   ttlSecondsAfterFinished: 86400 # Job and all pods will be deleted after this amount of time in second, regardless its result (succeeded or failed)
-  activeDeadlineSeconds: 10800 # Limit of time in second during which job can create new pods.
+  activeDeadlineSeconds: 10800 # Job completion timeout
   backoffLimit: 2 # Number of retries tu run a job. One retry is equal to one pod creation.
 
   redisNetworkPolicyEnabled: true
