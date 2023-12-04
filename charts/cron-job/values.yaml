@@ -4,6 +4,7 @@
 
 global:
   schedule: ""
+  concurrencyPolicy: Allow
   image:
     repository: "cicdcr01weuy01.azurecr.io"
     imagePullSecret: "acr-pull-secret"
