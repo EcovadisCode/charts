@@ -53,6 +53,7 @@ global:
   elasticNamespace: develop
 
   mongodbNetworkPolicyEnabled: false
+  mongodbStrictNetworkPolicyEnabled: false
   automountServiceAccountToken: false
   lnmElasticNetworkPolicyEnabled: false
   allowAllInternalClusterTrafficNetworkPolicy: false

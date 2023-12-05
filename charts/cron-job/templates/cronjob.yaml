@@ -6,6 +6,7 @@ metadata:
     {{- include "charts-cron-job.labels" . | nindent 4 }}
 spec:
   schedule: "{{ .Values.global.schedule }}"
+  concurrencyPolicy: "{{ .Values.global.concurrencyPolicy }}"
   jobTemplate:
     spec:
       ttlSecondsAfterFinished: {{ .Values.global.ttlSecondsAfterFinished }}
