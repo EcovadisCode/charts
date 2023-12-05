@@ -122,8 +122,8 @@ spec:
          - port: 1024
           endPort: 65535  # MongoDB outside VNet
   {{- end }}
-  {{- if .Values.global.mongodbSinglePortNetworkPolicyEnabled}}
-        - port: 27017
+  {{- if .Values.global.mongodbStrictNetworkPolicyEnabled}}
+        - port: 27017  # Only open port 27017 when Strict Network Policy is enabled
   {{- end }}
     - to: #vnet addressspace - mssql, servicebus
         - ipBlock:
