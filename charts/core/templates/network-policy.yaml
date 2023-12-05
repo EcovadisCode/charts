@@ -119,9 +119,12 @@ spec:
         - port: 8014
   {{- end }}
   {{- if .Values.global.mongodbNetworkPolicyEnabled}}
-        - port: 27017  # MongoDB outside VNet
+         - port: 1024
+          endPort: 65535  # MongoDB outside VNet
   {{- end }}
-
+  {{- if .Values.global.mongodbStrictNetworkPolicyEnabled}}
+        - port: 27017  # Only open port 27017 when Strict Network Policy is enabled
+  {{- end }}
     - to: #vnet addressspace - mssql, servicebus
         - ipBlock:
             cidr: {{ .Values.global.vnetCidr }}
@@ -132,10 +135,6 @@ spec:
         - port: 80
         - port: 53
           protocol: UDP
-  {{- if .Values.global.mongodbNetworkPolicyEnabled }}
-        - port: 1024  # Azure hosted mongo on random port in vnet
-          endPort: 65535
-  {{- end }}
   {{- if .Values.global.eventHubNetworkPolicyEnabled }} 
         - port: 5671 # - AMQP Ports
         - port: 5672
