@@ -41,6 +41,41 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
             jmespath.search("spec.egress[5].ports[7]", docs[0])
         )
 
+    def test_mongodbnetworkpolicy(self):
+        docs = render_chart(
+        values={
+            "global": {
+                "defaultNetworkPolicyEnabled": True,
+                "mongodbNetworkPolicyEnabled": True,
+            }
+        },
+        name=".",
+        show_only=["templates/network-policy.yaml"]
+        )
+        self.assertEqual(
+            {"port": 1024,
+             "endPort": 65535},
+            jmespath.search(
+                "spec.egress[5].ports[5]", docs[0])
+        )
+
+    def test_strictmongodbnetworkpolicy(self):
+        docs = render_chart(
+        values={
+            "global": {
+                "defaultNetworkPolicyEnabled": True,
+                "mongodbStrictNetworkPolicyEnabled": True,
+            }
+        },
+        name=".",
+        show_only=["templates/network-policy.yaml"]
+        )
+        self.assertEqual(
+            {"port": 27017},
+            jmespath.search(
+                "spec.egress[5].ports[5]", docs[0])
+        )
+
     def test_networkpolicy_rendering(self):
         docs = render_chart(
             values={
