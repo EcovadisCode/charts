@@ -119,7 +119,7 @@ spec:
         - port: 8014
   {{- end }}
   {{- if .Values.global.mongodbNetworkPolicyEnabled}}
-         - port: 1024
+        - port: 1024
           endPort: 65535  # MongoDB outside VNet
   {{- end }}
   {{- if .Values.global.mongodbStrictNetworkPolicyEnabled}}
