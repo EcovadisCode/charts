@@ -3,6 +3,20 @@ entries:
   charts-app-reverse-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2023-12-05T14:45:00.49073776Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.2
+    description: EcoVadis Helm chart for application exposed with nginx reverse proxy
+    digest: 4cd45afffefb4676650e7b79502283a1be0cad0475c9785c054f7f9cc15d8bff
+    name: charts-app-reverse-proxy
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-app-reverse-proxy-2.4.0/charts-app-reverse-proxy-2.4.0.tgz
+    version: 2.4.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2023-11-23T14:54:18.197606667Z"
     dependencies:
     - name: charts-core
@@ -267,6 +281,19 @@ entries:
     version: 1.0.0
   charts-cron-job:
   - apiVersion: v2
+    created: "2023-12-05T14:45:00.682746469Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.2
+    description: EcoVadis Helm chart for K8s Cron Job
+    digest: d3a8e192ba93cb87f6d6598b6f08fc60b60fb64de7ba1a29f86aabf5d3007471
+    name: charts-cron-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-cron-job-2.1.2/charts-cron-job-2.1.2.tgz
+    version: 2.1.2
+  - apiVersion: v2
     created: "2023-12-04T11:01:00.097363998Z"
     dependencies:
     - name: charts-core
@@ -384,6 +411,19 @@ entries:
     - https://github.com/EcovadisCode/charts/releases/download/charts-cron-job-2.0.0/charts-cron-job-2.0.0.tgz
     version: 2.0.0
   charts-dotnet-core:
+  - apiVersion: v2
+    created: "2023-12-05T14:45:00.904874064Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.2
+    description: EcoVadis Helm chart for .Net Core app
+    digest: f052d6fde261ec9639e8aea4dfbe451712cfcd2c9c59b2d5cd54ce5f1741f25c
+    name: charts-dotnet-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-3.1.2/charts-dotnet-core-3.1.2.tgz
+    version: 3.1.2
   - apiVersion: v2
     created: "2023-12-05T13:47:13.564869127Z"
     dependencies:
@@ -835,6 +875,19 @@ entries:
     version: 2.0.0
   charts-job:
   - apiVersion: v2
+    created: "2023-12-05T14:45:01.125559083Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.2
+    description: EcoVadis Helm chart for K8s Cron Job
+    digest: f9cdc9298f92be9dd0cbfc51c99fa7c8e41715b733983a3466801b1ce03dbaf9
+    name: charts-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-job-2.1.0/charts-job-2.1.0.tgz
+    version: 2.1.0
+  - apiVersion: v2
     created: "2023-08-04T13:31:41.419057799Z"
     dependencies:
     - name: charts-core
@@ -924,4 +977,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-05T14:26:31.425404842Z"
+generated: "2023-12-05T14:45:01.126075733Z"
