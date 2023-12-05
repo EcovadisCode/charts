@@ -59,6 +59,15 @@ entries:
     version: 2.2.0
   charts-core:
   - apiVersion: v2
+    created: "2023-12-05T14:26:31.425001693Z"
+    description: A Helm chart for Kubernetes
+    digest: 7ab8504aefd3d9aa2b35db3be3f4b12470f138fe3a682353ed2f1e7dd94c8cf3
+    name: charts-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-core-2.1.2/charts-core-2.1.2.tgz
+    version: 2.1.2
+  - apiVersion: v2
     created: "2023-12-05T13:26:19.588641973Z"
     description: A Helm chart for Kubernetes
     digest: 9692ac1e81de38d1f97d3e3a7c055e1638ae2fb7266495385181cdfdb83c93d9
@@ -915,4 +924,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-05T13:47:13.565277269Z"
+generated: "2023-12-05T14:26:31.425404842Z"
