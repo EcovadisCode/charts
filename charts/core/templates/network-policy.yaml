@@ -109,10 +109,13 @@ spec:
         - port: 443
         - port: 80
         - port: 9200 #any elastic or apm outside of the cluster
-        - port: 8200
+        - port: 8200  
   {{- if .Values.global.elasticNetworkPolicyEnabled }}
         - port: 9243  #elasticcloud
   {{- end }}
+  {{- if .Values.global.postgresNetworkPolicyEnabled }}
+        - port: 5432  #postgres
+  {{- end }}  
   {{- if .Values.global.zyteProxyNetworkPolicyEnabled }}
         - port: 8010   #Zyte Proxy
         - port: 8011
@@ -139,9 +142,6 @@ spec:
         - port: 5671 # - AMQP Ports
         - port: 5672
         - port: 9093 # - Kafka Port
-  {{- end }}
-  {{- if .Values.global.postgresNetworkPolicyEnabled }}
-        - port: 5432  #postgres
   {{- end }}
   {{- if .Values.global.servicebusNetworkPolicyEnabled }}
         - port: 5671  #servicebus
