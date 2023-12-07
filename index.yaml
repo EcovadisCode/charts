@@ -304,6 +304,19 @@ entries:
     version: 1.0.0
   charts-cron-job:
   - apiVersion: v2
+    created: "2023-12-07T15:52:00.601593313Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.3
+    description: EcoVadis Helm chart for K8s Cron Job
+    digest: 769cd036b1676ea0e1856fcbe84d8a0e85109768c756749c6edaec1c2f4d347e
+    name: charts-cron-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-cron-job-2.1.4/charts-cron-job-2.1.4.tgz
+    version: 2.1.4
+  - apiVersion: v2
     created: "2023-12-06T14:33:46.410124732Z"
     dependencies:
     - name: charts-core
@@ -447,6 +460,19 @@ entries:
     - https://github.com/EcovadisCode/charts/releases/download/charts-cron-job-2.0.0/charts-cron-job-2.0.0.tgz
     version: 2.0.0
   charts-dotnet-core:
+  - apiVersion: v2
+    created: "2023-12-07T15:52:00.773554846Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.3
+    description: EcoVadis Helm chart for .Net Core app
+    digest: 0cf9f5b26158f6e91ec2d2ae7f21ce0fc7d9e661b3fc11bdd1e089e7d486d13e
+    name: charts-dotnet-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-3.1.4/charts-dotnet-core-3.1.4.tgz
+    version: 3.1.4
   - apiVersion: v2
     created: "2023-12-06T14:33:46.582891385Z"
     dependencies:
@@ -924,6 +950,19 @@ entries:
     version: 2.0.0
   charts-job:
   - apiVersion: v2
+    created: "2023-12-07T15:52:00.919213249Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.3
+    description: EcoVadis Helm chart for K8s Cron Job
+    digest: b72990667a886efdd96be9e2ee8896bdcab479f29f335bfa86a476d2a0ce8fba
+    name: charts-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-job-2.1.2/charts-job-2.1.2.tgz
+    version: 2.1.2
+  - apiVersion: v2
     created: "2023-12-06T14:33:46.771086556Z"
     dependencies:
     - name: charts-core
@@ -1039,4 +1078,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2023-12-06T14:33:46.771518934Z"
+generated: "2023-12-07T15:52:00.919688236Z"
