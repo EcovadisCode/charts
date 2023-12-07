@@ -2,9 +2,9 @@ apiVersion: v2
 name: charts-app-reverse-proxy
 description: EcoVadis Helm chart for application exposed with nginx reverse proxy
 type: application
-version: 2.4.2
+version: 2.4.3
 appVersion: 1.16.0
 dependencies:
 - name: charts-core
-  version: 2.1.3
+  version: 2.1.5
   repository: "https://ecovadiscode.github.io/charts/"
