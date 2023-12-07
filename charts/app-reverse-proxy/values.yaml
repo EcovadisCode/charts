@@ -106,7 +106,6 @@ global:
   redisCidr: "#{redisCidr}#"
   sqlNetworkPolicyEnabled: true
   servicebusNetworkPolicyEnabled: true
-  vnetCidr: "#{vnetCidr}#"
   mongodbNetworkPolicyEnabled: false
   automountServiceAccountToken: false
 

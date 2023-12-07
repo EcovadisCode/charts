@@ -45,17 +45,9 @@ spec:
   {{- if .Values.global.monitoring.metrics.enabled }}
         - port: {{ .Values.global.monitoring.metrics.port }}  #metrics port
   {{- end }}
-
-    - from: #vnet address space
-        - ipBlock:
-            cidr: {{ .Values.global.vnetCidr }}
-      ports:
-        - port: 443
-        - port: 80
   {{- if .Values.global.servicebusNetworkPolicyEnabled }}
         - port: 5671  #servicebus
   {{- end }}
-
 
   egress:
     - to: #any pod in current namespace
@@ -93,14 +85,6 @@ spec:
       ports:
         - port: 9200
   {{- end }}
-  
-    - to: #any pod in monitoring namespace
-        - namespaceSelector:
-            matchLabels:
-              name: monitoring
-      ports:
-        - port: 9200
-        - port: 8200
 
     - to: #outside world - sentry, optimizely, etc
         - ipBlock:
@@ -108,8 +92,12 @@ spec:
       ports:
         - port: 443
         - port: 80
+        - port: 8433
+        - port: 8000
         - port: 9200 #any elastic or apm outside of the cluster
-        - port: 8200  
+        - port: 8200
+        - port: 53
+          protocol: UDP
   {{- if .Values.global.elasticNetworkPolicyEnabled }}
         - port: 9243  #elasticcloud
   {{- end }}
@@ -122,23 +110,14 @@ spec:
         - port: 8014
   {{- end }}
   {{- if .Values.global.mongodbNetworkPolicyEnabled}}
+        # Use mongodbStrictNetworkPolicy if possible to avoid opening unnecessary ports
         - port: 1024
-          endPort: 65535  # MongoDB outside VNet
+          endPort: 65535
   {{- end }}
   {{- if .Values.global.mongodbStrictNetworkPolicyEnabled}}
         - port: 27017  # Only open port 27017 when Strict Network Policy is enabled
   {{- end }}
-    - to: #vnet addressspace - mssql, servicebus
-        - ipBlock:
-            cidr: {{ .Values.global.vnetCidr }}
-      ports:
-        - port: 8433
-        - port: 8000
-        - port: 433
-        - port: 80
-        - port: 53
-          protocol: UDP
-  {{- if .Values.global.eventHubNetworkPolicyEnabled }} 
+   {{- if .Values.global.eventHubNetworkPolicyEnabled }} 
         - port: 5671 # - AMQP Ports
         - port: 5672
         - port: 9093 # - Kafka Port
