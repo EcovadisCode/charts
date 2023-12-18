@@ -1,13 +1,24 @@
-{{- if .Values.global.kedaAutoscalingEnabled -}}
+{{- if .Values.global.keda.triggers.azureServiceBus.enabled }}
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
 metadata:
-  name: {{ include "charts-job.fullname" . }}
+  name: {{ include "charts-job.fullname" . }}-servicebus
   labels:
     {{- include "charts-job.labels" . | nindent 4 }}
 spec:
-  secretTargetRef:
-    - key: {{- .Values.global.keda.connectionStringSecretKey -}}
-      name: "{{ include "charts-job.fullname" . }}-secure"
-      parameter: connection
-{{- end -}}
+  azureKeyVault:
+    vaultUri: {{ .Values.global.secEnvVars.KeyVault__Url | default "" }}
+    credentials:
+      clientId: {{ .Values.global.secEnvVars.AzureIdentity__ClientId | default "" }}
+      clientSecret:
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.global.keda.azure.clientIdSecretName | default (printf "%s-secure" (include "charts-job.fullname" .)) }}
+            key: {{ .Values.global.keda.azure.clientIdSecretKey }}
+      tenantId: {{ .Values.global.secEnvVars.AzureIdentity__TenantId | default "" }}
+    cloud:
+      type: AzurePublicCloud
+    secrets:
+    - parameter: connection
+      name: {{ .Values.global.keda.triggers.azureServiceBus.connectionStringKeyVaultSecretName }}
+{{ end }}
