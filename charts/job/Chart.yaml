@@ -1,8 +1,8 @@
 apiVersion: v2
-description: EcoVadis Helm chart for K8s Cron Job
+description: EcoVadis Helm chart for K8s Event driven Job
 name: charts-job
 type: application
-version: 2.1.3
+version: 2.1.4
 dependencies:
 - name: charts-core
   version: 2.1.5

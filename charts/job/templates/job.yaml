@@ -1,97 +1,126 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
 metadata:
   name: {{ include "charts-job.fullname" . }}
   labels:
     {{- include "charts-job.labels" . | nindent 4 }}
+  {{- if .Values.global.keda.autoscalingPaused }}
+  annotations:
+    autoscaling.keda.sh/paused: "true"
+  {{- end }}
 spec:
-  {{- if .Values.global.ttlSecondsAfterFinished }}
-  ttlSecondsAfterFinished: {{ .Values.global.ttlSecondsAfterFinished }}
-  {{- end }}
-  {{- if .Values.global.activeDeadlineSeconds }}
-  activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
-  {{- end }}
-  template:
-    metadata:
-      labels:
-        {{- include "charts-job.labels" . | nindent 12 }}
-    spec:
-      imagePullSecrets:
-      - name: "{{ .Values.global.image.imagePullSecret }}"
-      serviceAccountName: {{ include "charts-job.serviceAccountName" . }}
-      automountServiceAccountToken: {{ .Values.global.automountServiceAccountToken }}
-      containers:
-      - name: {{ .Chart.Name }}
-        securityContext:
-          {{- toYaml .Values.global.securityContext | nindent 14 }}
-        image: "{{ .Values.global.image.repository }}/{{ .Values.global.image.name}}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
-        {{- if .Values.global.image.command }}
-        command: {{- toYaml .Values.global.image.command | nindent 14 }}
+  minReplicaCount: {{ .Values.global.keda.minReplicaCount }}
+  maxReplicaCount: {{ .Values.global.keda.maxReplicaCount }}
+  pollingInterval: {{ .Values.global.keda.pollingInterval }}
+  successfulJobsHistoryLimit: {{ .Values.global.keda.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.global.keda.failedJobsHistoryLimit }}
+  triggers:
+    {{- if .Values.global.keda.triggers.azureServiceBus.enabled }}
+    - type: azure-servicebus
+      authenticationRef:
+        name: 
+          {{ include "charts-job.fullname" . }}-servicebus
+      metadata:
+        {{- if .Values.global.keda.triggers.azureServiceBus.queueName }}
+        queueName: {{ .Values.global.keda.triggers.azureServiceBus.queueName | quote }}
         {{- end }}
-        {{- if .Values.global.image.args }}
-        args: {{- toYaml .Values.global.image.args | nindent 14 }}
+        {{- if .Values.global.keda.triggers.azureServiceBus.topicName }}
+        topicName: {{ .Values.global.keda.triggers.azureServiceBus.topicName | quote }}
         {{- end }}
-        {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
-        envFrom:
-        {{- if .Values.global.envVarsEnabled }}
-          - configMapRef:
-              name: "{{ include "charts-job.fullname" . }}"
+        {{- if .Values.global.keda.triggers.azureServiceBus.subscriptionName }}
+        subscriptionName: {{ .Values.global.keda.triggers.azureServiceBus.subscriptionName | quote }}
         {{- end }}
-        {{- if .Values.global.secEnvVarsEnabled }}
-          - secretRef:
-              name: "{{ include "charts-job.fullname" . }}-secure"
+        messageCount: {{ .Values.global.keda.triggers.azureServiceBus.messageCount | quote }}
+        {{- if .Values.global.keda.triggers.azureServiceBus.activationMessageCount }}
+        activationMessageCount: {{ .Values.global.keda.triggers.azureServiceBus.activationMessageCount | quote }}
         {{- end }}
+        cloud: AzurePublicCloud
+    {{- end }}
+  jobTargetRef:
+    parallelism: 5
+    completions: 1
+    activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
+    backoffLimit: {{ .Values.global.backoffLimit }}
+    template:
+      metadata:
+        labels:
+          {{- include "charts-job.labels" . | nindent 10 }}
+      spec:
+        imagePullSecrets:
+        - name: "{{ .Values.global.image.imagePullSecret }}"
+        serviceAccountName: {{ include "charts-job.serviceAccountName" . }}
+        automountServiceAccountToken: {{ .Values.global.automountServiceAccountToken }}
+        containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.global.securityContext | nindent 12 }}
+          image: "{{ .Values.global.image.repository }}/{{ .Values.global.image.name}}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          {{- if .Values.global.image.command }}
+          command: {{- toYaml .Values.global.image.command | nindent 12 }}
+          {{- end }}
+          {{- if .Values.global.image.args }}
+          args: {{- toYaml .Values.global.image.args | nindent 12 }}
+          {{- end }}
+          {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
+          envFrom:
+          {{- if .Values.global.envVarsEnabled }}
+            - configMapRef:
+                name: "{{ include "charts-job.fullname" . }}"
+          {{- end }}
+          {{- if .Values.global.secEnvVarsEnabled }}
+            - secretRef:
+                name: "{{ include "charts-job.fullname" . }}-secure"
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.global.resources | nindent 12 }}
+          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalValumesEnabled }}
+          volumeMounts:
+          {{- if .Values.global.additionalValumesEnabled -}}
+          {{- with .Values.global.additionalVolumesMount }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- end }}
+          {{- $currentScope := .}}
+            {{- range $path, $_ :=  .Files.Glob .Values.global.appConfigFiles.globPattern }}
+            {{- with $currentScope}}
+          - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $path }}"
+            name: configuration-volume
+            subPath: "{{ $path }}"
+            {{- end }}
+            {{- end }}
+          {{- if .Values.global.appConfigFiles.filesList -}}
+            {{- $files := .Files }}
+            {{- range .Values.global.appConfigFiles.filesList }}
+            {{- $rangeItem := . -}}
+            {{- with $ }}
+          - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $rangeItem }}"
+            name: configuration-volume
+            subPath: "{{ $rangeItem }}"
+            {{- end }}
+            {{- end }}
+          {{- end }}
+        volumes:
+        - name: "configuration-volume"
+          secret:
+            secretName: {{ include "charts-job.fullname" . }}-files
         {{- end }}
-        resources:
-          {{- toYaml .Values.global.resources | nindent 14 }}
-        {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalValumesEnabled }}
-        volumeMounts:
         {{- if .Values.global.additionalValumesEnabled -}}
-        {{- with .Values.global.additionalVolumesMount }}
-          {{- toYaml . | nindent 12 }}
+        {{- with .Values.global.additionalVolumes }}
+          {{- toYaml . | nindent 8 }}
         {{- end }}
         {{- end }}
-        {{- $currentScope := .}}
-          {{- range $path, $_ :=  .Files.Glob .Values.global.appConfigFiles.globPattern }}
-          {{- with $currentScope}}
-        - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $path }}"
-          name: configuration-volume
-          subPath: "{{ $path }}"
-          {{- end }}
-          {{- end }}
-        {{- if .Values.global.appConfigFiles.filesList -}}
-          {{- $files := .Files }}
-          {{- range .Values.global.appConfigFiles.filesList }}
-          {{- $rangeItem := . -}}
-          {{- with $ }}
-        - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $rangeItem }}"
-          name: configuration-volume
-          subPath: "{{ $rangeItem }}"
-          {{- end }}
-          {{- end }}
+        restartPolicy: Never
+        {{- with .Values.global.nodeSelector }}
+        nodeSelector:
+          {{- toYaml . | nindent 10 }}
         {{- end }}
-      volumes:
-      - name: "configuration-volume"
-        secret:
-          secretName: {{ include "charts-job.fullname" . }}-files
-      {{- end }}
-      {{- if .Values.global.additionalValumesEnabled -}}
-      {{- with .Values.global.additionalVolumes }}
-        {{- toYaml . | nindent 10 }}
-      {{- end }}
-      {{- end }}
-      restartPolicy: Never
-      {{- with .Values.global.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 12 }}
-      {{- end }}
-      {{- with .Values.global.affinity }}
-      affinity:
-        {{- toYaml . | nindent 12 }}
-      {{- end }}
-      {{- with .Values.global.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 12 }}
-      {{- end }}
-  backoffLimit: {{ .Values.global.backoffLimit }}
+        {{- with .Values.global.affinity }}
+        affinity:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.global.tolerations }}
+        tolerations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}

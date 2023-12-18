@@ -4,8 +4,8 @@
 
 global:
   image:
-    repository: "labacreco.azurecr.io"
-    imagePullSecret: "labacreco-pull-secret" # can be labacreco-pull-secret or dockerhub-pull-secret
+    repository: "cicdcr01weuy01.azurecr.io"
+    imagePullSecret: "acr-pull-secret"
     name: # app name
     tag: "" #"10.64.1"
     pullPolicy: Always
@@ -25,8 +25,8 @@ global:
     # If not set and create is true, a name is generated using the fullname template
     name: ""
 
-  #ttlSecondsAfterFinished: 86400 # Job and all pods will be deleted after this amount of time in second, regardless its result (succeeded or failed)
-  #activeDeadlineSeconds: 10800 # Limit of time in second during which job can create new pods.
+  activeDeadlineSeconds: 10800 # Limit of time in second during which job can create new pods.
+  backoffLimit: 2 # Number of retries tu run a job. One retry is equal to one pod creation.
 
   redisNetworkPolicyEnabled: true
   redisCidr: "#{redisCidr}#"
@@ -115,32 +115,29 @@ global:
 
   podDisruptionBudget:
     enabled: false
-
-  autoscaling:
-    enabled: false
-
   ingressRoutes:
     enabled: false
+  canary:
+    enabled: false
 
-  backoffLimit: 2    
-
-  kedaAutoscalingEnabled: false
   keda:
-    connectionStringSecretKey: "test"
+    autoscalingPaused: false
+    pollingInterval: 30
+    minReplicaCount: 0
+    maxReplicaCount: 5
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+    azure:
+      clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
+      # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-job.fullname" . }}-secure'
     triggers:
-    - type: azure-servicebus
-      metadata:
-        # Required: queueName OR topicName and subscriptionName
-        queueName: functions-sbqueue
-        # or
-        #topicName: functions-sbtopic
-        #subscriptionName: sbtopic-sub1
-        # Optional, required when pod identity is used
-        namespace: service-bus-namespace
-        # Optional, can use TriggerAuthentication as well
-        #connectionFromEnv: SERVICEBUS_CONNECTIONSTRING_ENV_NAME
-        # Optional
-        messageCount: "5" # Optional. Count of messages to trigger scaling on. Default: 5 messages
-        activationMessageCount: "0" #  Target value for activating the scaler. Learn more about activation
-        cloud: AzurePublicCloud
+      azureServiceBus:
+        enabled: false            # Must be enabled. However, in order to enable this trigger, settings below must be provided.
+        queueName:                # Optional. ServiceBus Queue name
+        topicName:                # Optional. ServiceBus Topic name
+        subscriptionName:         # Optional. Required if topic is specified. ServiceBus Subscripion name
+        messageCount: 3           # Optional. Count of messages to trigger scaling out: 1 -> N. Default: 5 messages
+        activationMessageCount:   # Target value for activating the scaler: 0 -> 1. Default: 0
+        connectionStringKeyVaultSecretName: # Name of the secret in Azure Keyvault that is containing a connection string to Service Bus
+
         
