@@ -132,12 +132,11 @@ global:
       # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-job.fullname" . }}-secure'
     triggers:
       azureServiceBus:
-        enabled: false            # Must be enabled. However, in order to enable this trigger, settings below must be provided.
-        queueName:                # Optional. ServiceBus Queue name
-        topicName:                # Optional. ServiceBus Topic name
-        subscriptionName:         # Optional. Required if topic is specified. ServiceBus Subscripion name
-        messageCount: 3           # Optional. Count of messages to trigger scaling out: 1 -> N. Default: 5 messages
-        activationMessageCount:   # Target value for activating the scaler: 0 -> 1. Default: 0
-        connectionStringKeyVaultSecretName: # Name of the secret in Azure Keyvault that is containing a connection string to Service Bus
-
-        
+        connectionStringKeyVaultSecretName: 'ConnectionStrings--ServiceBus' # Name of secret in Azure Keyvault that is containing a connection string to Service Bus
+        triggers:
+        - enabled: true             # Must be enabled. However, in order to enable this trigger, settings below must be provided.
+          queueName:                # Optional. ServiceBus Queue name
+          topicName:                # Optional. ServiceBus Topic name
+          subscriptionName:         # Optional. Required if topic is specified. ServiceBus Subscripion name
+          messageCount: 5           # Optional. Count of messages to trigger scaling out: 1 -> N. Default: 5 messages
+          activationMessageCount:   # Target value for activating the scaler: 0 -> 1. Default: 0

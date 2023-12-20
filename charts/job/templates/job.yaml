@@ -15,26 +15,28 @@ spec:
   successfulJobsHistoryLimit: {{ .Values.global.keda.successfulJobsHistoryLimit }}
   failedJobsHistoryLimit: {{ .Values.global.keda.failedJobsHistoryLimit }}
   triggers:
-    {{- if .Values.global.keda.triggers.azureServiceBus.enabled }}
+    {{- range .Values.global.keda.triggers.azureServiceBus.triggers }}
+    {{- if .enabled }}
     - type: azure-servicebus
       authenticationRef:
         name: 
-          {{ include "charts-job.fullname" . }}-servicebus
+          {{ include "charts-job.fullname" $ }}-servicebus
       metadata:
-        {{- if .Values.global.keda.triggers.azureServiceBus.queueName }}
-        queueName: {{ .Values.global.keda.triggers.azureServiceBus.queueName | quote }}
+        {{- if .queueName }}
+        queueName: {{ .queueName | quote }}
         {{- end }}
-        {{- if .Values.global.keda.triggers.azureServiceBus.topicName }}
-        topicName: {{ .Values.global.keda.triggers.azureServiceBus.topicName | quote }}
+        {{- if .topicName }}
+        topicName: {{ .topicName | quote }}
         {{- end }}
-        {{- if .Values.global.keda.triggers.azureServiceBus.subscriptionName }}
-        subscriptionName: {{ .Values.global.keda.triggers.azureServiceBus.subscriptionName | quote }}
+        {{- if .subscriptionName }}
+        subscriptionName: {{ .subscriptionName | quote }}
         {{- end }}
-        messageCount: {{ .Values.global.keda.triggers.azureServiceBus.messageCount | quote }}
-        {{- if .Values.global.keda.triggers.azureServiceBus.activationMessageCount }}
-        activationMessageCount: {{ .Values.global.keda.triggers.azureServiceBus.activationMessageCount | quote }}
+        messageCount: {{ .messageCount | default 5 | quote }}
+        {{- if .activationMessageCount }}
+        activationMessageCount: {{ .activationMessageCount | quote }}
         {{- end }}
         cloud: AzurePublicCloud
+    {{- end }}
     {{- end }}
   jobTargetRef:
     parallelism: 5

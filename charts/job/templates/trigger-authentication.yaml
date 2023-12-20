@@ -1,4 +1,4 @@
-{{- if .Values.global.keda.triggers.azureServiceBus.enabled }}
+{{- if .Values.global.keda.triggers.azureServiceBus.triggers }}
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
 metadata:
