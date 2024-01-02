@@ -130,6 +130,8 @@ spec:
   {{- end }}
   {{- if .Values.global.sqlNetworkPolicyEnabled }}
         - port: 1433  #mssql
+        - port: 11000  # Redirect connection policy (default)
+          endPort: 11999
   {{- end }}
   {{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
         - port: 9201
