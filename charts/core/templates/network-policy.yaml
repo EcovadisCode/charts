@@ -71,12 +71,6 @@ spec:
             matchLabels:
               environment: {{ (split "-" .Release.Namespace)._0 }}
   {{- end }}
-      ports:
-        - port: 8443
-        - port: 8000
-        - port: 80
-        - port: 443
-
   {{- if .Values.global.elasticNetworkPolicyEnabled }} 
     - to:
         - namespaceSelector:
@@ -85,7 +79,17 @@ spec:
       ports:
         - port: 9200
   {{- end }}
-
+  {{- if .Values.global.seleniumNetworkPolicyEnabled }}
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            name: {{ .Values.global.seleniumNamespace }}
+      ports:
+        - port: 7777
+        - port: 4442
+        - port: 4443
+    {{- end }}
+    
     - to: #outside world - sentry, optimizely, etc
         - ipBlock:
             cidr: 0.0.0.0/0

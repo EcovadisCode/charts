@@ -64,7 +64,8 @@ global:
   servicebusNetworkPolicyEnabled: true
   redisNetworkPolicyEnabled: true
   cosmosNetworkPolicyEnabled: false
-  
+  seleniumNetworkPolicyEnabled: false
+  seleniumNamespace: selenium
   redisCidr: ""
   
   service:
