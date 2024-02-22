@@ -10,7 +10,7 @@ global:
     imagePullSecret: "acr-pull-secret"
     name: # app name
     tag: "" #"10.64.1"
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     command: []
     args: []
     ports:
