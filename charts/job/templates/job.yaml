@@ -39,8 +39,8 @@ spec:
     {{- end }}
     {{- end }}
   jobTargetRef:
-    parallelism: {{ .Values.global.keda.parallelism }}
-    completions: {{ .Values.global.keda.completions }}
+    parallelism: {{ .Values.global.parallelism }}
+    completions: {{ .Values.global.completions }}
     activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
     backoffLimit: {{ .Values.global.backoffLimit }}
     template:

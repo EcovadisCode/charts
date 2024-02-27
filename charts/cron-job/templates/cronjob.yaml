@@ -13,6 +13,7 @@ spec:
       activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
       backoffLimit: {{ .Values.global.backoffLimit }}
       parallelism: {{ .Values.global.parallelism }}
+      completions: {{ .Values.global.completions }}
       template:
         metadata:
           labels:

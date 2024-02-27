@@ -27,6 +27,8 @@ global:
 
   activeDeadlineSeconds: 10800 # Limit of time in second during which job can create new pods.
   backoffLimit: 2 # Number of retries tu run a job. One retry is equal to one pod creation.
+  parallelism: 1 # Number of concurrent PODS to run at the same time for single job (https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs)
+  completions: 1 # Number of successful completions required before marking the job as completed
 
   redisNetworkPolicyEnabled: true
   redisCidr: "#{redisCidr}#"
@@ -125,8 +127,6 @@ global:
     pollingInterval: 30 # Polling interval in seconds
     minReplicaCount: 0 # Minimum number of JOBS to run at the same time
     maxReplicaCount: 5 # Maximum number of JOBS to run at the same time
-    parallelism: 1 # Number of concurrent PODS to run at the same time for single job
-    completions: 1 # Number of successful completions required before marking the job as completed
     successfulJobsHistoryLimit: 3 # Number of successful jobs to keep in history
     failedJobsHistoryLimit: 3 # Number of failed jobs to keep in history
     azure:
