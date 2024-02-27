@@ -121,12 +121,14 @@ global:
     enabled: false
 
   keda:
-    autoscalingPaused: false
-    pollingInterval: 30
-    minReplicaCount: 0
-    maxReplicaCount: 5
-    successfulJobsHistoryLimit: 3
-    failedJobsHistoryLimit: 3
+    autoscalingPaused: false # If true, KEDA will not scale the job
+    pollingInterval: 30 # Polling interval in seconds
+    minReplicaCount: 0 # Minimum number of JOBS to run at the same time
+    maxReplicaCount: 5 # Maximum number of JOBS to run at the same time
+    parallelism: 1 # Number of concurrent PODS to run at the same time for single job
+    completions: 1 # Number of successful completions required before marking the job as completed
+    successfulJobsHistoryLimit: 3 # Number of successful jobs to keep in history
+    failedJobsHistoryLimit: 3 # Number of failed jobs to keep in history
     azure:
       clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
       # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-job.fullname" . }}-secure'

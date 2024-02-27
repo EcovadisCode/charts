@@ -12,6 +12,7 @@ spec:
       ttlSecondsAfterFinished: {{ .Values.global.ttlSecondsAfterFinished }}
       activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
       backoffLimit: {{ .Values.global.backoffLimit }}
+      parallelism: {{ .Values.global.parallelism }}
       template:
         metadata:
           labels:
