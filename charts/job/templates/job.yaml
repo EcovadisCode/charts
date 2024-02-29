@@ -39,8 +39,10 @@ spec:
     {{- end }}
     {{- end }}
   jobTargetRef:
-    parallelism: 5
-    completions: 1
+    parallelism: {{ .Values.global.parallelism }}
+    {{- if and (.Values.global.completions) (lt (int .Values.global.parallelism) 2) }}
+    completions: {{ .Values.global.completions }}
+    {{- end }}
     activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
     backoffLimit: {{ .Values.global.backoffLimit }}
     template:

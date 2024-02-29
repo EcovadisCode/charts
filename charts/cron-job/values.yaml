@@ -4,7 +4,6 @@
 
 global:
   schedule: ""
-  concurrencyPolicy: Allow
   image:
     repository: "cicdcr01weuy01.azurecr.io"
     imagePullSecret: "acr-pull-secret"
@@ -30,6 +29,9 @@ global:
   ttlSecondsAfterFinished: 86400 # Job and all pods will be deleted after this amount of time in second, regardless its result (succeeded or failed)
   activeDeadlineSeconds: 10800 # Job completion timeout
   backoffLimit: 2 # Number of retries tu run a job. One retry is equal to one pod creation.
+  concurrencyPolicy: Allow # Specifies how to treat concurrent executions of a job. This will allow multiple jobs to run in parallel. Valid values are: Allow (default), Forbid or Replace
+  parallelism: 1 # Number of pods to run in parallel for a single job (https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs)
+  completions: 1 # Number of successful completions required before marking the job as completed. This will be ignored if parallelism is set to more than 1.
 
   redisNetworkPolicyEnabled: true
   redisCidr: "#{redisCidr}#"
