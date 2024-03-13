@@ -148,6 +148,7 @@ global:
       #- "appsettings.json"
 
   certificateSecretStoreEnabled: true
+  certificateSecretStoreName: ecovadis-cert
   
   additionalVolumesEnabled: false
   additionalVolumes: {}

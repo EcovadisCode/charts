@@ -218,7 +218,7 @@ spec:
           driver: secrets-store.csi.k8s.io
           readOnly: true
           volumeAttributes:
-            secretProviderClass: "ecovadis-cert"
+            secretProviderClass: "{{ .Values.global.certificateSecretStoreName }}"
       {{- end }}
       {{- if .Values.global.additionalVolumesEnabled -}}
       {{- with .Values.global.additionalVolumes }}
