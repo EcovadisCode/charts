@@ -3,6 +3,7 @@ global:
   rollingUpdate:
     maxSurge: "50%"
     maxUnavailable: "50%"
+  progressDeadlineSeconds: 120
 
   image:
     repository: "cicdcr01weuy01.azurecr.io"
@@ -192,7 +193,7 @@ global:
 
   canary:
     enabled: false # Setting to enable or disable canary deployments with Flagger.
-    progressDeadlineSeconds: 90 # the maximum time in seconds for the canary deployment to make progress before it is rollback
+    progressDeadlineSeconds: 600 # the maximum time in seconds for the canary deployment to make progress before it is rollback
     portDiscovery:
       enabled: true # auto discover pod ports from deployment spec and add them to k8s service that created by Flagger
 
@@ -200,8 +201,8 @@ global:
       settings:
         interval: 20s # schedule interval
         threshold: 20 # max number of failed metric checks before rollback
-        maxWeight: 60 # max traffic percentage routed to canary (0-100)
-        stepWeight: 5 # canary traffic increment step in percentage
+        maxWeight: 70 # max traffic percentage routed to canary (0-100)
+        stepWeight: 10 # canary traffic increment step in percentage
       errorRate:
         threshold: 1 # max percentage of failed requests (5xx errors)
         interval: 5s
