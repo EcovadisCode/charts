@@ -8,7 +8,7 @@ spec:
 {{- if not .Values.global.autoscaling.enabled }}
   replicas: {{ .Values.global.replicaCount }}
 {{- end }}
-  progressDeadlineSeconds: {{ .Values.global.progressDeadlineSeconds | default "30"}}
+  progressDeadlineSeconds: {{ .Values.global.progressDeadlineSeconds }}
   revisionHistoryLimit: {{ .Values.global.revisionHistoryLimit | default "3" }}
   minReadySeconds: {{ .Values.global.minReadySeconds | default "0"}}
   strategy:
