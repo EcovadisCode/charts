@@ -127,8 +127,8 @@ global:
     pollingInterval: 30 # Polling interval in seconds
     minReplicaCount: 0 # Minimum number of JOBS to run at the same time
     maxReplicaCount: 5 # Maximum number of JOBS to run at the same time
-    successfulJobsHistoryLimit: 3 # Number of successful jobs to keep in history
-    failedJobsHistoryLimit: 3 # Number of failed jobs to keep in history
+    successfulJobsHistoryLimit: 2 # Number of successful jobs to keep in history
+    failedJobsHistoryLimit: 1 # Number of failed jobs to keep in history
     azure:
       clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
       # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-job.fullname" . }}-secure'
