@@ -36,9 +36,10 @@ spec:
           labelSelector:
             matchLabels:
               app.kubernetes.io/name: {{ include "charts-dotnet-core.name" . }}
-
+      {{- if .Values.global.image.imagePullSecret }}
       imagePullSecrets:
         - name: "{{ .Values.global.image.imagePullSecret }}"
+      {{- end }}
       {{- if .Values.global.serviceAccount.create }}
       serviceAccountName: {{ include "charts-dotnet-core.serviceAccountName" . }}
       {{- else }}
