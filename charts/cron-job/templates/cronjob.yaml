@@ -23,8 +23,10 @@ spec:
           labels:
             {{- include "charts-cron-job.labels" . | nindent 12 }}
         spec:
+          {{- if .Values.global.image.imagePullSecret }}
           imagePullSecrets:
           - name: "{{ .Values.global.image.imagePullSecret }}"
+          {{- end }}
           serviceAccountName: {{ include "charts-cron-job.serviceAccountName" . }}
           automountServiceAccountToken: {{ .Values.global.automountServiceAccountToken }}
           containers:

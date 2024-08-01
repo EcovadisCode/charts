@@ -50,8 +50,10 @@ spec:
         labels:
           {{- include "charts-job.labels" . | nindent 10 }}
       spec:
+        {{- if .Values.global.image.imagePullSecret }}
         imagePullSecrets:
         - name: "{{ .Values.global.image.imagePullSecret }}"
+        {{- end }}
         serviceAccountName: {{ include "charts-job.serviceAccountName" . }}
         automountServiceAccountToken: {{ .Values.global.automountServiceAccountToken }}
         containers:
