@@ -9,7 +9,7 @@ spec:
   type: {{ .Values.global.service.type }}
   ports:
     - port: {{ .Values.global.service.port }}
-      targetPort: {{ (index .Values.global.image.ports 0).containerPort | default "http" }} 
+      targetPort: {{ (index .Values.global.image.ports 0).name | default "http" }} 
       protocol: TCP
       name: {{ (index .Values.global.image.ports 0).name | default "http" }}
     {{- if .Values.global.monitoring.metrics.enabled }}
