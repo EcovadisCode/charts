@@ -64,9 +64,7 @@ spec:
           ports:
           {{- toYaml .Values.global.image.ports | nindent 12 }}
           {{- if .Values.global.monitoring.metrics.enabled }}
-            - containerPort: {{ .Values.global.monitoring.metrics.port }}
-              name: metrics
-              protocol: TCP
+          {{- toYaml .Values.global.monitoring.metrics.ports | nindent 12 }}
           {{- end }}
           livenessProbe:
           {{- if .Values.global.image.livenessProbe }}

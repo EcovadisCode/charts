@@ -171,7 +171,10 @@ global:
   monitoring:
     metrics:
       enabled: true # enable if service exposes metrics, so they will be routed to k8s service on specified port, allowing network policy will be created etc
-      port: 9100
+      ports:
+      - name: metrics
+        containerPort: 9100
+        protocol: TCP
       path: /metrics
     servicemonitor:
       enabled: true # setting to enable or disable monitoring of service on endpoint /metrics. Service should support exporting metrics to that endpoint first. NOTE: global.monitoring.metrics should be enabled as well.
