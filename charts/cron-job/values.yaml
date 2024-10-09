@@ -12,10 +12,6 @@ global:
     pullPolicy: IfNotPresent
     command: []
     args: []
-    ports:
-      - name: http
-        containerPort: 8000
-        protocol: TCP
 
   serviceAccount:
     # Specifies whether a service account should be created
