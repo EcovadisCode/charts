@@ -13,9 +13,10 @@ spec:
       protocol: TCP
       name: {{ (index .Values.global.image.ports 0).name | default "http" }}
     {{- if .Values.global.monitoring.metrics.enabled }}
-    - port: {{ .Values.global.monitoring.metrics.port }}
+    - port: {{ (index .Values.global.monitoring.metrics.ports 0).containerPort }}
+      targetPort: {{ (index .Values.global.monitoring.metrics.ports 0).name | default "metrics" }}
       protocol: TCP
-      name: metrics
+      name: {{ (index .Values.global.monitoring.metrics.ports 0).name | default "metrics" }}
     {{- end }}
   selector:
     {{- include "charts-dotnet-core.selectorLabels" . | nindent 4 }}
