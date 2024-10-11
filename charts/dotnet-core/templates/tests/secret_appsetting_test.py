@@ -34,8 +34,7 @@ class SecretTemplateFileTest(unittest.TestCase):
             name=".",
             show_only=["templates/appsettings-secret.yaml"]
         )
-        print(docs)
-        self.assertIsNotNone(docs[0]["stringData"][filename1], docs[0])
-        self.assertIsNotNone(docs[0]["stringData"][filename2], docs[0])
+        self.assertIsNotNone(docs[0]["data"][filename1], docs[0])
+        self.assertIsNotNone(docs[0]["data"][filename2], docs[0])
         remove(filename1)
         remove(filename2)
