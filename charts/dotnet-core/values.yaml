@@ -46,6 +46,13 @@ global:
       periodSeconds: 3
       timeoutSeconds: 3
       successThreshold: 1
+    startupProbe:
+      tcpSocket:
+        port: http-mock
+      initialDelaySeconds: 3
+      periodSeconds: 3
+      timeoutSeconds: 3
+      successThreshold: 1
 
   nameOverride: # app name, may be the same as image.name
   
@@ -135,7 +142,7 @@ global:
   envVarsEnabled: true
   envVars: 
     ASPNETCORE_ENVIRONMENT: Develop
-    ELASTIC_APM_TRANSACTION_IGNORE_URLS: '/VAADIN/*, /heartbeat*, /favicon.ico, *.js, *.css, *.jpg, *.jpeg, *.png, *.gif, *.webp, *.svg, *.woff, *.woff2, /readyz, /*/*/readyz, /metrics'
+    ELASTIC_APM_TRANSACTION_IGNORE_URLS: '/VAADIN/*, /heartbeat*, /favicon.ico, *.js, *.css, *.jpg, *.jpeg, *.png, *.gif, *.webp, *.svg, *.woff, *.woff2, /readyz, /*/*/readyz,, /startz, /*/*/startz, /metrics'
     ELASTIC_APM_USE_ELASTIC_TRACEPARENT_HEADER: false
 
   secEnvVarsEnabled: true
@@ -215,7 +222,7 @@ global:
 
     acceptanceTest:
       enabled: true # enable or disable acceptance test. Canary rollout will not happen if it fails.
-      endpoint: /readyz # service endpoint to do an acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
+      endpoint: /startz # service endpoint to do an acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/startz/ by default.
 
     loadTesting:
       enabled: true # [bool] enable or disable load testing with Flagger load tester based on 'hey' tool.
