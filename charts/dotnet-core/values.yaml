@@ -245,7 +245,7 @@ global:
 
     acceptanceTest:
       enabled: true # enable or disable acceptance test. Canary rollout will not happen if it fails.
-      endpoint: /startz # service endpoint to do an acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/startz/ by default.
+      endpoint: /readyz # service endpoint to do an acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
 
     loadTesting:
       enabled: true # [bool] enable or disable load testing with Flagger load tester based on 'hey' tool.
