@@ -135,40 +135,30 @@ spec:
             failureThreshold: 3
           {{- end }}
           
+          {{- if .Values.global.image.startupProbe }}
           startupProbe:
-          { { - if .Values.global.image.startupProbe } }
-          { { - toYaml .Values.global.image.startupProbe | nindent 12 } }
+          {{- toYaml .Values.global.image.startupProbe | nindent 12 }}
 
-          { { - if not .Values.global.image.startupProbe.initialDelaySeconds } }
-          initialDelaySeconds: 40
-          { { - end } }
+          {{- if not .Values.global.image.startupProbe.initialDelaySeconds }}
+            initialDelaySeconds: 40
+          {{- end }}
 
-          { { - if not .Values.global.image.startupProbe.periodSeconds } }
-          periodSeconds: 60
-          { { - end } }
+          {{- if not .Values.global.image.startupProbe.periodSeconds }}
+            periodSeconds: 60
+          {{- end }}
 
-          { { - if not .Values.global.image.startupProbe.timeoutSeconds } }
-          timeoutSeconds: 15
-          { { - end } }
+          {{- if not .Values.global.image.startupProbe.timeoutSeconds }}
+            timeoutSeconds: 15
+          {{- end }}
 
-          { { - if not .Values.global.image.startupProbe.successThreshold } }
-          successThreshold: 1
-          { { - end } }
+          {{- if not .Values.global.image.startupProbe.successThreshold }}
+            successThreshold: 1
+          {{- end }}
 
-          { { - if not .Values.global.image.startupProbe.failureThreshold } }
-          failureThreshold: 3
-          { { - end } }
-
-          { { - else } }
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 40
-          periodSeconds: 60
-          timeoutSeconds: 15
-          successThreshold: 1
-          failureThreshold: 3
-          { { - end } }
+          {{- if not .Values.global.image.startupProbe.failureThreshold }}
+            failureThreshold: 3
+          {{- end }}
+          {{- end }}
 
           {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
           envFrom:
@@ -233,6 +223,8 @@ spec:
             {{- toYaml .Values.global.mockingServer.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.global.mockingServer.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.global.mockingServer.startupProbe | nindent 12 }}
           {{- if .Values.global.mockingServer.envEnabled -}}
             {{- with .Values.global.mockingServer.env }}
           env:

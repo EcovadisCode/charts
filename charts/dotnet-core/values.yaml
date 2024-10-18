@@ -18,6 +18,29 @@ global:
         containerPort: 8000
         protocol: TCP
 
+    ### Configure liveness, readiness and startup probes
+    ### Change scheme HTTP/HTTPS and port number, according to global.image.ports
+    # livenessProbe:
+    #   httpGet:
+    #     path: /livez
+    #     port: 8000
+    #     scheme: HTTP
+    #   initialDelaySeconds: 15
+
+    # readinessProbe:
+    #   httpGet:
+    #     path: /readyz
+    #     port: 8000
+    #     scheme: HTTP
+    #   initialDelaySeconds: 15
+    
+    # startupProbe:
+    #   httpGet:
+    #     path: /startz
+    #     port: 8000
+    #     scheme: HTTP
+    #   initialDelaySeconds: 15
+
   mockingServer:
     enabled: false
     repository: "cicdcr01weuy01.azurecr.io"
