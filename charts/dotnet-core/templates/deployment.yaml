@@ -223,8 +223,10 @@ spec:
             {{- toYaml .Values.global.mockingServer.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.global.mockingServer.readinessProbe | nindent 12 }}
+          {{- if .Values.global.mockingServer.startupProbe }}
           startupProbe:
             {{- toYaml .Values.global.mockingServer.startupProbe | nindent 12 }}
+          {{- end }}
           {{- if .Values.global.mockingServer.envEnabled -}}
             {{- with .Values.global.mockingServer.env }}
           env:
