@@ -29,13 +29,17 @@ spec:
       labels:
         {{- include "charts-dotnet-core.labels" . | nindent 8 }}
     spec:
+      {{- if .Values.global.topologySpread }}
       topologySpreadConstraints:
-        - maxSkew: {{ .Values.global.topologySpread.maxSkew }}
-          topologyKey: {{ .Values.global.topologySpread.topologyKey }}
-          whenUnsatisfiable: {{ .Values.global.topologySpread.whenUnsatisfiable }}
+      {{- range .Values.global.topologySpread }}
+        - maxSkew: {{ .maxSkew }}
+          topologyKey: {{ .topologyKey }}
+          whenUnsatisfiable: {{ .whenUnsatisfiable }}
           labelSelector:
             matchLabels:
-              app.kubernetes.io/name: {{ include "charts-dotnet-core.name" . }}
+              app.kubernetes.io/name: {{ include "charts-dotnet-core.name" $ }}
+      {{- end }}
+      {{- end }}
       {{- if .Values.global.image.imagePullSecret }}
       imagePullSecrets:
         - name: "{{ .Values.global.image.imagePullSecret }}"
