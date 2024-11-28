@@ -588,6 +588,16 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                             'app.kubernetes.io/name': 'charts-dotnet-core'
                         }
                     }
+                },
+                {
+                    'maxSkew': 1,
+                    'topologyKey': 'kubernetes.io/hostname',
+                    'whenUnsatisfiable': 'ScheduleAnyway',
+                    'labelSelector': {
+                        'matchLabels': {
+                            'app.kubernetes.io/name': 'charts-dotnet-core'
+                        }
+                    }
                 }
             ],
             jmespath.search("spec.template.spec.topologySpreadConstraints", docs[0]))
@@ -596,20 +606,37 @@ class DeploymentTemplateFileTest(unittest.TestCase):
     def test_topology_spread_constraint_overwritten(self):
         docs = render_chart(
             values={
-                "global": {
-                    "topologySpread": {
+            "global": {
+                "topologySpread": [
+                    {
+                        "maxSkew": 2,
+                        "whenUnsatisfiable": "ScheduleAnyway",
+                        "topologyKey": "topology.kubernetes.io/anotherzone"
+                    },
+                    {
                         "maxSkew": 2,
                         "whenUnsatisfiable": "DoNotSchedule",
-                        "topologyKey": "kubernetes.io/hostname"
+                        "topologyKey": "kubernetes.io/anotherhostname"
                     }
-                }
+                ]
+            }
             },
             name=".", show_only=["templates/deployment.yaml"])
         self.assertEqual(
             [
                 {
                     'maxSkew': 2,
-                    'topologyKey': 'kubernetes.io/hostname',
+                    'topologyKey': 'topology.kubernetes.io/anotherzone',
+                    'whenUnsatisfiable': 'ScheduleAnyway',
+                    'labelSelector': {
+                        'matchLabels': {
+                            'app.kubernetes.io/name': 'charts-dotnet-core'
+                        }
+                    }
+                },
+                {
+                    'maxSkew': 2,
+                    'topologyKey': 'kubernetes.io/anotherhostname',
                     'whenUnsatisfiable': 'DoNotSchedule',
                     'labelSelector': {
                         'matchLabels': {
