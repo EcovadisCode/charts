@@ -653,6 +653,19 @@ entries:
     version: 2.0.0
   charts-dotnet-core:
   - apiVersion: v2
+    created: "2024-11-29T14:43:47.904659012Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.6
+    description: EcoVadis Helm chart for .Net Core app
+    digest: d1fcf22adbfff1918175e7cf264dd2226bc0d9fc5ee3e6ddf0f45f6592244a60
+    name: charts-dotnet-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-3.7.0/charts-dotnet-core-3.7.0.tgz
+    version: 3.7.0
+  - apiVersion: v2
     created: "2024-11-29T12:58:41.59704052Z"
     dependencies:
     - name: charts-core
@@ -1530,4 +1543,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2024-11-29T12:58:41.597835835Z"
+generated: "2024-11-29T14:43:47.905125191Z"
