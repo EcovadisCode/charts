@@ -277,8 +277,11 @@ global:
   #   serviceName: #{traefikServiceName}# # k8s service name under which traefik is accessible.
   #   namespace: #{traefikServiceNamespace}# # namespace where traefik k8s service is installed.
 
+  # Defaults to trying to schedule pods evenly across availability zones and node hostnames
   topologySpread:
-    # Defaults to trying to schedule pods evenly across availability zones
+  - topologyKey: topology.kubernetes.io/zone
     maxSkew: 1
     whenUnsatisfiable: ScheduleAnyway
-    topologyKey: topology.kubernetes.io/zone
+  - topologyKey: kubernetes.io/hostname
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
