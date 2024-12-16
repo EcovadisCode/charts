@@ -1,6 +1,6 @@
 {{- if .Values.ingress.enabled -}}
 {{ if .Values.ingress.tlsRouteEnabled }}
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: {{ include "chart.fullname" . }}-https
@@ -22,7 +22,7 @@ spec:
 {{- end }}
 {{ if .Values.ingress.nonTlsRouteEnabled }}
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: {{ include "chart.fullname" . }}-http
@@ -46,7 +46,7 @@ spec:
           port: {{ .Values.service.ports.http }}
 {{- if and .Values.ingress.redirectToHttps .Values.ingress.tlsRouteEnabled }}
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: redirect-https
