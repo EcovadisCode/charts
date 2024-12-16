@@ -3,6 +3,20 @@ entries:
   charts-app-reverse-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-12-16T12:59:32.489589611Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.6
+    description: EcoVadis Helm chart for application exposed with nginx reverse proxy
+    digest: 09988d0fc751ca2f58ca7df247bfe41b8d5998ba373ec6ed7baaf0a6f393a55c
+    name: charts-app-reverse-proxy
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-app-reverse-proxy-2.6.0/charts-app-reverse-proxy-2.6.0.tgz
+    version: 2.6.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-08-01T13:04:21.270259506Z"
     dependencies:
     - name: charts-core
@@ -156,6 +170,15 @@ entries:
     - https://github.com/EcovadisCode/charts/releases/download/charts-app-reverse-proxy-2.2.0/charts-app-reverse-proxy-2.2.0.tgz
     version: 2.2.0
   charts-core:
+  - apiVersion: v2
+    created: "2024-12-16T12:59:32.609334527Z"
+    description: A Helm chart for Kubernetes
+    digest: dfb6e5740d9a0b7c81c665b895f7ffe8f7b69328bb20a52b127807aba29aa6c4
+    name: charts-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-core-2.3.0/charts-core-2.3.0.tgz
+    version: 2.3.0
   - apiVersion: v2
     created: "2024-01-02T11:27:45.515426693Z"
     description: A Helm chart for Kubernetes
@@ -391,6 +414,19 @@ entries:
     - packages/charts-core-1.0.0.tgz
     version: 1.0.0
   charts-cron-job:
+  - apiVersion: v2
+    created: "2024-12-16T12:59:32.721306225Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.6
+    description: EcoVadis Helm chart for K8s Cron Job
+    digest: 5058429ab5c0fbeb53c7228a28ad1c568663e803c90591907ce054b5d49815a9
+    name: charts-cron-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-cron-job-2.4.0/charts-cron-job-2.4.0.tgz
+    version: 2.4.0
   - apiVersion: v2
     created: "2024-10-09T13:56:34.480188461Z"
     dependencies:
@@ -652,6 +688,19 @@ entries:
     - https://github.com/EcovadisCode/charts/releases/download/charts-cron-job-2.0.0/charts-cron-job-2.0.0.tgz
     version: 2.0.0
   charts-dotnet-core:
+  - apiVersion: v2
+    created: "2024-12-16T12:59:32.832995757Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.6
+    description: EcoVadis Helm chart for .Net Core app
+    digest: f2ff6f2efd045048e035e8147ae83af780a14fbb0104e601c12ade959e3e9fa8
+    name: charts-dotnet-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-3.8.0/charts-dotnet-core-3.8.0.tgz
+    version: 3.8.0
   - apiVersion: v2
     created: "2024-11-29T14:43:47.904659012Z"
     dependencies:
@@ -1298,6 +1347,19 @@ entries:
     version: 2.0.0
   charts-job:
   - apiVersion: v2
+    created: "2024-12-16T12:59:32.99039329Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.1.6
+    description: EcoVadis Helm chart for K8s Event driven Job
+    digest: dd1db561293c89a1884fbfd73b4c8f131ea5186701835dd43ac676c92fa4878c
+    name: charts-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-job-2.4.0/charts-job-2.4.0.tgz
+    version: 2.4.0
+  - apiVersion: v2
     created: "2024-08-01T13:04:21.841662695Z"
     dependencies:
     - name: charts-core
@@ -1469,6 +1531,19 @@ entries:
   pact-broker:
   - apiVersion: v2
     appVersion: 2.102.2.0
+    created: "2024-12-16T12:59:33.100857304Z"
+    description: EcoVadis public Helm chart for Pact Broker
+    digest: 9fdf77bfd423b131bba6cf165bb48de50f3fcf5881d2c9fcae05a6b8edc859be
+    name: pact-broker
+    sources:
+    - https://github.com/pact-foundation/pact_broker
+    - https://github.com/ChrisJBurns/pact-broker-chart
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/pact-broker-1.2.0/pact-broker-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
+    appVersion: 2.102.2.0
     created: "2023-11-23T14:54:18.86083358Z"
     description: EcoVadis public Helm chart for Pact Broker
     digest: d09a4caf96291845bab6c8e641f593b1c8ca4d3d213523ea11917c150d8dc3e7
@@ -1543,4 +1618,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2024-11-29T14:43:47.905125191Z"
+generated: "2024-12-16T12:59:33.101915313Z"
