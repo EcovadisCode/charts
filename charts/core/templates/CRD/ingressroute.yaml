@@ -2,7 +2,7 @@
 {{- range .Values.global.ingressRoutes.routes }}
 {{- $rangeItem := . -}}
 {{- with $ }}
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}
@@ -44,7 +44,7 @@ spec:
 {{- end }}
 {{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes}}
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-stripprefix
@@ -55,7 +55,7 @@ spec:
 {{- end }}
 {{- if ne "false" ($rangeItem.isRetryEnabled | toString)}}
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-retry
@@ -66,7 +66,7 @@ spec:
 {{- end }}
 {{- if (default $rangeItem.isCircuitBreakerEnabled false)}}
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-circuitbreaker
