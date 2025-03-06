@@ -4,6 +4,6 @@ name: charts-dotnet-core
 type: application
 dependencies:
 - name: charts-core
-  version: 2.3.0
+  version: 2.4.0
   repository: "https://ecovadiscode.github.io/charts/"
 version: 4.0.0
