@@ -121,7 +121,6 @@ global:
 
   #Additional Network Polices configuration
   elasticNetworkPolicyEnabled: true
-  elasticNamespace: #{elasticNamespace}#
 
   mongodbNetworkPolicyEnabled: false
   eventHubNetworkPolicyEnabled: false
