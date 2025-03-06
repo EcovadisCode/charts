@@ -100,8 +100,6 @@ global:
   defaultNetworkPolicyEnabled: false
 
   #Additional Network Polices configuration
-  elasticNetworkPolicyEnabled: true
-  elasticNamespace: #{elasticNamespace}#
   redisNetworkPolicyEnabled: false
   redisCidr: "#{redisCidr}#"
   sqlNetworkPolicyEnabled: true

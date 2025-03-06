@@ -49,13 +49,10 @@ global:
   defaultNetworkPolicyEnabled: false
 
   #Additional Network Polices configuration
-  elasticNetworkPolicyEnabled: true
-  elasticNamespace: develop
 
   mongodbNetworkPolicyEnabled: false
   mongodbStrictNetworkPolicyEnabled: false
   automountServiceAccountToken: false
-  lnmElasticNetworkPolicyEnabled: false
   allowAllInternalClusterTrafficNetworkPolicy: false
   sqlNetworkPolicyEnabled: true
   postgresNetworkPolicyEnabled: false

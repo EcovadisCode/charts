@@ -77,15 +77,6 @@ spec:
         - port: 80
         - port: 443
 
-  {{- if .Values.global.elasticNetworkPolicyEnabled }} 
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              name: {{ .Values.global.elasticNamespace }}
-      ports:
-        - port: 9200
-  {{- end }}
-
     - to: #outside world - sentry, optimizely, etc
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -94,13 +85,9 @@ spec:
         - port: 80
         - port: 8433
         - port: 8000
-        - port: 9200 #any elastic or apm outside of the cluster
         - port: 8200
         - port: 53
           protocol: UDP
-  {{- if .Values.global.elasticNetworkPolicyEnabled }}
-        - port: 9243  #elasticcloud
-  {{- end }}
   {{- if .Values.global.postgresNetworkPolicyEnabled }}
         - port: 5432  #postgres
   {{- end }}  
@@ -133,13 +120,7 @@ spec:
         - port: 11000  # Redirect connection policy (default)
           endPort: 11999
   {{- end }}
-  {{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
-        - port: 9201
-  {{- end }}
   {{- if .Values.global.cosmosNetworkPolicyEnabled }}
         - port: 10255
-  {{- end }}
-  {{- if .Values.global.elasticNetworkPolicyEnabled }} 
-        - port: 9243 #elastic cloud
   {{- end }}
 {{- end -}}

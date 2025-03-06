@@ -68,10 +68,6 @@ global:
   #Automates creation of default network policy, which is responsible for handling traffic between pod - service - traefik 
   defaultNetworkPolicyEnabled: false
 
-  #Additional Network Polices configuration
-  elasticNetworkPolicyEnabled: true
-  elasticNamespace: #{elasticNamespace}#
-
   automountServiceAccountToken: false
 
   resources: {}

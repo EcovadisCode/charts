@@ -119,14 +119,9 @@ global:
   #Automates creation of default network policy, which is responsible for handling traffic between pod - service - traefik 
   defaultNetworkPolicyEnabled: false
 
-  #Additional Network Polices configuration
-  elasticNetworkPolicyEnabled: true
-  elasticNamespace: #{elasticNamespace}#
-
   mongodbNetworkPolicyEnabled: false
   eventHubNetworkPolicyEnabled: false
   automountServiceAccountToken: false
-  lnmElasticNetworkPolicyEnabled: false
   redisNetworkPolicyEnabled: true
   redisCidr: "#{redisCidr}#"
   sqlNetworkPolicyEnabled: true
@@ -165,8 +160,6 @@ global:
   envVarsEnabled: true
   envVars: 
     ASPNETCORE_ENVIRONMENT: Develop
-    ELASTIC_APM_TRANSACTION_IGNORE_URLS: '/VAADIN/*, /heartbeat*, /favicon.ico, *.js, *.css, *.jpg, *.jpeg, *.png, *.gif, *.webp, *.svg, *.woff, *.woff2, /metrics'
-    ELASTIC_APM_USE_ELASTIC_TRACEPARENT_HEADER: false
 
   secEnvVarsEnabled: true
   secEnvVars: {}
