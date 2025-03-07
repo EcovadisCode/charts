@@ -43,6 +43,8 @@ global:
     annotations: {}
     name: ""
 
+  automountServiceAccountToken: false
+
   podSecurityContext: 
     runAsNonRoot: true
     runAsUser: 1000
@@ -101,12 +103,13 @@ global:
 
   #Additional Network Polices configuration
   elasticNetworkPolicyEnabled: true
-  redisNetworkPolicyEnabled: false
+  mongodbNetworkPolicyEnabled: false
+  eventHubNetworkPolicyEnabled: false
+  lnmElasticNetworkPolicyEnabled: false
+  redisNetworkPolicyEnabled: true
   redisCidr: "#{redisCidr}#"
   sqlNetworkPolicyEnabled: true
   servicebusNetworkPolicyEnabled: true
-  mongodbNetworkPolicyEnabled: false
-  automountServiceAccountToken: false
 
   appConfigFilesEnabled: true
   appConfigFiles:

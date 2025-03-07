@@ -25,15 +25,12 @@ global:
     # If not set and create is true, a name is generated using the fullname template
     name: ""
 
+  automountServiceAccountToken: false
+
   activeDeadlineSeconds: 10800 # Limit of time in second during which job can create new pods.
   backoffLimit: 2 # Number of retries tu run a job. One retry is equal to one pod creation.
   parallelism: 1 # Number of concurrent PODS to run at the same time for single job (https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs)
   completions: 1 # Number of successful completions required before marking the job as completed. This will be ignored if parallelism is set to more than 1.
-
-  redisNetworkPolicyEnabled: true
-  redisCidr: "#{redisCidr}#"
-  sqlNetworkPolicyEnabled: true
-  servicebusNetworkPolicyEnabled: true
 
   secEnvVarsEnabled: true
   secEnvVars: {}
@@ -69,8 +66,13 @@ global:
 
   #Additional Network Polices configuration
   elasticNetworkPolicyEnabled: true
-
-  automountServiceAccountToken: false
+  mongodbNetworkPolicyEnabled: false
+  eventHubNetworkPolicyEnabled: false
+  lnmElasticNetworkPolicyEnabled: false
+  redisNetworkPolicyEnabled: true
+  redisCidr: "#{redisCidr}#"
+  sqlNetworkPolicyEnabled: true
+  servicebusNetworkPolicyEnabled: true
 
   resources: {}
     # limits:

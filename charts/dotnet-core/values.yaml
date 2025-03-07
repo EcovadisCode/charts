@@ -92,6 +92,8 @@ global:
       resources: []
       verbs: []
 
+  automountServiceAccountToken: false
+
   podAnnotations: {}
 
   podSecurityContext: 
@@ -121,10 +123,8 @@ global:
 
   #Additional Network Polices configuration
   elasticNetworkPolicyEnabled: true
-
   mongodbNetworkPolicyEnabled: false
   eventHubNetworkPolicyEnabled: false
-  automountServiceAccountToken: false
   lnmElasticNetworkPolicyEnabled: false
   redisNetworkPolicyEnabled: true
   redisCidr: "#{redisCidr}#"
