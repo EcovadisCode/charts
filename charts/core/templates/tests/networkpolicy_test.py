@@ -30,15 +30,15 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
         self.assertRegex(docs[0]["kind"], "NetworkPolicy")
         self.assertEqual(
             {"port": 8010},
-            jmespath.search("spec.egress[4].ports[8]", docs[0])
+            jmespath.search("spec.egress[3].ports[7]", docs[0])
         )
         self.assertEqual(
             {"port": 8011},
-            jmespath.search("spec.egress[4].ports[9]", docs[0])
+            jmespath.search("spec.egress[3].ports[8]", docs[0])
         )
         self.assertEqual(
             {"port": 8014},
-            jmespath.search("spec.egress[4].ports[10]", docs[0])
+            jmespath.search("spec.egress[3].ports[9]", docs[0])
         )
 
     def test_mongodbnetworkpolicy(self):
@@ -56,7 +56,7 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
             {"port": 1024,
              "endPort": 65535},
             jmespath.search(
-                "spec.egress[4].ports[8]", docs[0])
+                "spec.egress[3].ports[7]", docs[0])
         )
 
     def test_strictmongodbnetworkpolicy(self):
@@ -73,7 +73,7 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
         self.assertEqual(
             {"port": 27017},
             jmespath.search(
-                "spec.egress[4].ports[8]", docs[0])
+                "spec.egress[3].ports[7]", docs[0])
         )
 
     def test_networkpolicy_rendering(self):
@@ -160,7 +160,7 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
 
         self.assertEqual(
             {'port': 5432},
-            jmespath.search("spec.egress[4].ports[8]", docs[0])
+            jmespath.search("spec.egress[3].ports[7]", docs[0])
         )
 
         self.assertEqual(
