@@ -21,6 +21,8 @@ global:
     # The name of the service account to use.
     # If not set and create is true, a name is generated using the fullname template
     name: ""
+  
+  automountServiceAccountToken: false
 
   ttlSecondsAfterFinished: 86400 # Job and all pods will be deleted after this amount of time in second, regardless its result (succeeded or failed)
   activeDeadlineSeconds: 10800 # Job completion timeout
@@ -30,11 +32,6 @@ global:
   completions: 1 # Number of successful completions required before marking the job as completed. This will be ignored if parallelism is set to more than 1.
   successfulJobsHistoryLimit: 1 # The number of successful finished jobs to retain
   failedJobsHistoryLimit: 1 # The number of failed finished jobs to retain
-
-  redisNetworkPolicyEnabled: true
-  redisCidr: "#{redisCidr}#"
-  sqlNetworkPolicyEnabled: true
-  servicebusNetworkPolicyEnabled: true
 
   secEnvVarsEnabled: true
   secEnvVars: {}
@@ -70,8 +67,13 @@ global:
 
   #Additional Network Polices configuration
   elasticNetworkPolicyEnabled: true
-
-  automountServiceAccountToken: false
+  mongodbNetworkPolicyEnabled: false
+  eventHubNetworkPolicyEnabled: false
+  lnmElasticNetworkPolicyEnabled: false
+  redisNetworkPolicyEnabled: true
+  redisCidr: "#{redisCidr}#"
+  sqlNetworkPolicyEnabled: true
+  servicebusNetworkPolicyEnabled: true
 
   resources: {}
     # limits:

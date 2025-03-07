@@ -2,8 +2,8 @@ apiVersion: v2
 description: EcoVadis Helm chart for .Net Core app
 name: charts-dotnet-core
 type: application
+version: 4.1.0
 dependencies:
 - name: charts-core
-  version: 2.3.0
+  version: 2.4.2
   repository: "https://ecovadiscode.github.io/charts/"
-version: 4.0.1
