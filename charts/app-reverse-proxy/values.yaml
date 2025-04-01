@@ -13,7 +13,7 @@ global:
       containerPort: 8443
       repository: "cicdcr01weuy01.azurecr.io"
       pullPolicy: IfNotPresent
-      tag: "1.20"
+      tag: "alpine3.21-perl"
     
   imagePullSecrets: 
     - name: "acr-pull-secret"
