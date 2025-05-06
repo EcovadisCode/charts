@@ -1,7 +1,8 @@
+{{- if .Values.staging.enabled }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledJob
 metadata:
-  name: {{ .Values.buildAgentName }}
+  name: "{{ .Values.buildAgentName }}-staging"
   namespace: {{ .Values.aks.namespace }}
 spec:
   jobTargetRef:
@@ -46,8 +47,8 @@ spec:
             - name: buildkitd-certs
               mountPath: /certs
         containers:
-        - name: {{ .Values.buildAgentName }}
-          image: {{ .Values.devops.ACR_NAME }}/{{ .Values.image.imageName }}:{{ .Values.image.version }}
+        - name: "{{ .Values.buildAgentName }}-staging"
+          image: {{ .Values.devops.ACR_NAME }}/{{ .Values.staging.stagingImageName }}:{{ .Values.staging.stagingImageVersion }}
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
@@ -145,3 +146,4 @@ spec:
       organizationURLFromEnv: "AZP_URL"
     authenticationRef:
       name: "trigger-auth-{{ .Values.buildAgentName }}"
+{{- end }}
