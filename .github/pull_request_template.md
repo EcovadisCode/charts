@@ -11,6 +11,7 @@ Select the chart that you are modifying:
 - [ ] job
 - [ ] app-reverse-proxy
 - [ ] pact-broker
+- [ ] ado-build-agents
 
 ## Checklist
 - [ ] Description provided
