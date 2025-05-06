@@ -1,0 +1,41 @@
+buildAgentName: build-agent-1
+
+aks:
+  # Name of the AKS node pool where agents will be deployed
+  agentPool: linux
+  # namespace to deploy
+  namespace: "build-agents"
+  memoryRequest: 10G
+  memoryLimit: 10G
+  # whether to deploy sysbox or not, should be disabled in most cases
+  # https://github.com/nestybox/sysbox
+  sysbox:
+    enabled: false
+
+# Application ID of the kubelet user assigned identity form Azure
+aadIdentity: xxxxxx-xxxx-xxxx-xxxx
+# Tenant ID of the kubelet user assigned identity from Azure
+tenantId : xxxxxx-xxxx-xxxx-xxxx
+
+devops:
+  # Azure DevOps organization URL
+  # e.g. https://dev.azure.com/{organization}
+  AZP_URL: "https://dev.azure.com/contoso"
+  # Azure DevOps pool name
+  AZP_POOL: "build-agent"
+  # Pool ID of the Azure DevOps pool, can be found in the Azure DevOps portal from Organization agent pools pane
+  poolID: "99"
+  # Azure Container Registry name
+  ACR_NAME: "myazacr.azurecr.io"
+
+image:
+  # Image name to be used for the build agent
+  imageName: build-agent-1
+  # Image version to be used for the build agent
+  version: 1.0.0
+
+keda:
+  # Minimum number of replicas to be deployed, should be >= 1
+  minReplicas: "1"
+  # Maximum number of replicas to be deployed
+  maxReplicas: "30"

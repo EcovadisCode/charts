@@ -1,0 +1,147 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: {{ .Values.buildAgentName }}
+  namespace: {{ .Values.aks.namespace }}
+spec:
+  jobTargetRef:
+    template:
+      metadata:
+        annotations:
+          io.kubernetes.cri-o.userns-mode: "auto:size=65536"
+        labels:
+          azure.workload.identity/use: "true"
+      spec:
+        shareProcessNamespace: true
+        restartPolicy: Never
+        terminationGracePeriodSeconds: 3600
+        volumes:
+          - name: buildkitd-certs
+            emptyDir: {}
+          - name: buildkitd-workspace
+            emptyDir: {}
+        serviceAccountName: "svc-acc-{{ .Values.buildAgentName }}"
+        nodeSelector:
+          pool: "{{ .Values.aks.agentPool }}"
+        {{- if .Values.aks.sysbox.enabled }}
+        runtimeClassName: "sysbox-runc-{{ .Values.buildAgentName }}"
+        {{- end }}
+        initContainers:
+        - name: generate-mtls-cert
+          image: busybox:1.37
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cd ~ &&
+              wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 -O mkcert &&
+              chmod +x mkcert &&
+              mkdir -p -- /certs/server /certs/client &&
+              CAROOT=$(pwd) ./mkcert -cert-file /certs/server/cert.pem -key-file /certs/server/key.pem 127.0.0.1 &&
+              cp rootCA.pem /certs/server/ca.pem &&
+              CAROOT=$(pwd) ./mkcert -client -cert-file /certs/client/cert.pem -key-file /certs/client/key.pem client &&
+              cp rootCA.pem /certs/client/ca.pem &&
+              chmod 744 /certs/client/ca.pem /certs/client/cert.pem /certs/client/key.pem /certs/server/ca.pem /certs/server/cert.pem /certs/server/key.pem
+          volumeMounts:
+            - name: buildkitd-certs
+              mountPath: /certs
+        containers:
+        - name: {{ .Values.buildAgentName }}
+          image: {{ .Values.devops.ACR_NAME }}/{{ .Values.image.imageName }}:{{ .Values.image.version }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: {{ .Values.aks.memoryRequest }}
+            limits:
+              memory: {{ .Values.aks.memoryLimit }}
+          env:
+            - name: AZP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: "azdevops-{{ .Values.buildAgentName }}"
+                  key: AZP_URL
+            - name: AZP_POOL
+              valueFrom:
+                secretKeyRef:
+                  name: "azdevops-{{ .Values.buildAgentName }}"
+                  key: AZP_POOL
+            - name: ACR_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: "azdevops-{{ .Values.buildAgentName }}"
+                  key: ACR_NAME
+          volumeMounts:
+            - name: buildkitd-certs
+              mountPath: /certs
+              readOnly: true
+        - name: buildkitd
+          image: cicdcr01weuy01.azurecr.io/dockerhub/moby/buildkit:v0.21.1-rootless
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          livenessProbe:
+            exec:
+              command:
+              - buildctl
+              - debug
+              - workers
+            failureThreshold: 3
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            exec:
+              command:
+              - buildctl
+              - debug
+              - workers
+            failureThreshold: 3
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              trap 'echo "[CMD] Caught SIGTERM. Stopping buildkitd..."; kill -TERM "$BKD_PID"; wait "$BKD_PID"; exit 0' TERM INT;
+              echo "[CMD] Starting buildkitd...";
+              rootlesskit buildkitd \
+                --addr tcp://0.0.0.0:1234 \
+                --addr unix:///run/user/1000/buildkit/buildkitd.sock \
+                --tlscacert /certs/server/ca.pem \
+                --tlscert /certs/server/cert.pem \
+                --tlskey /certs/server/key.pem &
+              BKD_PID=$!;
+              wait "$BKD_PID";
+              echo "[CMD] buildkitd exited. Exiting cleanly...";
+              exit 0
+          volumeMounts:
+            - name: buildkitd-certs
+              mountPath: /certs
+              readOnly: true
+            - name: buildkitd-workspace
+              mountPath: /home/user/.local/share/buildkit
+        tolerations:
+        - key: "pool"
+          operator: "Equal"
+          value: {{ .Values.aks.agentPool }}
+          effect: "NoSchedule"
+  pollingInterval: 10
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 5
+  minReplicaCount: {{ .Values.keda.minReplicas }}
+  maxReplicaCount: {{ .Values.keda.maxReplicas }}
+  scalingStrategy:
+    strategy: "default"
+  triggers:
+  - type: azure-pipelines
+    metadata:
+      poolName: {{ .Values.devops.AZP_POOL }}
+      organizationURLFromEnv: "AZP_URL"
+    authenticationRef:
+      name: "trigger-auth-{{ .Values.buildAgentName }}"
