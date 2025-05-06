@@ -1,0 +1,5 @@
+apiVersion: v2
+name: buildAgent
+description: A Helm chart with Keda scalable Azure Devops build agent for Kubernetes
+version: 1.0.0
+appVersion: "1.0"
