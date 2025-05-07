@@ -39,3 +39,9 @@ keda:
   minReplicas: "1"
   # Maximum number of replicas to be deployed
   maxReplicas: "30"
+
+# Object controlling staging instance deployment, used for A/B deployment
+staging:
+  enabled: false
+  stagingImageName: build-agent-1-staging
+  stagingImageVersion: 1.0.0
