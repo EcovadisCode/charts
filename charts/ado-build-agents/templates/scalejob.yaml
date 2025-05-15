@@ -5,14 +5,17 @@ metadata:
   namespace: {{ .Values.aks.namespace }}
 spec:
   jobTargetRef:
+    ttlSecondsAfterFinished: 30
+    backoffLimit: 0
     template:
       metadata:
         annotations:
-          io.kubernetes.cri-o.userns-mode: "auto:size=65536"
+          container.apparmor.security.beta.kubernetes.io/buildkitd: unconfined
         labels:
           azure.workload.identity/use: "true"
       spec:
         shareProcessNamespace: true
+        serviceAccountName: "svc-acc-{{ .Values.buildAgentName }}"
         restartPolicy: Never
         terminationGracePeriodSeconds: 3600
         volumes:
@@ -20,7 +23,6 @@ spec:
             emptyDir: {}
           - name: buildkitd-workspace
             emptyDir: {}
-        serviceAccountName: "svc-acc-{{ .Values.buildAgentName }}"
         nodeSelector:
           pool: "{{ .Values.aks.agentPool }}"
         {{- if .Values.aks.sysbox.enabled }}
@@ -50,7 +52,12 @@ spec:
           image: {{ .Values.devops.ACR_NAME }}/{{ .Values.image.imageName }}:{{ .Values.image.version }}
           imagePullPolicy: IfNotPresent
           securityContext:
-            privileged: true
+            allowPrivilegeEscalation: true
+            privileged: false
+            capabilities:
+              add:
+                - SYS_PTRACE
+                - KILL
           resources:
             requests:
               memory: {{ .Values.aks.memoryRequest }}
@@ -77,23 +84,17 @@ spec:
               mountPath: /certs
               readOnly: true
         - name: buildkitd
-          image: cicdcr01weuy01.azurecr.io/dockerhub/moby/buildkit:v0.21.1-rootless
+          image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/buildkit:v0.21.1-rootless
           imagePullPolicy: IfNotPresent
           securityContext:
-            privileged: true
             runAsUser: 1000
             runAsGroup: 1000
-          livenessProbe:
-            exec:
-              command:
-              - buildctl
-              - debug
-              - workers
-            failureThreshold: 3
-            initialDelaySeconds: 3
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 1
+            capabilities:
+              add:
+                - SYS_PTRACE
+                - KILL
+            seccompProfile:
+              type: Unconfined
           readinessProbe:
             exec:
               command:
@@ -108,17 +109,29 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              trap 'echo "[CMD] Caught SIGTERM. Stopping buildkitd..."; kill -TERM "$BKD_PID"; wait "$BKD_PID"; exit 0' TERM INT;
               echo "[CMD] Starting buildkitd...";
               rootlesskit buildkitd \
+                --oci-worker-no-process-sandbox \
                 --addr tcp://0.0.0.0:1234 \
                 --addr unix:///run/user/1000/buildkit/buildkitd.sock \
                 --tlscacert /certs/server/ca.pem \
                 --tlscert /certs/server/cert.pem \
                 --tlskey /certs/server/key.pem &
-              BKD_PID=$!;
-              wait "$BKD_PID";
-              echo "[CMD] buildkitd exited. Exiting cleanly...";
+              attempts=0
+              max_attempts=30
+              while ! pgrep start.sh > /dev/null; do
+                attempts=$((attempts + 1))
+                if [ $attempts -ge $max_attempts ]; then
+                  echo "[CMD] Failed to find start.sh after $max_attempts attempts. Exiting with status 1."
+                  exit 1
+                fi
+                echo "[CMD] Failed to find process start.sh from agent container, retrying..."
+                sleep 10
+              done
+              echo "[CMD] start.sh process found."
+              while pgrep start.sh > /dev/null; do
+                sleep 1
+              done
               exit 0
           volumeMounts:
             - name: buildkitd-certs
