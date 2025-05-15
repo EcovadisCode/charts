@@ -85,7 +85,7 @@ spec:
               mountPath: /certs
               readOnly: true
         - name: buildkitd
-          image: cicdcr01weuy01.azurecr.io/dockerhub/moby/buildkit:v0.21.1-rootless
+          image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/buildkit:v0.21.1-rootless
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 1000
