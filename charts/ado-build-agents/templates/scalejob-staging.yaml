@@ -1,4 +1,4 @@
-{{- if .Values.staging.enabled }}
+{{- if .Values.agent.staging.enabled }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledJob
 metadata:
@@ -11,24 +11,36 @@ spec:
     template:
       metadata:
         annotations:
+          {{- if .Values.sidecarContainers.buildkit.enabled }}
           container.apparmor.security.beta.kubernetes.io/buildkitd: unconfined
+          {{- end }}
+          container.apparmor.security.beta.kubernetes.io/{{ .Values.buildAgentName }}-staging: {{ .Values.agent.apparmor }}
         labels:
           azure.workload.identity/use: "true"
       spec:
+        # For now it's explicitedy set to true to avoid issues when it becomes false by default in future kubernetes versions
+        hostUsers: true
         shareProcessNamespace: true
         serviceAccountName: "svc-acc-{{ .Values.buildAgentName }}"
         restartPolicy: Never
         terminationGracePeriodSeconds: 3600
         volumes:
+        {{- if .Values.sidecarContainers.docker.enabled }}
+          - name: dind-certs
+            emptyDir: {}
+        {{- end }}
+        {{- if .Values.sidecarContainers.buildkit.enabled }}
           - name: buildkitd-certs
             emptyDir: {}
           - name: buildkitd-workspace
             emptyDir: {}
+        {{- end }}
         nodeSelector:
           pool: "{{ .Values.aks.agentPool }}"
         {{- if .Values.aks.sysbox.enabled }}
         runtimeClassName: "sysbox-runc-{{ .Values.buildAgentName }}"
         {{- end }}
+        {{- if .Values.sidecarContainers.buildkit.enabled }}
         initContainers:
         - name: generate-mtls-cert
           image: busybox:1.37
@@ -48,23 +60,48 @@ spec:
           volumeMounts:
             - name: buildkitd-certs
               mountPath: /certs
+        {{- end }}
         containers:
-        - name: "{{ .Values.buildAgentName }}-staging"
-          image: {{ .Values.devops.ACR_NAME }}/{{ .Values.staging.stagingImageName }}:{{ .Values.staging.stagingImageVersion }}
-          imagePullPolicy: IfNotPresent
+        {{- if .Values.sidecarContainers.docker.enabled }}
+        - name: dind
+          image: {{ .Values.sidecarContainers.docker.image | default "docker:dind" }}
           securityContext:
-            allowPrivilegeEscalation: true
-            privileged: false
-            capabilities:
-              add:
-                - SYS_PTRACE
-                - KILL
+            privileged: true
+          env: 
+            - name: DOCKER_TLS_CERTDIR
+              value: /dind-certs
+          volumeMounts:
+            - mountPath: /dind-certs
+              name: dind-certs
+        {{- end }}
+        - name: "{{ .Values.buildAgentName }}-staging"
+          image: {{ .Values.devops.ACR_NAME }}/{{ .Values.agent.staging.imageName }}:{{ .Values.agent.staging.imageVersion }}
+          imagePullPolicy: IfNotPresent
+          {{- with .Values.agent.securityContext }}
+          securityContext:
+          {{ toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             requests:
               memory: {{ .Values.aks.memoryRequest }}
             limits:
               memory: {{ .Values.aks.memoryLimit }}
           env:
+            {{- if .Values.sidecarContainers.docker.enabled }}
+            - name: DOCKER_HOST
+              value: "tcp://localhost:2376"
+            - name: DOCKER_CERT_PATH
+              value: "/dind-certs/client"
+            - name: DOCKER_TLS_VERIFY
+              value: "1"
+            {{- end }}
+            {{- if .Values.sidecarContainers.docker.enabled }}
+            - name: DOCKER_BACKEND
+              value: "DOCKER"
+            {{- else }}
+            - name: DOCKER_BACKEND
+              value: "BUILDKIT"
+            {{- end }}
             - name: AZP_URL
               valueFrom:
                 secretKeyRef:
@@ -81,11 +118,19 @@ spec:
                   name: "azdevops-{{ .Values.buildAgentName }}"
                   key: ACR_NAME
           volumeMounts:
+            {{- if .Values.sidecarContainers.buildkit.enabled }}
             - name: buildkitd-certs
               mountPath: /certs
               readOnly: true
+            {{- end}}
+            {{- if .Values.sidecarContainers.docker.enabled }}
+            - name: dind-certs
+              mountPath: /dind-certs
+              readOnly: true
+            {{- end }}
+        {{- if .Values.sidecarContainers.buildkit.enabled }}
         - name: buildkitd
-          image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/buildkit:v0.21.1-rootless
+          image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.sidecarContainers.buildkit.image }}
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 1000
@@ -140,6 +185,7 @@ spec:
               readOnly: true
             - name: buildkitd-workspace
               mountPath: /home/user/.local/share/buildkit
+        {{- end }}
         tolerations:
         - key: "pool"
           operator: "Equal"
