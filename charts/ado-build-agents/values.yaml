@@ -28,20 +28,35 @@ devops:
   # Azure Container Registry name
   ACR_NAME: "myazacr.azurecr.io"
 
-image:
-  # Image name to be used for the build agent
-  imageName: build-agent-1
-  # Image version to be used for the build agent
-  version: 1.0.0
+agent:
+  primary:
+    # Image name to be used for the main build agent
+    imageName: build-agent-1
+    # Image version to be used for the main build agent
+    imageVersion: 1.0.0
+  staging:
+    enabled: false
+    # Image name to be used for the secondary/staging build agent
+    imageName: build-agent-1-staging
+    # Image version to be used for the secondary/staging build agent
+    imageVersion: 1.0.0
+  # Security context object attached to build agent container
+  securityContext:
+    privileged: false
+  # Apparmor profile to be used for the build agent container, for now only "unconfined" is required and tested
+  apparmor: unconfined
+
+# Sidecar container that will be used from agent image. Only one sidecar should be enabled at a time. Rootless docker is not yet tested.
+sidecarContainers:
+  docker:
+    enabled: true
+    image: docker:dind
+  buildkit:
+    enabled: false
+    image: buildkit:v0.21.1-rootless
 
 keda:
   # Minimum number of replicas to be deployed, should be >= 1
   minReplicas: "1"
   # Maximum number of replicas to be deployed
   maxReplicas: "30"
-
-# Object controlling staging instance deployment, used for A/B deployment
-staging:
-  enabled: false
-  stagingImageName: build-agent-1-staging
-  stagingImageVersion: 1.0.0
