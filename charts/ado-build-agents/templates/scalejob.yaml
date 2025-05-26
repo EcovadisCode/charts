@@ -14,6 +14,9 @@ spec:
           container.apparmor.security.beta.kubernetes.io/buildkitd: unconfined
           {{- end }}
           container.apparmor.security.beta.kubernetes.io/{{ .Values.buildAgentName }}: {{ .Values.agent.apparmor }}
+          {{- if .Values.sidecarContainers.docker.enabled}}
+          container.apparmor.security.beta.kubernetes.io/dind: {{ .Values.agent.apparmor }}
+          {{- end }}
         labels:
           azure.workload.identity/use: "true"
       spec:
@@ -95,11 +98,14 @@ spec:
               value: "1"
             {{- end }}
             {{- if .Values.sidecarContainers.docker.enabled }}
-            - name: DOCKER_BACKEND
-              value: "DOCKER"
-            {{- else }}
-            - name: DOCKER_BACKEND
-              value: "BUILDKIT"
+            - name: DOCKER_ENABLED
+              value: "TRUE"
+            {{- end }}
+            {{- if .Values.sidecarContainers.buildkit.enabled }}
+            - name: BUILDKIT_ENABLED
+              value: "TRUE"
+            - name: BUILDX_BUILDER
+              value: buildkitd
             {{- end }}
             - name: AZP_URL
               valueFrom:
