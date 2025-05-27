@@ -3,6 +3,15 @@ entries:
   charts-ado-build-agents:
   - apiVersion: v2
     appVersion: "1.0"
+    created: "2025-05-27T09:35:15.680891981Z"
+    description: A Helm chart with Keda scalable Azure Devops build agent for Kubernetes
+    digest: 942d28263c5ca10ab70c48535375ab8046ace7f5806fb8c412514029793bae21
+    name: charts-ado-build-agents
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-ado-build-agents-1.4.0/charts-ado-build-agents-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v2
+    appVersion: "1.0"
     created: "2025-05-26T07:45:44.6393524Z"
     description: A Helm chart with Keda scalable Azure Devops build agent for Kubernetes
     digest: 05170eeaf509a5cfab6f57647022e936e8abb5cf637046f5b4d1ad9fb24ca2a9
@@ -1837,4 +1846,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2025-05-26T07:45:44.640472621Z"
+generated: "2025-05-27T09:35:15.681725749Z"
