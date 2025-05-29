@@ -1,5 +1,5 @@
 apiVersion: v2
-description: EcoVadis Helm chart for K8s Event driven Job
+description: EcoVadis Helm chart for K8s Event driven Deployment
 name: charts-event-worker
 type: application
 version: 1.0.0
