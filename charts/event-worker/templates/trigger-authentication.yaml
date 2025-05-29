@@ -1,0 +1,24 @@
+{{- if .Values.global.keda.triggers.azureServiceBus.triggers }}
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "charts-event-worker.fullname" . }}-servicebus
+  labels:
+    {{- include "charts-event-worker.labels" . | nindent 4 }}
+spec:
+  azureKeyVault:
+    vaultUri: {{ .Values.global.secEnvVars.KeyVault__Url | default "" }}
+    credentials:
+      clientId: {{ .Values.global.secEnvVars.AzureIdentity__ClientId | default "" }}
+      clientSecret:
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.global.keda.azure.clientIdSecretName | default (printf "%s-secure" (include "charts-event-worker.fullname" .)) }}
+            key: {{ .Values.global.keda.azure.clientIdSecretKey }}
+      tenantId: {{ .Values.global.secEnvVars.AzureIdentity__TenantId | default "" }}
+    cloud:
+      type: AzurePublicCloud
+    secrets:
+    - parameter: connection
+      name: {{ .Values.global.keda.triggers.azureServiceBus.connectionStringKeyVaultSecretName }}
+{{ end }}

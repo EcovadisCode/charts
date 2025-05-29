@@ -1,0 +1,168 @@
+# Default values for charts-event-worker.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  rollingUpdate:
+    maxSurge: "50%"
+    maxUnavailable: "50%"
+  progressDeadlineSeconds: 120
+
+  image:
+    repository: "cicdcr01weuy01.azurecr.io"
+    imagePullSecret: "acr-pull-secret"
+    name: # app name
+    tag: "" #"10.64.1"
+    pullPolicy: IfNotPresent
+    command: []
+    args: []
+    ports:
+      - name: http
+        containerPort: 8000
+        protocol: TCP
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  automountServiceAccountToken: false
+
+  activeDeadlineSeconds: 10800 # Limit of time in second during which job can create new pods.
+  backoffLimit: 2 # Number of retries tu run a job. One retry is equal to one pod creation.
+  parallelism: 1 # Number of concurrent PODS to run at the same time for single job (https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs)
+  completions: 1 # Number of successful completions required before marking the job as completed. This will be ignored if parallelism is set to more than 1.
+
+  secEnvVarsEnabled: true
+  secEnvVars: {}
+      #APP_INSIGHT_KEY: TEST
+
+  envVarsEnabled: true
+  envVars: 
+    ASPNETCORE_ENVIRONMENT: #{ASPNETCORE_ENVIRONMENT}#
+
+  nameOverride: # app name, may be the same as image.name
+
+  additionalLabelsEnabled: false
+  additionalLabels: {}
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - SYS_ADMIN
+        - SYS_PTRACE
+        - SYS_MODULE
+        - DAC_READ_SEARCH
+        - DAC_OVERRIDE
+        - CHOWN
+        - SETFCAP
+        - KILL
+        - NET_ADMIN
+        - NET_RAW
+    # readOnlyRootFilesystem: true
+
+  #Automates creation of default network policy, which is responsible for handling traffic between pod - service - traefik 
+  defaultNetworkPolicyEnabled: false
+
+  #Additional Network Polices configuration
+  elasticNetworkPolicyEnabled: true
+  mongodbNetworkPolicyEnabled: false
+  eventHubNetworkPolicyEnabled: false
+  lnmElasticNetworkPolicyEnabled: false
+  redisNetworkPolicyEnabled: true
+  redisCidr: "#{redisCidr}#"
+  sqlNetworkPolicyEnabled: true
+  servicebusNetworkPolicyEnabled: true
+
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  additionalValumesEnabled: false
+  additionalVolumes: []
+    # - name: azurefileshare
+    #   azureFile:
+    #     secretName: storage-secret
+    #     shareName: fileshare-name
+    #     readOnly: false
+  additionalVolumesMount: []  
+    # - name: azurefileshare
+    #   mountPath: /app
+
+  appConfigFilesEnabled: true
+  appConfigFiles:
+    globPattern: "**.json"
+    dir: "/app/"
+    filesList: []
+      #- "appsettings.json"
+
+  nodeSelector: {}
+
+  tolerations:
+  - key: "aksjobs"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: aksjobs
+            operator: In
+            values:
+            - "true"
+
+  monitoring:
+    metrics:
+      enabled: true # enable if service exposes metrics, so they will be routed to k8s service on specified port, allowing network policy will be created etc
+      ports:
+      - name: metrics
+        containerPort: 9100
+        protocol: TCP
+      path: /metrics
+    servicemonitor:
+      enabled: true # setting to enable or disable monitoring of service on endpoint /metrics. Service should support exporting metrics to that endpoint first. NOTE: global.monitoring.metrics should be enabled as well.
+
+    # prometheus server settings for existing prometheus installation. Currently needed only for canary deployments.
+    prometheusService: prometheus-operator-kube-p-prometheus
+    prometheusPort: 9090
+    prometheusNamespace: prometheus-operator
+
+  podDisruptionBudget:
+    enabled: false
+  ingressRoutes:
+    enabled: false
+  canary:
+    enabled: false
+
+  keda:
+    autoscalingPaused: false        # If true, KEDA will not scale the job
+    pollingInterval: 30             # Polling interval in seconds
+    minReplicaCount: 0              # Minimum number of instances to run at the same time
+    maxReplicaCount: 5              # Maximum number of instances to run at the same time
+    cooldownPeriod:   300           # Optional. Default: 300 seconds
+    initialCooldownPeriod:  0       # Optional. Default: 0 seconds
+    idleReplicaCount: 0             # Optional. Default: ignored, must be less than minReplicaCount
+    fallbackReplicasCount:          # Optional. Number of replicas to set when event metrics cannot be gathered, defaults to #TODO
+    azure:
+      clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
+      # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-event-worker.fullname" . }}-secure'
+    triggers:
+      azureServiceBus:
+        connectionStringKeyVaultSecretName: 'ConnectionStrings--ServiceBus' # Name of secret in Azure Keyvault that is containing a connection string to Service Bus
+        triggers:
+        - enabled: true             # Must be enabled. However, in order to enable this trigger, settings below must be provided.
+          queueName:                # Optional. ServiceBus Queue name
+          topicName:                # Optional. ServiceBus Topic name
+          subscriptionName:         # Optional. Required if topic is specified. ServiceBus Subscripion name
+          messageCount: 5           # Optional. Count of messages to trigger scaling out: 1 -> N. Default: 5 messages
+          activationMessageCount:   # Target value for activating the scaler: 0 -> 1. Default: 0
