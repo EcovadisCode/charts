@@ -3,6 +3,8 @@
 # Declare variables to be passed into your templates.
 
 global:
+  terminationGracePeriodSeconds: 30 # Time to let pod shutdown itselft before it is killed. Time between SIGTERM and SIGKILL
+
   rollingUpdate:
     maxSurge: "50%"
     maxUnavailable: "50%"
@@ -16,10 +18,13 @@ global:
     pullPolicy: IfNotPresent
     command: []
     args: []
-    ports:
-      - name: http
-        containerPort: 8000
-        protocol: TCP
+
+    ### Configure liveness probe
+    # livenessProbe:
+    #   exec:
+    #     command: ["cat", "/tmp/healthy"]
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 10
 
   serviceAccount:
     # Specifies whether a service account should be created
@@ -123,14 +128,14 @@ global:
 
   monitoring:
     metrics:
-      enabled: true # enable if service exposes metrics, so they will be routed to k8s service on specified port, allowing network policy will be created etc
+      enabled: false # enable if service exposes metrics, so they will be routed to k8s service on specified port, allowing network policy will be created etc
       ports:
       - name: metrics
         containerPort: 9100
         protocol: TCP
       path: /metrics
     servicemonitor:
-      enabled: true # setting to enable or disable monitoring of service on endpoint /metrics. Service should support exporting metrics to that endpoint first. NOTE: global.monitoring.metrics should be enabled as well.
+      enabled: false # setting to enable or disable monitoring of service on endpoint /metrics. Service should support exporting metrics to that endpoint first. NOTE: global.monitoring.metrics should be enabled as well.
 
     # prometheus server settings for existing prometheus installation. Currently needed only for canary deployments.
     prometheusService: prometheus-operator-kube-p-prometheus

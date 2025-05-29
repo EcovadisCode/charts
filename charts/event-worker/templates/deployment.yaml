@@ -63,102 +63,12 @@ spec:
           args: {{- toYaml .Values.global.image.args | nindent 12 }}
           {{- end }}
           ports:
-          {{- toYaml .Values.global.image.ports | nindent 12 }}
           {{- if .Values.global.monitoring.metrics.enabled }}
           {{- toYaml .Values.global.monitoring.metrics.ports | nindent 12 }}
           {{- end }}
           livenessProbe:
           {{- if .Values.global.image.livenessProbe }}
           {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
-
-          {{- if not .Values.global.image.livenessProbe.initialDelaySeconds }}
-            initialDelaySeconds: 60
-          {{- end }}
-
-          {{- if not .Values.global.image.livenessProbe.periodSeconds }}
-            periodSeconds: 60
-          {{- end }}
-
-          {{- if not .Values.global.image.livenessProbe.timeoutSeconds }}
-            timeoutSeconds: 15
-          {{- end }}
-
-          {{- if not .Values.global.image.livenessProbe.successThreshold }}
-            successThreshold: 1
-          {{- end }}
-
-          {{- if not .Values.global.image.livenessProbe.failureThreshold }}
-            failureThreshold: 3
-          {{- end }}
-
-          {{- else }}
-            httpGet:
-              path: /
-              port: http
-            periodSeconds: 60
-            timeoutSeconds: 15
-            successThreshold: 1
-            failureThreshold: 3
-          {{- end }}
-          
-          readinessProbe:
-          {{- if .Values.global.image.readinessProbe }}
-          {{- toYaml .Values.global.image.readinessProbe | nindent 12 }}
-
-          {{- if not .Values.global.image.readinessProbe.initialDelaySeconds }}
-            initialDelaySeconds: 40
-          {{- end }}
-
-          {{- if not .Values.global.image.readinessProbe.periodSeconds }}
-            periodSeconds: 60
-          {{- end }}
-
-          {{- if not .Values.global.image.readinessProbe.timeoutSeconds }}
-            timeoutSeconds: 15
-          {{- end }}
-
-          {{- if not .Values.global.image.readinessProbe.successThreshold }}
-            successThreshold: 1
-          {{- end }}
-
-          {{- if not .Values.global.image.readinessProbe.failureThreshold }}
-            failureThreshold: 3
-          {{- end }}
-
-          {{- else }}
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 40
-            periodSeconds: 60
-            timeoutSeconds: 15
-            successThreshold: 1
-            failureThreshold: 3
-          {{- end }}
-          
-          {{- if .Values.global.image.startupProbe }}
-          startupProbe:
-          {{- toYaml .Values.global.image.startupProbe | nindent 12 }}
-
-          {{- if not .Values.global.image.startupProbe.initialDelaySeconds }}
-            initialDelaySeconds: 40
-          {{- end }}
-
-          {{- if not .Values.global.image.startupProbe.periodSeconds }}
-            periodSeconds: 60
-          {{- end }}
-
-          {{- if not .Values.global.image.startupProbe.timeoutSeconds }}
-            timeoutSeconds: 15
-          {{- end }}
-
-          {{- if not .Values.global.image.startupProbe.successThreshold }}
-            successThreshold: 1
-          {{- end }}
-
-          {{- if not .Values.global.image.startupProbe.failureThreshold }}
-            failureThreshold: 3
-          {{- end }}
           {{- end }}
 
           {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
@@ -202,11 +112,6 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
-          {{- if .Values.global.certificateSecretStoreEnabled }}
-          - name: ecovadis-ceritificate
-            mountPath: "/app/cert"
-            readOnly: true
-            {{- end }}
             {{- if .Values.global.additionalVolumesEnabled -}}
             {{- with .Values.global.additionalVolumesMount }}
               {{- toYaml . | nindent 10 }}
@@ -217,14 +122,6 @@ spec:
       - name: "configuration-volume"
         secret:
           secretName: {{ include "charts-event-worker.fullname" . }}-files
-      {{- end }}
-      {{ if .Values.global.certificateSecretStoreEnabled -}}
-      - name: "ecovadis-ceritificate"
-        csi:
-          driver: secrets-store.csi.k8s.io
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: "{{ .Values.global.certificateSecretStoreName }}"
       {{- end }}
       {{- if .Values.global.additionalVolumesEnabled -}}
       {{- with .Values.global.additionalVolumes }}

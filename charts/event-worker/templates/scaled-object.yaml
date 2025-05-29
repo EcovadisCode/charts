@@ -20,4 +20,25 @@ spec:
     replicas: {{ default .Values.global.keda.minReplicaCount .Values.global.keda.fallbackReplicasCount }}
   triggers:
     {{- range .Values.global.keda.triggers.azureServiceBus.triggers }}
+    {{- if .enabled }}
+    - type: azure-servicebus
+      authenticationRef:
+        name: 
+          {{ include "charts-event-worker.fullname" $ }}-servicebus
+      metadata:
+        {{- if .queueName }}
+        queueName: {{ .queueName | quote }}
+        {{- end }}
+        {{- if .topicName }}
+        topicName: {{ .topicName | quote }}
+        {{- end }}
+        {{- if .subscriptionName }}
+        subscriptionName: {{ .subscriptionName | quote }}
+        {{- end }}
+        messageCount: {{ .messageCount | default 5 | quote }}
+        {{- if .activationMessageCount }}
+        activationMessageCount: {{ .activationMessageCount | quote }}
+        {{- end }}
+        cloud: AzurePublicCloud
+    {{- end }}
     {{- end }}
