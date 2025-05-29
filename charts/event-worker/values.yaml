@@ -157,7 +157,7 @@ global:
     cooldownPeriod:   300           # Optional. Default: 300 seconds
     initialCooldownPeriod:  0       # Optional. Default: 0 seconds
     idleReplicaCount: 0             # Optional. Default: ignored, must be less than minReplicaCount
-    fallbackReplicasCount:          # Optional. Number of replicas to set when event metrics cannot be gathered, defaults to #TODO
+    fallbackReplicasCount:          # Optional. Number of replicas to set when event metrics cannot be gathered, defaults to half of maxReplicaCount (rounded up)
     azure:
       clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
       # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-event-worker.fullname" . }}-secure'

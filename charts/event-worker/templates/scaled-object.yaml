@@ -17,7 +17,8 @@ spec:
   maxReplicaCount: {{ .Values.global.keda.maxReplicaCount }}
   fallback:
     failureThreshold: 3
-    replicas: {{ default .Values.global.keda.minReplicaCount .Values.global.keda.fallbackReplicasCount }}
+    # Defaults to half of the maxReplicaCount
+    replicas: {{ default (round (divf .Values.global.keda.maxReplicaCount 2) 0 ) .Values.global.keda.fallbackReplicasCount }}
   triggers:
     {{- range .Values.global.keda.triggers.azureServiceBus.triggers }}
     {{- if .enabled }}
