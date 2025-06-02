@@ -149,7 +149,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             show_only=["templates/deployment.yaml"]
         )
         self.assertEqual(
-            "release-name-charts-event-worker",
+            "RELEASE-NAME-charts-event-worker",
             jmespath.search(
                 "spec.template.spec.containers[0].envFrom[0].configMapRef.name", docs[0])
         )
@@ -175,7 +175,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             show_only=["templates/deployment.yaml"]
         )
         self.assertEqual(
-            "release-name-charts-event-worker-secure",
+            "RELEASE-NAME-charts-event-worker-secure",
             jmespath.search(
                 "spec.template.spec.containers[0].envFrom[0].secretRef.name", docs[0])
         )
@@ -414,7 +414,7 @@ class DeploymentTemplateFileTest(unittest.TestCase):
         )
 
         self.assertEqual(
-            "release-name-charts-event-worker-files",
+            "RELEASE-NAME-charts-event-worker-files",
             jmespath.search(
                 "spec.template.spec.volumes[0].secret.secretName", docs[0])
         )
