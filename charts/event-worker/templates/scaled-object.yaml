@@ -1,0 +1,45 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "charts-event-worker.fullname" . }}
+  {{- if .Values.global.keda.autoscalingPaused }}
+  annotations:
+    autoscaling.keda.sh/paused: "true"
+  {{- end }}
+spec:
+  scaleTargetRef:
+    name:          {{ include "charts-event-worker.fullname" . }}
+  pollingInterval: {{ .Values.global.keda.pollingInterval }}
+  cooldownPeriod:  {{ .Values.global.keda.cooldownPeriod }}
+  initialCooldownPeriod: {{ .Values.global.keda.initialCooldownPeriod }}
+  idleReplicaCount: {{ .Values.global.keda.idleReplicaCount }}
+  minReplicaCount: {{ .Values.global.keda.minReplicaCount }}
+  maxReplicaCount: {{ .Values.global.keda.maxReplicaCount }}
+  fallback:
+    failureThreshold: 3
+    # Defaults to half of the maxReplicaCount
+    replicas: {{ default (round (divf .Values.global.keda.maxReplicaCount 2) 0 ) .Values.global.keda.fallbackReplicasCount }}
+  triggers:
+    {{- range .Values.global.keda.triggers.azureServiceBus.triggers }}
+    {{- if .enabled }}
+    - type: azure-servicebus
+      authenticationRef:
+        name: 
+          {{ include "charts-event-worker.fullname" $ }}-servicebus
+      metadata:
+        {{- if .queueName }}
+        queueName: {{ .queueName | quote }}
+        {{- end }}
+        {{- if .topicName }}
+        topicName: {{ .topicName | quote }}
+        {{- end }}
+        {{- if .subscriptionName }}
+        subscriptionName: {{ .subscriptionName | quote }}
+        {{- end }}
+        messageCount: {{ .messageCount | default 5 | quote }}
+        {{- if .activationMessageCount }}
+        activationMessageCount: {{ .activationMessageCount | quote }}
+        {{- end }}
+        cloud: AzurePublicCloud
+    {{- end }}
+    {{- end }}

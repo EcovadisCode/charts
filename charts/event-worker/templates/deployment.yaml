@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "charts-event-worker.fullname" . }}
+  labels:
+    {{- include "charts-event-worker.labels" . | nindent 4 }}
+spec:
+  progressDeadlineSeconds: {{ .Values.global.progressDeadlineSeconds }}
+  revisionHistoryLimit: {{ .Values.global.revisionHistoryLimit | default "3" }}
+  minReadySeconds: {{ .Values.global.minReadySeconds | default "0"}}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.global.rollingUpdate.maxSurge | default "50%" }}
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default "50" }} 
+  selector:
+    matchLabels:
+      {{- include "charts-event-worker.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/appsettings-secret: {{ include (print $.Template.BasePath "/appsettings-secret.yaml") . | sha256sum }}
+      {{- range $key,$value := .Values.global.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      labels:
+        {{- include "charts-event-worker.labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.global.topologySpread }}
+      topologySpreadConstraints:
+      {{- range .Values.global.topologySpread }}
+        - maxSkew: {{ .maxSkew }}
+          topologyKey: {{ .topologyKey }}
+          whenUnsatisfiable: {{ .whenUnsatisfiable }}
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "charts-event-worker.name" $ }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.global.image.imagePullSecret }}
+      imagePullSecrets:
+        - name: "{{ .Values.global.image.imagePullSecret }}"
+      {{- end }}
+      {{- if .Values.global.serviceAccount.create }}
+      serviceAccountName: {{ include "charts-event-worker.serviceAccountName" . }}
+      {{- else }}
+      serviceAccountName: null
+      serviceAccount: null
+      {{- end }}
+      automountServiceAccountToken: {{ .Values.global.automountServiceAccountToken | default false }}
+      securityContext:
+        {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.global.securityContext | nindent 12 }}
+          image: "{{ .Values.global.image.repository }}/{{ .Values.global.image.name}}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          {{- if .Values.global.image.command }}
+          command: {{- toYaml .Values.global.image.command | nindent 12 }}
+          {{- end }}
+          {{- if .Values.global.image.args }}
+          args: {{- toYaml .Values.global.image.args | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+          {{- if .Values.global.image.livenessProbe }}
+          {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
+          {{- end }}
+
+          {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
+          envFrom:
+          {{- if .Values.global.envVarsEnabled }}
+            - configMapRef:
+                name: "{{ include "charts-event-worker.fullname" . }}"
+          {{- end }}
+          {{- if .Values.global.secEnvVarsEnabled }}
+            - secretRef:
+                name: "{{ include "charts-event-worker.fullname" . }}-secure"
+          {{- end }}
+          {{- end }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          resources:
+            {{- toYaml .Values.global.resources | nindent 12 }}
+          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled }}
+          volumeMounts:
+          {{- if .Values.global.appConfigFilesEnabled -}}
+          {{- $currentScope := .}}
+            {{- range $path, $_ :=  .Files.Glob .Values.global.appConfigFiles.globPattern }}
+            {{- with $currentScope}}
+          - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $path }}"
+            name: configuration-volume
+            subPath: "{{ $path }}"
+            {{- end }}
+            {{- end }}
+          {{- if .Values.global.appConfigFiles.filesList -}}
+            {{- $files := .Files }}
+            {{- range .Values.global.appConfigFiles.filesList }}
+            {{- $rangeItem := . -}}
+            {{- with $ }}
+          - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $rangeItem }}"
+            name: configuration-volume
+            subPath: "{{ $rangeItem }}"
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.global.additionalVolumesEnabled -}}
+            {{- with .Values.global.additionalVolumesMount }}
+              {{- toYaml . | nindent 10 }}
+            {{- end }}
+            {{- end }}
+      volumes:
+      {{ if .Values.global.appConfigFilesEnabled -}}
+      - name: "configuration-volume"
+        secret:
+          secretName: {{ include "charts-event-worker.fullname" . }}-files
+      {{- end }}
+      {{- if .Values.global.additionalVolumesEnabled -}}
+      {{- with .Values.global.additionalVolumes }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+	    {{- end }}
+      {{- end }}
+      {{- with .Values.global.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ toYaml . }}
+      {{- end }}
+      {{- with .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
