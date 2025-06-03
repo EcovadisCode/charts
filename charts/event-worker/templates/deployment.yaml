@@ -62,10 +62,6 @@ spec:
           {{- if .Values.global.image.args }}
           args: {{- toYaml .Values.global.image.args | nindent 12 }}
           {{- end }}
-          ports:
-          {{- if .Values.global.monitoring.metrics.enabled }}
-          {{- toYaml .Values.global.monitoring.metrics.ports | nindent 12 }}
-          {{- end }}
           livenessProbe:
           {{- if .Values.global.image.livenessProbe }}
           {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
