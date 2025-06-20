@@ -4,6 +4,7 @@ from os import sep
 from os.path import dirname, realpath
 from shutil import copyfile
 import jmespath
+import base64
 
 from tests.helm_template_generator import render_chart
 from tests.helm_template_generator import get_random_json_file_name
@@ -646,3 +647,62 @@ class DeploymentTemplateFileTest(unittest.TestCase):
                 }
             ],
             jmespath.search("spec.template.spec.topologySpreadConstraints", docs[0]))
+
+    def test_fileshare_mount(self):
+
+        share_name = "files"
+        mount_path = "/mnt/storage"
+        stgkey = "zzzz"
+        stgname = "aaaa"
+
+        docs = render_chart(
+            values={
+                "global": {
+                    "fileShareMount": {
+                        "enabled": "true",
+                        "shareName": share_name, # name of Azure File Share
+                        "readOnly": "true", # mount as read-only or read-write
+                        "mountPath": mount_path, # mount path in container
+                        "storageAccountName": stgname, # Azure Storage Account name
+                        "storageAccountKey": stgkey # Azure Storage Account key
+                    }
+                }
+            },
+            name=".", show_only=["templates/deployment.yaml","templates/file-share-secret.yaml"])
+
+        volume_mounts = jmespath.search("spec.template.spec.containers[0].volumeMounts", docs[0])
+        volumes = jmespath.search("spec.template.spec.volumes", docs[0])
+
+        self.assertIn(
+            {
+                "mountPath": mount_path,
+                "name": "file-share",
+                "readOnly": True
+            },
+            volume_mounts,
+            "Volume mount for Azure File Share not found"
+        )
+
+        self.assertIn(
+            {
+                "name": "file-share",
+                "csi": {
+                    "driver": "file.csi.azure.com",
+                    "volumeAttributes": {
+                        "mountOptions": "dir_mode=0777,file_mode=0777,cache=strict,actimeo=30,nosharesock,nobrl",
+                        "secretName": "RELEASE-NAME-charts-dotnet-core-file-share",
+                        "shareName": share_name
+                    }
+                }
+            },
+            volumes,
+            "Volume for Azure File Share not found"
+        )
+
+        self.assertEqual(
+            {
+                "azurestorageaccountkey" : base64.b64encode(stgkey.encode()).decode(),
+                "azurestorageaccountname" : base64.b64encode(stgname.encode()).decode()
+            },
+            jmespath.search("data", docs[1])
+        )
