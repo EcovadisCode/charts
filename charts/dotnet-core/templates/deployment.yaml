@@ -215,6 +215,11 @@ spec:
               {{- toYaml . | nindent 10 }}
             {{- end }}
             {{- end }}
+          {{- if .Values.global.fileShareMount.enabled }}
+          - name: file-share
+            mountPath: {{ .Values.global.fileShareMount.mountPath }}
+            readOnly: {{ .Values.global.fileShareMount.readOnly }}
+          {{- end }}
         {{ if .Values.global.mockingServer.enabled -}}
         - name: mockserver
           securityContext:
@@ -243,6 +248,15 @@ spec:
       - name: "configuration-volume"
         secret:
           secretName: {{ include "charts-dotnet-core.fullname" . }}-files
+      {{- end }}
+      {{ if .Values.global.fileShareMount.enabled -}}
+      - name: file-share
+        csi:
+          driver: file.csi.azure.com
+          volumeAttributes:
+            secretName: {{ include "charts-dotnet-core.fullname" . }}-file-share
+            shareName: {{.Values.global.fileShareMount.shareName }}
+            mountOptions: 'dir_mode=0777,file_mode=0777,cache=strict,actimeo=30,nosharesock,nobrl'  # optional
       {{- end }}
       {{ if .Values.global.certificateSecretStoreEnabled -}}
       - name: "ecovadis-ceritificate"

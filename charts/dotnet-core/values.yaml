@@ -284,3 +284,11 @@ global:
   - topologyKey: kubernetes.io/hostname
     maxSkew: 1
     whenUnsatisfiable: ScheduleAnyway
+
+  fileShareMount:
+    enabled: false 
+    shareName: "" # name of Azure File Share
+    readOnly: false # mount as read-only or read-write
+    mountPath: "/mnt/storage" # mount path in container
+    storageAccountName: "" # Azure Storage Account name
+    storageAccountKey: "" # Azure Storage Account key
