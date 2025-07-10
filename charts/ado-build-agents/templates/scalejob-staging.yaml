@@ -43,8 +43,8 @@ spec:
         {{- if .Values.aks.sysbox.enabled }}
         runtimeClassName: "sysbox-runc-{{ .Values.buildAgentName }}"
         {{- end }}
-        {{- if .Values.sidecarContainers.buildkit.enabled }}
         initContainers:
+        {{- if .Values.sidecarContainers.buildkit.enabled }}
         - name: generate-mtls-cert
           image: busybox:1.37
           command:
@@ -63,6 +63,51 @@ spec:
           volumeMounts:
             - name: buildkitd-certs
               mountPath: /certs
+        {{- end }}
+        {{- if .Values.sidecarContainers.buildkit.enabled }}
+        - name: buildkitd
+          image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.sidecarContainers.buildkit.image }}
+          imagePullPolicy: IfNotPresent
+          restartPolicy: Always
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              add:
+                - SYS_PTRACE
+                - KILL
+            seccompProfile:
+              type: Unconfined
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "[CMD] Starting buildkitd...";
+              rootlesskit buildkitd \
+                --oci-worker-no-process-sandbox \
+                --addr tcp://0.0.0.0:1234 \
+                --addr unix:///run/user/1000/buildkit/buildkitd.sock \
+                --tlscacert /certs/server/ca.pem \
+                --tlscert /certs/server/cert.pem \
+                --tlskey /certs/server/key.pem
+          volumeMounts:
+            - name: buildkitd-certs
+              mountPath: /certs
+              readOnly: true
+            - name: buildkitd-workspace
+              mountPath: /home/user/.local/share/buildkit
+        {{- end }}
+        {{- if .Values.sidecarContainers.docker.enabled }}
+        - name: dind
+          image: {{ .Values.sidecarContainers.docker.image | default "docker:dind" }}
+          restartPolicy: Always
+          securityContext:
+            privileged: true
+          env: 
+            - name: DOCKER_TLS_CERTDIR
+              value: /dind-certs
+          volumeMounts:
+            - mountPath: /dind-certs
+              name: dind-certs
         {{- end }}
         containers:
           # PROTIP - In Keda agent container has to be first, otherwise it will not be able to read value from AZP_URL
@@ -123,76 +168,6 @@ spec:
               mountPath: /dind-certs
               readOnly: true
             {{- end }}
-        {{- if .Values.sidecarContainers.buildkit.enabled }}
-        - name: buildkitd
-          image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.sidecarContainers.buildkit.image }}
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-            capabilities:
-              add:
-                - SYS_PTRACE
-                - KILL
-            seccompProfile:
-              type: Unconfined
-          readinessProbe:
-            exec:
-              command:
-              - buildctl
-              - debug
-              - workers
-            failureThreshold: 3
-            initialDelaySeconds: 3
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 1
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo "[CMD] Starting buildkitd...";
-              rootlesskit buildkitd \
-                --oci-worker-no-process-sandbox \
-                --addr tcp://0.0.0.0:1234 \
-                --addr unix:///run/user/1000/buildkit/buildkitd.sock \
-                --tlscacert /certs/server/ca.pem \
-                --tlscert /certs/server/cert.pem \
-                --tlskey /certs/server/key.pem &
-              attempts=0
-              max_attempts=30
-              while ! pgrep start.sh > /dev/null; do
-                attempts=$((attempts + 1))
-                if [ $attempts -ge $max_attempts ]; then
-                  echo "[CMD] Failed to find start.sh after $max_attempts attempts. Exiting with status 1."
-                  exit 1
-                fi
-                echo "[CMD] Failed to find process start.sh from agent container, retrying..."
-                sleep 10
-              done
-              echo "[CMD] start.sh process found."
-              while pgrep start.sh > /dev/null; do
-                sleep 1
-              done
-              exit 0
-          volumeMounts:
-            - name: buildkitd-certs
-              mountPath: /certs
-              readOnly: true
-            - name: buildkitd-workspace
-              mountPath: /home/user/.local/share/buildkit
-        {{- end }}
-        {{- if .Values.sidecarContainers.docker.enabled }}
-        - name: dind
-          image: {{ .Values.sidecarContainers.docker.image | default "docker:dind" }}
-          securityContext:
-            privileged: true
-          env: 
-            - name: DOCKER_TLS_CERTDIR
-              value: /dind-certs
-          volumeMounts:
-            - mountPath: /dind-certs
-              name: dind-certs
-        {{- end }}
         tolerations:
         - key: "pool"
           operator: "Equal"
