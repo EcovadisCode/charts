@@ -43,8 +43,8 @@ spec:
         {{- if .Values.aks.sysbox.enabled }}
         runtimeClassName: "sysbox-runc-{{ .Values.buildAgentName }}"
         {{- end }}
-        {{- if .Values.sidecarContainers.buildkit.enabled }}
         initContainers:
+        {{- if .Values.sidecarContainers.buildkit.enabled }}
         - name: generate-mtls-cert
           image: busybox:1.37
           command:
