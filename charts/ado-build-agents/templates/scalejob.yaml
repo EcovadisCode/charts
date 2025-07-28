@@ -21,7 +21,7 @@ spec:
           azure.workload.identity/use: "true"
       spec:
         # For now it's explicitedy set to true to avoid issues when it becomes false by default in future kubernetes versions
-        hostUsers: true
+        # hostUsers: true
         shareProcessNamespace: true
         serviceAccountName: "svc-acc-{{ .Values.buildAgentName }}"
         restartPolicy: Never
