@@ -6,7 +6,7 @@ global:
   schedule: ""
   image:
     repository: "cicdcr01weuy01.azurecr.io"
-    imagePullSecret: "acr-pull-secret"
+    imagePullSecret: ""
     name: # app name
     tag: "" #"10.64.1"
     pullPolicy: IfNotPresent
