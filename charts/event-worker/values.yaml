@@ -12,6 +12,7 @@ global:
 
   image:
     repository: "cicdcr01weuy01.azurecr.io"
+    imagePullSecret: ""
     name: # app name
     tag: "" #"10.64.1"
     pullPolicy: IfNotPresent

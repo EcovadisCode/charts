@@ -43,6 +43,7 @@ global:
   mockingServer:
     enabled: false
     repository: "cicdcr01weuy01.azurecr.io"
+    imagePullSecret: ""
     name: "dockerhub/mockserver/mockserver"
     tag: "5.13.2"
     pullPolicy: IfNotPresent
