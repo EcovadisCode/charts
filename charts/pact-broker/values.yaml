@@ -4,8 +4,6 @@ image:
   repository: dockerhub/pactfoundation/pact-broker # -- Pact Broker image repository
   tag: 2.102.2.0 # -- Pact Broker image tag (immutable tags are recommended) https://hub.docker.com/r/pactfoundation/pact-broker/tags
   pullPolicy: IfNotPresent # -- Specify a imagePullPolicy
-  pullSecrets: # -- Array of imagePullSecrets to allow pulling the Pact Broker image from private registries: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-    - acr-pull-secret # -- It is recommended to create this secret and store docker.io credentials inside. Even when we are pulling image from a public repo there are may be transient errors when pulling without imagePullSecrets.
 
 envVars:
   PACT_BROKER_DATABASE_ADAPTER: "postgres" # -- Database engine to use.
