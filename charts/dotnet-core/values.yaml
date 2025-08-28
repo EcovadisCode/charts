@@ -228,6 +228,8 @@ global:
     portDiscovery:
       enabled: true # auto discover pod ports from deployment spec and add them to k8s service that created by Flagger
 
+    skipAnalysis: false # skip analysis phase and promote canary to primary if set to true
+
     analysis:
       settings:
         interval: 20s # schedule interval

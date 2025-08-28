@@ -30,6 +30,7 @@ spec:
     apex:
       labels:
         {{- include "charts-dotnet-core.labels" . | nindent 8 }}
+  skipAnalysis: {{ .Values.global.canary.skipAnalysis }}
   analysis:
     {{- toYaml .Values.global.canary.analysis.settings | nindent 4}}
     metrics:
