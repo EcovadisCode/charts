@@ -223,10 +223,12 @@ global:
     targetCPUUtilizationPercentage: 70
 
   canary:
-    enabled: false # Setting to enable or disable canary deployments with Flagger.
+    enabled: true # Setting to enable or disable canary deployments with Flagger.
     progressDeadlineSeconds: 600 # the maximum time in seconds for the canary deployment to make progress before it is rollback
     portDiscovery:
       enabled: true # auto discover pod ports from deployment spec and add them to k8s service that created by Flagger
+
+    skipAnalysis: true # skip analysis phase and promote canary to primary if set to true
 
     analysis:
       settings:
@@ -246,7 +248,7 @@ global:
       endpoint: /readyz # service endpoint to do an acceptance test. Readiness health probe is default, so acceptance test Url looks like http://service.namespace/readyz/ by default.
 
     loadTesting:
-      enabled: true # [bool] enable or disable load testing with Flagger load tester based on 'hey' tool.
+      enabled: false # [bool] enable or disable load testing with Flagger load tester based on 'hey' tool.
       endpoint: /readyz # service endpoint to do a load test. Readiness health probe is default, so load test Url looks like http://service.namespace/readyz/ by default.
       serviceName: flagger-loadtester # name of Flagger load tester k8s service
       namespace: flagger-system # namespace of Flagger load tester k8s service
