@@ -1,4 +1,3 @@
-{{- if .Values.global.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -11,7 +10,11 @@ spec:
     kind: Deployment
     name: {{ include "charts-dotnet-core.fullname" . }}
   minReplicas: {{ .Values.global.replicaCount }}
+{{- if .Values.global.autoscaling.enabled }}
   maxReplicas: {{ .Values.global.autoscaling.maxReplicas }}
+{{ else }}
+  maxReplicas: {{ .Values.global.replicaCount }}
+{{- end }}
   metrics:
   {{- if .Values.global.autoscaling.targetCPUUtilizationPercentage }}
     - type: Resource
@@ -29,4 +32,3 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.global.autoscaling.targetMemoryUtilizationPercentage }}
   {{- end }}
-{{- end }}
