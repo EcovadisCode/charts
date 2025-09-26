@@ -12,8 +12,8 @@ aks:
   sysbox:
     enabled: false
 
-# Application ID of the kubelet user assigned identity form Azure
-aadIdentity: xxxxxx-xxxx-xxxx-xxxx
+# Application ID of identity used by build agent
+agentAadIdentity: xxxxxx-xxxx-xxxx-xxxx
 # Tenant ID of the kubelet user assigned identity from Azure
 tenantId : xxxxxx-xxxx-xxxx-xxxx
 
@@ -56,6 +56,8 @@ sidecarContainers:
     image: buildkit:v0.21.1-rootless
 
 keda:
+  # Azure Identity to be used by Keda scaler
+  aadIdentity: xxxxxx-xxxx-xxxx-xxxx
   # Minimum number of replicas to be deployed, should be >= 1
   minReplicas: "1"
   # Maximum number of replicas to be deployed

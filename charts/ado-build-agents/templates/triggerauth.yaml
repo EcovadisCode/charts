@@ -6,6 +6,6 @@ metadata:
 spec:
   podIdentity:
     provider: azure-workload
-    identityId: {{ $.Values.aadIdentity }}
+    identityId: {{ $.Values.keda.aadIdentity }}
     identityTenantId: {{ .Values.tenantId }}
 ---
