@@ -141,6 +141,8 @@ spec:
             - name: BUILDX_BUILDER
               value: buildkitd
             {{- end }}
+            - name: AZP_IGNORE_SECRETS_SHORTER_THAN
+              value: "4"
             - name: AZP_URL
               valueFrom:
                 secretKeyRef:
