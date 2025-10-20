@@ -73,19 +73,22 @@ spec:
             {{- end }}
             {{- end }}
             {{- $currentScope := $}}
-              {{- range $path, $_ :=  $.Files.Glob ($cronjob.appConfigFiles.globPattern | default $.Values.global.appConfigFiles.globPattern) }}
+            {{- $appConfigFiles := $cronjob.appConfigFiles | default $.Values.global.appConfigFiles }}
+            {{- if $appConfigFiles.globPattern }}
+              {{- range $path, $_ :=  $.Files.Glob $appConfigFiles.globPattern }}
               {{- with $currentScope}}
-            - mountPath: "{{- ($cronjob.appConfigFiles.dir | default $.Values.global.appConfigFiles.dir) -}}{{ $path }}"
+            - mountPath: "{{- $appConfigFiles.dir -}}{{ $path }}"
               name: configuration-volume
               subPath: "{{ $path }}"
               {{- end }}
               {{- end }}
-            {{- if ($cronjob.appConfigFiles.filesList | default $.Values.global.appConfigFiles.filesList) -}}
+            {{- end }}
+            {{- if $appConfigFiles.filesList -}}
               {{- $files := $.Files }}
-              {{- range ($cronjob.appConfigFiles.filesList | default $.Values.global.appConfigFiles.filesList) }}
+              {{- range $appConfigFiles.filesList }}
               {{- $rangeItem := . -}}
               {{- with $ }}
-            - mountPath: "{{- ($cronjob.appConfigFiles.dir | default $.Values.global.appConfigFiles.dir) -}}{{ $rangeItem }}"
+            - mountPath: "{{- $appConfigFiles.dir -}}{{ $rangeItem }}"
               name: configuration-volume
               subPath: "{{ $rangeItem }}"
               {{- end }}
