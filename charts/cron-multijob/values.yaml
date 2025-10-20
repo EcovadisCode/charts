@@ -1,0 +1,139 @@
+# Default values for charts-cron-multijob.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Define multiple cronjobs here. Each cronjob can override global settings.
+cronjobs:
+  - schedule: ""
+    image:
+      name: # app name
+      tag: ""
+    nameOverride: 
+    fullnameOverride:
+    additionalLabelsEnabled: true
+    additionalLabels:
+      team: #{team}#
+
+global:
+  schedule: ""
+  image:
+    repository: "cicdcr01weuy01.azurecr.io"
+    imagePullSecret: ""
+    name: # app name
+    tag: "" #"10.64.1"
+    pullPolicy: IfNotPresent
+    command: []
+    args: []
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+  
+  automountServiceAccountToken: false
+
+  ttlSecondsAfterFinished: 86400 # Job and all pods will be deleted after this amount of time in second, regardless its result (succeeded or failed)
+  activeDeadlineSeconds: 10800 # Job completion timeout
+  backoffLimit: 2 # Number of retries tu run a job. One retry is equal to one pod creation.
+  concurrencyPolicy: Allow # Specifies how to treat concurrent executions of a job. This will allow multiple jobs to run in parallel. Valid values are: Allow (default), Forbid or Replace
+  parallelism: 1 # Number of pods to run in parallel for a single job (https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs)
+  completions: 1 # Number of successful completions required before marking the job as completed. This will be ignored if parallelism is set to more than 1.
+  successfulJobsHistoryLimit: 1 # The number of successful finished jobs to retain
+  failedJobsHistoryLimit: 1 # The number of failed finished jobs to retain
+
+  secEnvVarsEnabled: true
+  secEnvVars: {}
+      #APP_INSIGHT_KEY: TEST
+
+  envVarsEnabled: true
+  envVars: 
+    ASPNETCORE_ENVIRONMENT: #{ASPNETCORE_ENVIRONMENT}#
+
+  nameOverride: # app name, may be the same as image.name
+
+  additionalLabelsEnabled: false
+  additionalLabels: {}
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - SYS_ADMIN
+        - SYS_PTRACE
+        - SYS_MODULE
+        - DAC_READ_SEARCH
+        - DAC_OVERRIDE
+        - CHOWN
+        - SETFCAP
+        - KILL
+        - NET_ADMIN
+        - NET_RAW
+    # readOnlyRootFilesystem: true
+
+  #Automates creation of default network policy, which is responsible for handling traffic between pod - service - traefik 
+  defaultNetworkPolicyEnabled: false
+
+  #Additional Network Polices configuration
+  elasticNetworkPolicyEnabled: true
+  mongodbNetworkPolicyEnabled: false
+  eventHubNetworkPolicyEnabled: false
+  lnmElasticNetworkPolicyEnabled: false
+  redisNetworkPolicyEnabled: true
+  redisCidr: "#{redisCidr}#"
+  sqlNetworkPolicyEnabled: true
+  servicebusNetworkPolicyEnabled: true
+
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  additionalValumesEnabled: false
+  additionalVolumes: []
+    # - name: azurefileshare
+    #   azureFile:
+    #     secretName: storage-secret
+    #     shareName: fileshare-name
+    #     readOnly: false
+  additionalVolumesMount: []  
+    # - name: azurefileshare
+    #   mountPath: /app
+
+  appConfigFilesEnabled: true
+  appConfigFiles:
+    globPattern: "**.json"
+    dir: "/app/"
+    filesList: []
+      #- "appsettings.json"
+
+  nodeSelector: {}
+
+  tolerations:
+  - key: "aksjobs"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: aksjobs
+            operator: In
+            values:
+            - "true"
+
+  podDisruptionBudget:
+    enabled: false
+
+  ingressRoutes:
+    enabled: false
+
+  canary:
+    enabled: false
