@@ -1,4 +1,35 @@
 {{- range $index, $cronjob := $.Values.cronjobs }}
+
+{{- $global := $.Values.global }}
+
+{{- /* CronJob configuration */ -}}
+{{- $schedule := $cronjob.schedule | default $global.schedule }}
+{{- $concurrencyPolicy := $cronjob.concurrencyPolicy | default $global.concurrencyPolicy }}
+{{- $successfulJobsHistoryLimit := $cronjob.successfulJobsHistoryLimit | default $global.successfulJobsHistoryLimit }}
+{{- $failedJobsHistoryLimit := $cronjob.failedJobsHistoryLimit | default $global.failedJobsHistoryLimit }}
+{{- $ttlSecondsAfterFinished := $cronjob.ttlSecondsAfterFinished | default $global.ttlSecondsAfterFinished }}
+{{- $activeDeadlineSeconds := $cronjob.activeDeadlineSeconds | default $global.activeDeadlineSeconds }}
+{{- $backoffLimit := $cronjob.backoffLimit | default $global.backoffLimit }}
+{{- $parallelism := $cronjob.parallelism | default $global.parallelism }}
+{{- $completions := $cronjob.completions | default $global.completions }}
+
+{{- /* Image configuration */ -}}
+{{- $imagePullSecret := $cronjob.image.imagePullSecret | default $global.image.imagePullSecret }}
+{{- $imageRepository := $cronjob.image.repository | default $global.image.repository }}
+{{- $imageName := $cronjob.image.name | default $global.image.name }}
+{{- $imageTag := $cronjob.image.tag | default $global.image.tag | default $.Chart.AppVersion }}
+{{- $imagePullPolicy := $cronjob.image.pullPolicy | default $global.image.pullPolicy }}
+
+{{- /* Pod configuration */ -}}
+{{- $automountServiceAccountToken := $cronjob.automountServiceAccountToken | default $global.automountServiceAccountToken }}
+{{- $securityContext := $cronjob.securityContext | default $global.securityContext }}
+{{- $resources := $cronjob.resources | default $global.resources }}
+{{- $appConfigFiles := $cronjob.appConfigFiles | default $global.appConfigFiles }}
+{{- $additionalValumesEnabled := $cronjob.additionalValumesEnabled | default $global.additionalValumesEnabled }}
+{{- $additionalVolumes := $cronjob.additionalVolumes | default $global.additionalVolumes }}
+{{- $nodeSelector := $cronjob.nodeSelector | default $global.nodeSelector }}
+{{- $affinity := $cronjob.affinity | default $global.affinity }}
+{{- $tolerations := $cronjob.tolerations | default $global.tolerations }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -7,76 +38,72 @@ metadata:
   labels:
     {{- include "charts-cron-multijob.labels" (dict "root" $ "cronjob" $cronjob) | nindent 4 }}
 spec:
-  schedule: "{{ $cronjob.schedule | default $.Values.global.schedule }}"
-  concurrencyPolicy: "{{ $cronjob.concurrencyPolicy | default $.Values.global.concurrencyPolicy }}"
-  successfulJobsHistoryLimit: {{ $cronjob.successfulJobsHistoryLimit | default $.Values.global.successfulJobsHistoryLimit }}
-  failedJobsHistoryLimit: {{ $cronjob.failedJobsHistoryLimit | default $.Values.global.failedJobsHistoryLimit }}
+  schedule: "{{ $schedule }}"
+  concurrencyPolicy: "{{ $concurrencyPolicy }}"
+  successfulJobsHistoryLimit: {{ $successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $failedJobsHistoryLimit }}
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: {{ $cronjob.ttlSecondsAfterFinished | default $.Values.global.ttlSecondsAfterFinished }}
-      activeDeadlineSeconds: {{ $cronjob.activeDeadlineSeconds | default $.Values.global.activeDeadlineSeconds }}
-      backoffLimit: {{ $cronjob.backoffLimit | default $.Values.global.backoffLimit }}
-      parallelism: {{ $cronjob.parallelism | default $.Values.global.parallelism }}
-      {{- if and ($cronjob.completions | default $.Values.global.completions) (lt (int ($cronjob.parallelism | default $.Values.global.parallelism)) 2) }}
-      completions: {{ $cronjob.completions | default $.Values.global.completions }}
+      ttlSecondsAfterFinished: {{ $ttlSecondsAfterFinished }}
+      activeDeadlineSeconds: {{ $activeDeadlineSeconds }}
+      backoffLimit: {{ $backoffLimit }}
+      parallelism: {{ $parallelism }}
+      {{- if and $completions (lt (int $parallelism) 2) }}
+      completions: {{ $completions }}
       {{- end }}
       template:
         metadata:
           labels:
             {{- include "charts-cron-multijob.labels" (dict "root" $ "cronjob" $cronjob) | nindent 12 }}
         spec:
-          {{- if ($cronjob.image.imagePullSecret | default $.Values.global.image.imagePullSecret) }}
+          {{- if $imagePullSecret }}
           imagePullSecrets:
-          - name: "{{ $cronjob.image.imagePullSecret | default $.Values.global.image.imagePullSecret }}"
+          - name: "{{ $imagePullSecret }}"
           {{- end }}
           serviceAccountName: {{ include "charts-cron-multijob.serviceAccountName" (dict "root" $ "cronjob" $cronjob "index" $index) }}
-          automountServiceAccountToken: {{ $cronjob.automountServiceAccountToken | default $.Values.global.automountServiceAccountToken }}
+          automountServiceAccountToken: {{ $automountServiceAccountToken }}
           containers:
           - name: {{ $.Chart.Name }}
             securityContext:
-              {{- toYaml ($cronjob.securityContext | default $.Values.global.securityContext) | nindent 14 }}
-            {{- $repo := $cronjob.image.repository | default $.Values.global.image.repository }}
-            {{- $name := $cronjob.image.name | default $.Values.global.image.name }}
-            {{- $tag := $cronjob.image.tag | default $.Values.global.image.tag | default $.Chart.AppVersion }}
-            image: "{{ $repo }}/{{ $name }}:{{ $tag }}"
-            imagePullPolicy: {{ $cronjob.image.pullPolicy | default $.Values.global.image.pullPolicy }}
+              {{- toYaml $securityContext | nindent 14 }}
+            image: "{{ $imageRepository }}/{{ $imageName }}:{{ $imageTag }}"
+            imagePullPolicy: {{ $imagePullPolicy }}
             {{- if $cronjob.image.command }}
             command: {{- toYaml $cronjob.image.command | nindent 14 }}
-            {{- else if $.Values.global.image.command }}
-            command: {{- toYaml $.Values.global.image.command | nindent 14 }}
+            {{- else if $global.image.command }}
+            command: {{- toYaml $global.image.command | nindent 14 }}
             {{- end }}
             {{- if $cronjob.image.args }}
             args: {{- toYaml $cronjob.image.args | nindent 14 }}
-            {{- else if $.Values.global.image.args }}
-            args: {{- toYaml $.Values.global.image.args | nindent 14 }}
+            {{- else if $global.image.args }}
+            args: {{- toYaml $global.image.args | nindent 14 }}
             {{- end }}
 
-            {{- if or $cronjob.envVarsEnabled $cronjob.secEnvVarsEnabled $.Values.global.envVarsEnabled $.Values.global.secEnvVarsEnabled}}
+            {{- if or $cronjob.envVarsEnabled $cronjob.secEnvVarsEnabled $global.envVarsEnabled $global.secEnvVarsEnabled}}
             envFrom:
-            {{- if or $cronjob.envVarsEnabled $.Values.global.envVarsEnabled}}
+            {{- if or $cronjob.envVarsEnabled $global.envVarsEnabled}}
               - configMapRef:
                   name: {{ include "charts-cron-multijob.fullname" (dict "root" $ "cronjob" $cronjob "index" $index) }}
             {{- end }}
-            {{- if or $cronjob.secEnvVarsEnabled $.Values.global.secEnvVarsEnabled}}
+            {{- if or $cronjob.secEnvVarsEnabled $global.secEnvVarsEnabled}}
               - secretRef:
                   name: {{ include "charts-cron-multijob.fullname" (dict "root" $ "cronjob" $cronjob "index" $index) }}-secure
             {{- end }}
             {{- end }}
             resources:
-              {{- toYaml ($cronjob.resources | default $.Values.global.resources) | nindent 14 }}
-            {{- if or $cronjob.appConfigFilesEnabled $cronjob.additionalValumesEnabled $.Values.global.appConfigFilesEnabled $.Values.global.additionalVolumesEnabled }}
+              {{- toYaml $resources | nindent 14 }}
+            {{- if or $cronjob.appConfigFilesEnabled $cronjob.additionalValumesEnabled $global.appConfigFilesEnabled $global.additionalVolumesEnabled }}
             volumeMounts:
             {{- if $cronjob.additionalValumesEnabled -}}
             {{- with $cronjob.additionalVolumesMount }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
-            {{- else if $.Values.global.additionalValumesEnabled -}}
-            {{- with $.Values.global.additionalVolumesMount }}
+            {{- else if $global.additionalValumesEnabled -}}
+            {{- with $global.additionalVolumesMount }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
             {{- end }}
             {{- $currentScope := $}}
-            {{- $appConfigFiles := $cronjob.appConfigFiles | default $.Values.global.appConfigFiles }}
             {{- if $appConfigFiles.globPattern }}
               {{- range $path, $_ :=  $.Files.Glob $appConfigFiles.globPattern }}
               {{- with $currentScope}}
@@ -102,21 +129,21 @@ spec:
             secret:
               secretName: {{ include "charts-cron-multijob.fullname" (dict "root" $ "cronjob" $cronjob "index" $index) }}-files
           {{- end }}
-          {{- if ($cronjob.additionalValumesEnabled | default $.Values.global.additionalValumesEnabled) -}}
-          {{- with ($cronjob.additionalVolumes | default $.Values.global.additionalVolumes) }}
+          {{- if $additionalValumesEnabled -}}
+          {{- with $additionalVolumes }}
             {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- end }}
           restartPolicy: Never
-          {{- with ($cronjob.nodeSelector | default $.Values.global.nodeSelector) }}
+          {{- with $nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with ($cronjob.affinity | default $.Values.global.affinity) }}
+          {{- with $affinity }}
           affinity:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with ($cronjob.tolerations | default $.Values.global.tolerations) }}
+          {{- with $tolerations }}
           tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
