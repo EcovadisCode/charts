@@ -35,7 +35,10 @@ spec:
           - name: {{ $.Chart.Name }}
             securityContext:
               {{- toYaml ($cronjob.securityContext | default $.Values.global.securityContext) | nindent 14 }}
-            image: "{{ ($cronjob.image.repository | default $.Values.global.image.repository) }}/{{ ($cronjob.image.name | default $.Values.global.image.name) }}:{{ ($cronjob.image.tag | default $.Values.global.image.tag) | default $.Chart.AppVersion }}"
+            {{- $repo := $cronjob.image.repository | default $.Values.global.image.repository }}
+            {{- $name := $cronjob.image.name | default $.Values.global.image.name }}
+            {{- $tag := $cronjob.image.tag | default $.Values.global.image.tag | default $.Chart.AppVersion }}
+            image: "{{ $repo }}/{{ $name }}:{{ $tag }}"
             imagePullPolicy: {{ $cronjob.image.pullPolicy | default $.Values.global.image.pullPolicy }}
             {{- if $cronjob.image.command }}
             command: {{- toYaml $cronjob.image.command | nindent 14 }}
