@@ -209,6 +209,8 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             values={
                 "global": {
                     "livenessProbe": {
+                        "path": "test",
+                        "intervalSeconds": 42,
                         "periodSeconds": 42,
                         "successThreshold": 42,
                         "failureThreshold": 42,
@@ -224,6 +226,13 @@ class DeploymentTemplateFileTest(unittest.TestCase):
 
         self.assertEqual(
             {
+                "exec": {
+                    "command": [
+                        "/bin/sh",
+                        "-c",
+                        "[ $(($(date +%s) - $(stat -c %Y test))) -lt 42 ]"
+                    ]
+                },
                 "initialDelaySeconds": 42,
                 "periodSeconds": 42,
                 "successThreshold": 42,
