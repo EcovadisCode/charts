@@ -27,14 +27,20 @@ spec:
         restartPolicy: Never
         terminationGracePeriodSeconds: 3600
         volumes:
-        {{- if .Values.sidecarContainers.docker.enabled }}
+        {{- if .Values.agent.os | eq "linux" }}
+          {{- if .Values.sidecarContainers.docker.enabled }}
           - name: dind-certs
             emptyDir: {}
-        {{- end }}
-        {{- if .Values.sidecarContainers.buildkit.enabled }}
+          {{- end }}
+          {{- if .Values.sidecarContainers.buildkit.enabled }}
           - name: buildkitd-certs
             emptyDir: {}
           - name: buildkitd-workspace
+            emptyDir: {}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.agent.os | eq "windows" }}
+          - name: agentmount
             emptyDir: {}
         {{- end }}
         nodeSelector:
@@ -42,71 +48,73 @@ spec:
         {{- if .Values.aks.sysbox.enabled }}
         runtimeClassName: "sysbox-runc-{{ .Values.buildAgentName }}"
         {{- end }}
+        {{- if .Values.agent.os | eq "linux" }}
         initContainers:
-        {{- if .Values.sidecarContainers.buildkit.enabled }}
-        - name: generate-mtls-cert
-          image: busybox:1.37
-          command:
-            - /bin/sh
-            - -c
-            - |
-              cd ~ &&
-              wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 -O mkcert &&
-              chmod +x mkcert &&
-              mkdir -p -- /certs/server /certs/client &&
-              CAROOT=$(pwd) ./mkcert -cert-file /certs/server/cert.pem -key-file /certs/server/key.pem 127.0.0.1 &&
-              cp rootCA.pem /certs/server/ca.pem &&
-              CAROOT=$(pwd) ./mkcert -client -cert-file /certs/client/cert.pem -key-file /certs/client/key.pem client &&
-              cp rootCA.pem /certs/client/ca.pem &&
-              chmod 744 /certs/client/ca.pem /certs/client/cert.pem /certs/client/key.pem /certs/server/ca.pem /certs/server/cert.pem /certs/server/key.pem
-          volumeMounts:
-            - name: buildkitd-certs
-              mountPath: /certs
-        {{- end }}
-        {{- if .Values.sidecarContainers.buildkit.enabled }}
-        - name: buildkitd
-          image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.sidecarContainers.buildkit.image }}
-          imagePullPolicy: IfNotPresent
-          restartPolicy: Always
-          securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-            capabilities:
-              add:
-                - SYS_PTRACE
-                - KILL
-            seccompProfile:
-              type: Unconfined
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo "[CMD] Starting buildkitd...";
-              rootlesskit buildkitd \
-                --oci-worker-no-process-sandbox \
-                --addr tcp://0.0.0.0:1234 \
-                --addr unix:///run/user/1000/buildkit/buildkitd.sock \
-                --tlscacert /certs/server/ca.pem \
-                --tlscert /certs/server/cert.pem \
-                --tlskey /certs/server/key.pem
-          volumeMounts:
-            - name: buildkitd-certs
-              mountPath: /certs
-              readOnly: true
-            - name: buildkitd-workspace
-              mountPath: /home/user/.local/share/buildkit
-        {{- end }}
-        {{- if .Values.sidecarContainers.docker.enabled }}
-        - name: dind
-          image: {{ .Values.sidecarContainers.docker.image | default "docker:dind" }}
-          restartPolicy: Always
-          securityContext:
-            privileged: true
-          env: 
-            - name: DOCKER_TLS_CERTDIR
-              value: /dind-certs
-          volumeMounts:
-            - mountPath: /dind-certs
-              name: dind-certs
+          {{- if .Values.sidecarContainers.buildkit.enabled }}
+          - name: generate-mtls-cert
+            image: busybox:1.37
+            command:
+              - /bin/sh
+              - -c
+              - |
+                cd ~ &&
+                wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 -O mkcert &&
+                chmod +x mkcert &&
+                mkdir -p -- /certs/server /certs/client &&
+                CAROOT=$(pwd) ./mkcert -cert-file /certs/server/cert.pem -key-file /certs/server/key.pem 127.0.0.1 &&
+                cp rootCA.pem /certs/server/ca.pem &&
+                CAROOT=$(pwd) ./mkcert -client -cert-file /certs/client/cert.pem -key-file /certs/client/key.pem client &&
+                cp rootCA.pem /certs/client/ca.pem &&
+                chmod 744 /certs/client/ca.pem /certs/client/cert.pem /certs/client/key.pem /certs/server/ca.pem /certs/server/cert.pem /certs/server/key.pem
+            volumeMounts:
+              - name: buildkitd-certs
+                mountPath: /certs
+          {{- end }}
+          {{- if .Values.sidecarContainers.buildkit.enabled }}
+          - name: buildkitd
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.sidecarContainers.buildkit.image }}
+            imagePullPolicy: IfNotPresent
+            restartPolicy: Always
+            securityContext:
+              runAsUser: 1000
+              runAsGroup: 1000
+              capabilities:
+                add:
+                  - SYS_PTRACE
+                  - KILL
+              seccompProfile:
+                type: Unconfined
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                echo "[CMD] Starting buildkitd...";
+                rootlesskit buildkitd \
+                  --oci-worker-no-process-sandbox \
+                  --addr tcp://0.0.0.0:1234 \
+                  --addr unix:///run/user/1000/buildkit/buildkitd.sock \
+                  --tlscacert /certs/server/ca.pem \
+                  --tlscert /certs/server/cert.pem \
+                  --tlskey /certs/server/key.pem
+            volumeMounts:
+              - name: buildkitd-certs
+                mountPath: /certs
+                readOnly: true
+              - name: buildkitd-workspace
+                mountPath: /home/user/.local/share/buildkit
+          {{- end }}
+          {{- if .Values.sidecarContainers.docker.enabled }}
+          - name: dind
+            image: {{ .Values.sidecarContainers.docker.image | default "docker:dind" }}
+            restartPolicy: Always
+            securityContext:
+              privileged: true
+            env: 
+              - name: DOCKER_TLS_CERTDIR
+                value: /dind-certs
+            volumeMounts:
+              - mountPath: /dind-certs
+                name: dind-certs
+          {{- end }}
         {{- end }}
         containers:
           # PROTIP - In Keda agent container has to be first, otherwise it will not be able to read value from AZP_URL
@@ -123,23 +131,25 @@ spec:
             limits:
               memory: {{ .Values.aks.memoryLimit }}
           env:
-            {{- if .Values.sidecarContainers.docker.enabled }}
+            {{- if .Values.agent.os | eq "linux" }}
+              {{- if .Values.sidecarContainers.docker.enabled }}
             - name: DOCKER_HOST
               value: "tcp://localhost:2376"
             - name: DOCKER_CERT_PATH
               value: "/dind-certs/client"
             - name: DOCKER_TLS_VERIFY
               value: "1"
-            {{- end }}
-            {{- if .Values.sidecarContainers.docker.enabled }}
+              {{- end }}
+              {{- if .Values.sidecarContainers.docker.enabled }}
             - name: DOCKER_ENABLED
               value: "TRUE"
-            {{- end }}
-            {{- if .Values.sidecarContainers.buildkit.enabled }}
+              {{- end }}
+              {{- if .Values.sidecarContainers.buildkit.enabled }}
             - name: BUILDKIT_ENABLED
               value: "TRUE"
             - name: BUILDX_BUILDER
               value: buildkitd
+              {{- end }}
             {{- end }}
             - name: AZP_IGNORE_SECRETS_SHORTER_THAN
               value: "4"
@@ -158,16 +168,35 @@ spec:
                 secretKeyRef:
                   name: "azdevops-{{ .Values.buildAgentName }}"
                   key: ACR_NAME
+            {{- if .Values.agent.os | eq "windows" }}
+            - name: AZP_WORK
+              value: "C:/builds"
+              {{- if .Values.agent.remoteArtifactsShare.enabled }}
+            - name: BLD_ARTIFACTS_SA_RG
+              value: {{ .Values.agent.remoteArtifactsShare.fileShareResourceGroup }}
+            - name: BLD_ARTIFACTS_SA_NAME
+              value: {{ .Values.agent.remoteArtifactsShare.fileShareStorageAccountName }}
+            - name: BLD_ARTIFACTS_SA_SHARE
+              value: {{ .Values.agent.remoteArtifactsShare.fileShareName }}
+              {{- end }}
+            {{- end }}
           volumeMounts:
-            {{- if .Values.sidecarContainers.buildkit.enabled }}
+            {{- if .Values.agent.os | eq "linux" }}
+              {{- if .Values.sidecarContainers.buildkit.enabled }}
             - name: buildkitd-certs
               mountPath: /certs
               readOnly: true
-            {{- end}}
-            {{- if .Values.sidecarContainers.docker.enabled }}
+              {{- end}}
+              {{- if .Values.sidecarContainers.docker.enabled }}
             - name: dind-certs
               mountPath: /dind-certs
               readOnly: true
+              {{- end }}
+            {{- end }}
+            {{- if .Values.agent.os | eq "windows" }}
+            - name: agentmount
+              mountPath: "C:/builds"
+              readOnly: false
             {{- end }}
         tolerations:
         - key: "pool"

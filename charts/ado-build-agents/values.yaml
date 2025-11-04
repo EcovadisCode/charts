@@ -29,6 +29,14 @@ devops:
   ACR_NAME: "myazacr.azurecr.io"
 
 agent:
+  # Operating system of the build agent, either windows or linux
+  os: linux
+  # # Only applicable for os: windows, passes required parameters for mounting azure file share
+  remoteArtifactsShare:
+    enabled: false
+    fileShareResourceGroup: ""
+    fileShareStorageAccountName: ""
+    fileShareName: ""
   primary:
     # Image name to be used for the main build agent
     imageName: build-agent-1
@@ -46,7 +54,7 @@ agent:
   # Apparmor profile to be used for the build agent container, for now only "unconfined" is required and tested
   apparmor: unconfined
 
-# Sidecar container that will be used from agent image. Only one sidecar should be enabled at a time. Rootless docker is not yet tested.
+# Sidecar container that will be used from agent image. Rootless docker is not yet tested.
 sidecarContainers:
   docker:
     enabled: true
