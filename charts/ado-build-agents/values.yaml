@@ -33,7 +33,7 @@ agent:
   os: linux
   # # Only applicable for os: windows, passes required parameters for mounting azure file share
   remoteArtifactsShare:
-    enabled: true
+    enabled: false
     fileShareResourceGroup: ""
     fileShareStorageAccountName: ""
     fileShareName: ""
