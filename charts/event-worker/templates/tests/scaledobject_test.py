@@ -30,8 +30,8 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
                         "pollingInterval": 1,
                         "cooldownPeriod": 2,
                         "initialCooldownPeriod": 3,
-                        "minReplicaCount": 5,
-                        "maxReplicaCount": 6
+                        "minReplicaCount": 4,
+                        "maxReplicaCount": 5
                     }
                 }
 
