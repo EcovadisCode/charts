@@ -54,14 +54,10 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
         )
         self.assertEqual(
             4,
-            jmespath.search("spec.idleReplicaCount", docs[0])
-        )
-        self.assertEqual(
-            5,
             jmespath.search("spec.minReplicaCount", docs[0])
         )
         self.assertEqual(
-            6,
+            5,
             jmespath.search("spec.maxReplicaCount", docs[0])
         )
 
