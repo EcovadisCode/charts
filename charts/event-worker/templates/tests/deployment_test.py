@@ -208,19 +208,14 @@ class DeploymentTemplateFileTest(unittest.TestCase):
         docs = render_chart(
             values={
                 "global": {
-                    "image": {
-                        "livenessProbe": {
-                            "httpGet": {
-                                "path": "/test/path",
-                                "port": "443"
-                            },
-                            "periodSeconds": 42,
-                            "successThreshold": 42,
-                            "failureThreshold": 42,
-                            "timeoutSeconds": 42,
-                            "initialDelaySeconds": 42
-                        }
+                    "livenessProbe": {
+                        "periodSeconds": 42,
+                        "successThreshold": 42,
+                        "failureThreshold": 42,
+                        "timeoutSeconds": 42,
+                        "initialDelaySeconds": 42
                     }
+
                 }
             },
             name=".",
@@ -229,10 +224,6 @@ class DeploymentTemplateFileTest(unittest.TestCase):
 
         self.assertEqual(
             {
-                "httpGet": {
-                    "path": "/test/path",
-                    "port": "443"
-                },
                 "initialDelaySeconds": 42,
                 "periodSeconds": 42,
                 "successThreshold": 42,
