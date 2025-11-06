@@ -62,7 +62,19 @@ spec:
           {{- if .Values.global.image.args }}
           args: {{- toYaml .Values.global.image.args | nindent 12 }}
           {{- end }}
+          {{- if .Values.global.livenessProbe.enabled }}
           livenessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - "[ $(($(date +%s) - $(stat -c %Y {{ .Values.global.livenessProbe.path }}))) -lt {{ .Values.global.livenessProbe.intervalSeconds }} ]"
+            timeoutSeconds: {{ .Values.global.livenessProbe.timeoutSeconds | default 5 }}
+            initialDelaySeconds: {{ .Values.global.livenessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.global.livenessProbe.periodSeconds | default 10 }}
+            failureThreshold: {{ .Values.global.livenessProbe.failureThreshold | default 3 }}
+            successThreshold: {{ .Values.global.livenessProbe.successThreshold | default 1 }}
+          {{- end }}
           {{- if .Values.global.image.livenessProbe }}
           {{- toYaml .Values.global.image.livenessProbe | nindent 12 }}
           {{- end }}

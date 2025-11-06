@@ -30,9 +30,8 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
                         "pollingInterval": 1,
                         "cooldownPeriod": 2,
                         "initialCooldownPeriod": 3,
-                        "idleReplicaCount": 4,
-                        "minReplicaCount": 5,
-                        "maxReplicaCount": 6
+                        "minReplicaCount": 4,
+                        "maxReplicaCount": 5
                     }
                 }
 
@@ -55,14 +54,10 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
         )
         self.assertEqual(
             4,
-            jmespath.search("spec.idleReplicaCount", docs[0])
-        )
-        self.assertEqual(
-            5,
             jmespath.search("spec.minReplicaCount", docs[0])
         )
         self.assertEqual(
-            6,
+            5,
             jmespath.search("spec.maxReplicaCount", docs[0])
         )
 
