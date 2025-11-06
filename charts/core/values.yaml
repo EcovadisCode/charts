@@ -141,3 +141,15 @@ global:
   # Setting to enable or disable canary deployments with Flagger.
   canary:
     enabled: false
+
+  # External Secrets Operator configuration
+  # When enabled, creates ClusterSecretStore and ExternalSecret to sync secrets from Azure Key Vault
+  # Uses credentials from secEnvVars (AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID, KeyVault__Url)
+  eso:
+    enabled: false
+    # Optional: override refreshInterval for ExternalSecret (default: 1h)
+    refreshInterval: "1h"
+    # Optional: override regex pattern for finding secrets in Key Vault (default: .*)
+    findRegex: ".*"
+    # Optional: override conversion strategy (default: Unicode)
+    conversionStrategy: "Unicode"
