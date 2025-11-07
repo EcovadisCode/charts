@@ -260,7 +260,7 @@ spec:
       - name: cert-volume
         secret:
           defaultMode: 420
-          secretName: ecovadis-tls     
+          secretName: ecovadis-tls
       {{- end }}
       {{ if .Values.global.appConfigFilesEnabled -}}
       - name: "configuration-volume"
