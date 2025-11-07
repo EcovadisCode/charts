@@ -176,7 +176,7 @@ global:
     filesList: []
       #- "appsettings.json"
 
-  certificateSecretStoreEnabled: false
+  certificateSecretStoreEnabled: true
   certificateSecretStoreName: ecovadis-cert
   
   additionalVolumesEnabled: false
