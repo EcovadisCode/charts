@@ -143,8 +143,6 @@ global:
     enabled: false
 
   # External Secrets Operator configuration
-  # When enabled, creates ClusterSecretStore and ExternalSecret to sync secrets from Azure Key Vault
-  # Uses credentials from secEnvVars (AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID, KeyVault__Url)
   eso:
     enabled: false
     # Optional: override refreshInterval for ExternalSecret (default: 1h)

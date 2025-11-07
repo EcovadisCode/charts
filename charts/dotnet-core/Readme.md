@@ -1,5 +1,34 @@
 # Dotnet Core Helm Chart
 
+## External Secrets Operator (ESO) Support
+
+This chart supports integration with External Secrets Operator through the `charts-core` dependency. When enabled, secrets from Azure Key Vault are automatically mounted to `/var/run/secrets/app` in your application container.
+
+### Configuration
+
+To enable ESO, add the following to your `values.yaml`:
+
+```yaml
+global:
+  eso:
+    enabled: true
+    refreshInterval: "1h"
+  
+  secEnvVarsEnabled: true
+  secEnvVars:
+    AZURE_CLIENT_ID: '#{clientId}#'
+    AZURE_CLIENT_SECRET: '#{clientSecret}#'
+    AZURE_TENANT_ID: '#{azAccountTenantId}#'
+    KeyVault__Url: 'https://#{keyVaultName}#.vault.azure.net/'
+```
+
+When enabled:
+- Creates a `ClusterSecretStore` pointing to your Azure Key Vault
+- Creates an `ExternalSecret` that syncs secrets to `<release-name>-secure-kv`
+- Mounts the synced secrets to `/var/run/secrets/app` (read-only)
+- Mounts ecovadis cert to `/app/cert `, which later is used in ASPNETCORE_Kestrel__Certificates__Default__Path and ASPNETCORE_Kestrel__Certificates__Default__KeyPath
+## Overview
+
 Kubernetes is a system for automating deployment and management of applications.
 As with each system it comes up with its infrastructure and object definitions. Those objects defintions can be supplied in either *yaml* or *json* files. Furthermore, those objects can be separated into multiple categories.
 One of those categories can be the source of the object - it can be either built-in Kubernetes, or user created one (custom resource definition like Traefik's IngressRoute for example).
