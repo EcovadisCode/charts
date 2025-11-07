@@ -141,3 +141,13 @@ global:
   # Setting to enable or disable canary deployments with Flagger.
   canary:
     enabled: false
+
+  # External Secrets Operator configuration
+  eso:
+    enabled: false
+    # Optional: override refreshInterval for ExternalSecret (default: 1h)
+    refreshInterval: "1h"
+    # Optional: override regex pattern for finding secrets in Key Vault (default: .*)
+    findRegex: ".*"
+    # Optional: override conversion strategy (default: Unicode)
+    conversionStrategy: "Unicode"

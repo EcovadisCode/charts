@@ -176,7 +176,7 @@ global:
     filesList: []
       #- "appsettings.json"
 
-  certificateSecretStoreEnabled: true
+  certificateSecretStoreEnabled: false
   certificateSecretStoreName: ecovadis-cert
   
   additionalVolumesEnabled: false
@@ -293,3 +293,13 @@ global:
     mountPath: "/mnt/storage" # mount path in container
     storageAccountName: "" # Azure Storage Account name
     storageAccountKey: "" # Azure Storage Account key
+
+  # External Secrets Operator configuration
+  eso:
+    enabled: false
+    # Optional: override refreshInterval for ExternalSecret (default: 1h)
+    refreshInterval: "1h"
+    # Optional: override regex pattern for finding secrets in Key Vault (default: .*)
+    findRegex: ".*"
+    # Optional: override conversion strategy (default: Unicode)
+    conversionStrategy: "Unicode"
