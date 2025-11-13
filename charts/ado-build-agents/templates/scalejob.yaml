@@ -52,7 +52,7 @@ spec:
         initContainers:
           {{- if .Values.sidecarContainers.buildkit.enabled }}
           - name: generate-mtls-cert
-            image: cicdcr01weuy01.azurecr.io/dockerhub/library/busybox:1.37
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.sidecarContainers.busybox.image }}
             command:
               - /bin/sh
               - -c
@@ -104,7 +104,7 @@ spec:
           {{- end }}
           {{- if .Values.sidecarContainers.docker.enabled }}
           - name: dind
-            image: {{ .Values.sidecarContainers.docker.image | default "docker:dind" }}
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.sidecarContainers.docker.image | default "docker:dind" }}
             restartPolicy: Always
             securityContext:
               privileged: true

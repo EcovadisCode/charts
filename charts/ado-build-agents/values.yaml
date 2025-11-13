@@ -62,6 +62,8 @@ sidecarContainers:
   buildkit:
     enabled: false
     image: buildkit:v0.21.1-rootless
+  busybox:
+    image: busybox:1.37
 
 keda:
   # Azure Identity to be used by Keda scaler
