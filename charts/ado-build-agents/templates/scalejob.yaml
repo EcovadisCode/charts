@@ -52,7 +52,7 @@ spec:
         initContainers:
           {{- if .Values.sidecarContainers.buildkit.enabled }}
           - name: generate-mtls-cert
-            image: busybox:1.37
+            image: cicdcr01weuy01.azurecr.io/dockerhub/library/busybox:1.37
             command:
               - /bin/sh
               - -c
