@@ -4,6 +4,15 @@ metadata:
   name: {{ include "charts-dotnet-core.fullname" . }}
   labels:
     {{- include "charts-dotnet-core.labels" . | nindent 4 }}
+  {{- if and .Values.global.certificate.enabled .Values.global.certificate.reloader.enabled }}
+  {{- $currentEnv := .Values.global.envVars.ASPNETCORE_ENVIRONMENT | default "" }}
+  {{- $allowedEnvs := .Values.global.certificate.reloader.environments }}
+  {{- $envList := splitList "," $allowedEnvs }}
+  {{- if or (eq $allowedEnvs "") (has $currentEnv $envList) }}
+  annotations:
+    secret.reloader.stakater.com/reload: "{{ .Values.global.certificate.secretName }}"
+  {{- end }}
+  {{- end }}
 spec:
 {{- if not .Values.global.autoscaling.enabled }}
   replicas: {{ .Values.global.replicaCount }}
