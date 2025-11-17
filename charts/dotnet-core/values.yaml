@@ -310,3 +310,11 @@ global:
     enabled: false
     secretName: "ecovadis-tls"
     mountPath: "/app/cert"
+    # Reloader configuration - automatically restart pods when certificate changes
+    reloader:
+      enabled: false
+      # Optional: only enable reloader for specific environments
+      # Default: lab/staging environments only (not Production)
+      # Set to empty string "" to enable for all environments
+      # Can be comma-separated: "Develop,ReleaseCandidate,Hotfix"
+      environments: "#{reloader_envs}#"
