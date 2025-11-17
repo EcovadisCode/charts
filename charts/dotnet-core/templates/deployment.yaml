@@ -182,8 +182,18 @@ spec:
                   fieldPath: metadata.name
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
-          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled }}
+          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled .Values.global.eso.enabled .Values.global.certificate.enabled }}
           volumeMounts:
+          {{- if .Values.global.eso.enabled }}
+          - mountPath: /var/run/secrets/app
+            name: app-secrets-vol
+            readOnly: true
+          {{- end }}
+          {{- if .Values.global.certificate.enabled }}
+          - mountPath: {{ .Values.global.certificate.mountPath }}
+            name: cert-volume
+            readOnly: true  
+          {{- end }}
           {{- if .Values.global.appConfigFilesEnabled -}}
           {{- $currentScope := .}}
             {{- range $path, $_ :=  .Files.Glob .Values.global.appConfigFiles.globPattern }}
@@ -244,6 +254,18 @@ spec:
           {{- end }}
         {{- end }}          
       volumes:
+      {{- if .Values.global.eso.enabled }}
+      - name: app-secrets-vol
+        secret:
+          defaultMode: 420
+          secretName: {{ include "charts-dotnet-core.fullname" . }}-secure-kv
+      {{- end }}
+      {{- if .Values.global.certificate.enabled }}
+      - name: cert-volume
+        secret:
+          defaultMode: 420
+          secretName: {{ .Values.global.certificate.secretName }}
+      {{- end }}
       {{ if .Values.global.appConfigFilesEnabled -}}
       - name: "configuration-volume"
         secret:

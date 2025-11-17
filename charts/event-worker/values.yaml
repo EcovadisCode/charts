@@ -3,8 +3,6 @@
 # Declare variables to be passed into your templates.
 
 global:
-  terminationGracePeriodSeconds: 30 # Time to let pod shutdown itselft before it is killed. Time between SIGTERM and SIGKILL
-
   rollingUpdate:
     maxSurge: "50%"
     maxUnavailable: "50%"
@@ -18,13 +16,6 @@ global:
     pullPolicy: IfNotPresent
     command: []
     args: []
-
-    ### Configure liveness probe
-    # livenessProbe:
-    #   exec:
-    #     command: ["cat", "/tmp/healthy"]
-    #   initialDelaySeconds: 5
-    #   periodSeconds: 10
 
   serviceAccount:
     # Specifies whether a service account should be created
@@ -74,7 +65,7 @@ global:
   mongodbNetworkPolicyEnabled: false
   eventHubNetworkPolicyEnabled: false
   lnmElasticNetworkPolicyEnabled: false
-  redisNetworkPolicyEnabled: true
+  redisNetworkPolicyEnabled: false
   redisCidr: "#{redisCidr}#"
   sqlNetworkPolicyEnabled: true
   servicebusNetworkPolicyEnabled: true
@@ -128,14 +119,24 @@ global:
   canary:
     enabled: false
 
+  livenessProbe:
+    enabled: true
+    path: "/tmp/probeFile.prb"      # Path to health probe file
+    intervalSeconds: 12             # Seconds since last modification to check, set slightly higher value than in appsettings
+    initialDelaySeconds: 30         # Delay after pod startup before probe is enabled
+    periodSeconds: 10               # How often in secons probe is executed
+    failureThreshold: 3             # How many times it can fail before pod is killed
+
+  terminationGracePeriodSeconds: 30 # Time to let pod shutdown itselft before it is killed. Time between SIGTERM and SIGKILL
+
+  # https://keda.sh/docs/latest/reference/scaledobject-spec/
   keda:
-    autoscalingPaused: false        # If true, KEDA will not scale the job
+    autoscalingPaused: false        # If true, KEDA will not scale the worker
     pollingInterval: 30             # Polling interval in seconds
-    minReplicaCount: 0              # Minimum number of instances to run at the same time
+    minReplicaCount: 2              # Minimum number of instances to run at the same time
     maxReplicaCount: 5              # Maximum number of instances to run at the same time
     cooldownPeriod:   300           # Optional. Default: 300 seconds
     initialCooldownPeriod:  0       # Optional. Default: 0 seconds
-    idleReplicaCount: 0             # Optional. Default: ignored, must be less than minReplicaCount
     fallbackReplicasCount:          # Optional. Number of replicas to set when event metrics cannot be gathered, defaults to half of maxReplicaCount (rounded up)
     azure:
       clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.

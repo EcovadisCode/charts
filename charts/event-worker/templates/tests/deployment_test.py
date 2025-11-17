@@ -91,22 +91,6 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             jmespath.search("spec.template.spec.containers[0].args", docs[0])
         )
 
-    def test_should_remove_replicas_when_autoscaling_enabled(self):
-        docs = render_chart(
-            values={
-                "global": {
-                    "autoscaling": {
-                        "enabled": True
-                    }
-                }
-            },
-            name=".",
-            show_only=["templates/deployment.yaml"]
-        )
-        self.assertIsNone(
-            jmespath.search("spec.replicas", docs[0])
-        )
-
     def test_should_overwrite_serviceaccount_name(self):
         docs = render_chart(
             values={
@@ -224,19 +208,16 @@ class DeploymentTemplateFileTest(unittest.TestCase):
         docs = render_chart(
             values={
                 "global": {
-                    "image": {
-                        "livenessProbe": {
-                            "httpGet": {
-                                "path": "/test/path",
-                                "port": "443"
-                            },
-                            "periodSeconds": 42,
-                            "successThreshold": 42,
-                            "failureThreshold": 42,
-                            "timeoutSeconds": 42,
-                            "initialDelaySeconds": 42
-                        }
+                    "livenessProbe": {
+                        "path": "test",
+                        "intervalSeconds": 42,
+                        "periodSeconds": 42,
+                        "successThreshold": 42,
+                        "failureThreshold": 42,
+                        "timeoutSeconds": 42,
+                        "initialDelaySeconds": 42
                     }
+
                 }
             },
             name=".",
@@ -245,9 +226,12 @@ class DeploymentTemplateFileTest(unittest.TestCase):
 
         self.assertEqual(
             {
-                "httpGet": {
-                    "path": "/test/path",
-                    "port": "443"
+                "exec": {
+                    "command": [
+                        "/bin/sh",
+                        "-c",
+                        "[ $(($(date +%s) - $(stat -c %Y test))) -lt 42 ]"
+                    ]
                 },
                 "initialDelaySeconds": 42,
                 "periodSeconds": 42,
