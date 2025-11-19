@@ -117,3 +117,18 @@ global:
     dir: "/app/"
     filesList: []
       #- "appsettings.json"
+
+  # Certificate mounting configuration (independent from ESO)
+  certificate:
+    # Mount ecovadis-tls certificate to /etc/ssl for nginx (default: false)
+    enabled: false
+    secretName: "ecovadis-tls"
+    mountPath: "/etc/ssl"
+    # Reloader configuration - automatically restart pods when certificate changes
+    reloader:
+      enabled: false
+      # Optional: only enable reloader for specific environments
+      # Default: lab/staging environments only (not Production)
+      # Set to empty string "" to enable for all environments
+      # Can be comma-separated: "Develop,ReleaseCandidate,Hotfix"
+      environments: "Develop,ReleaseCandidate,Hotfix,Training,Demo,ReleaseGated,PreDevelop"

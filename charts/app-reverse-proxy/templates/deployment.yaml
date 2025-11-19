@@ -4,6 +4,15 @@ metadata:
   name: {{ include "charts-app-reverse-proxy.fullname" . }}
   labels:
     {{- include "charts-app-reverse-proxy.labels" . | nindent 4 }}
+  {{- if and .Values.global.certificate.enabled .Values.global.certificate.reloader.enabled }}
+  {{- $currentEnv := .Values.global.envVars.ASPNETCORE_ENVIRONMENT | default "" }}
+  {{- $allowedEnvs := .Values.global.certificate.reloader.environments }}
+  {{- $envList := splitList "," $allowedEnvs }}
+  {{- if or (eq $allowedEnvs "") (has $currentEnv $envList) }}
+  annotations:
+    secret.reloader.stakater.com/reload: "{{ .Values.global.certificate.secretName }}"
+  {{- end }}
+  {{- end }}
 spec:
   replicas: {{ .Values.global.replicaCount }}
   selector:
@@ -40,8 +49,10 @@ spec:
           volumeMounts:
             - mountPath: /etc/nginx/conf.d/
               name: nginx-default-config
+            {{- if .Values.global.certificate.enabled }}
             - mountPath: /etc/ssl/
-              name: ecovadis-cert
+              name: cert-volume
+            {{- end }}
           resources:
             {{- toYaml .Values.global.resources.nginx | nindent 12 }}
         - name: {{ .Chart.Name }}
@@ -64,8 +75,9 @@ spec:
                 name: "{{ include "charts-app-reverse-proxy.fullname" . }}-secure"
           {{- end }}
           {{- end }}
-          {{- if .Values.global.appConfigFilesEnabled }}
+          {{- if or .Values.global.appConfigFilesEnabled }}
           volumeMounts:
+          {{- if .Values.global.appConfigFilesEnabled }}
           {{- $currentScope := .}}
             {{- range $path, $_ :=  .Files.Glob .Values.global.appConfigFiles.globPattern }}
             {{- with $currentScope}}
@@ -85,26 +97,33 @@ spec:
             {{- end }}
             {{- end }}
            {{- end }}
+          {{- end }}
 	  {{- end }}
           resources:
             {{- toYaml .Values.global.resources.application | nindent 12 }}
       volumes:
+      {{- if .Values.global.certificate.enabled }}
+      - name: cert-volume
+        secret:
+          defaultMode: 420
+          secretName: {{ .Values.global.certificate.secretName }}
+      {{- end }}
       - name : nginx-default-config
         configMap:
           name: {{ include "charts-app-reverse-proxy.fullname" . }}-reverse-proxy
           items:
             - key: server_conf
               path: default.conf
-      - name : ecovadis-cert
-        secret:
-          secretName: ecovadis-cert
-          items:
-            - key: tls.crt
-              path: tls.crt
-            - key: tls.key 
-              path: tls.key
-            - key: ca.crt 
-              path: ca.crt
+      # - name : ecovadis-cert
+      #   secret:
+      #     secretName: ecovadis-cert
+      #     items:
+      #       - key: tls.crt
+      #         path: tls.crt
+      #       - key: tls.key 
+      #         path: tls.key
+      #       - key: ca.crt 
+      #         path: ca.crt
       - name: "configuration-volume"
         secret:
           secretName: {{ include "charts-app-reverse-proxy.fullname" . }}-files
