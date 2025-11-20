@@ -2,9 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Define multiple cronjobs here when you want to run multiple cron jobs from a single image/library.
-# Each cronjob can override global settings (schedule, resources, concurrency policy, etc.).
-# If this section is not defined, a single cronjob will be created using the global settings.
+# Leave cronjobs undefined to create a single cronjob using global settings only.
+# Define cronjobs array when you need multiple jobs with different configurations.
 #cronjobs:
 #  - schedule: ""
 #    nameOverride: 

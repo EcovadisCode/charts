@@ -81,7 +81,7 @@ spec:
             {{- end }}
             {{- if $cronjobImage.args }}
             args: {{- toYaml $cronjobImage.args | nindent 14 }}
-            {{- else if $global.image.command }}
+            {{- else if $global.image.args }}
             args: {{- toYaml $global.image.args | nindent 14 }}
             {{- end }}
 
