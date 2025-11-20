@@ -10,7 +10,7 @@ metadata:
   {{- $envList := splitList "," $allowedEnvs }}
   {{- if or (eq $allowedEnvs "") (has $currentEnv $envList) }}
   annotations:
-    secret.reloader.stakater.com/reload: "{{ .Values.global.certificate.secretName }}"
+    secret.reloader.stakater.com/reload: "{{ .Values.global.certificate.secretNames }}"
   {{- end }}
   {{- end }}
 spec:
@@ -199,9 +199,13 @@ spec:
             readOnly: true
           {{- end }}
           {{- if .Values.global.certificate.enabled }}
-          - mountPath: {{ .Values.global.certificate.mountPath }}
-            name: cert-volume
-            readOnly: true  
+          {{- $secretNames := splitList "," .Values.global.certificate.secretNames }}
+          {{- $mountPaths := splitList "," .Values.global.certificate.mountPaths }}
+          {{- range $index, $secretName := $secretNames }}
+          - mountPath: {{ index $mountPaths $index }}
+            name: cert-volume-{{ $index }}
+            readOnly: true
+          {{- end }}
           {{- end }}
           {{- if .Values.global.appConfigFilesEnabled -}}
           {{- $currentScope := .}}
@@ -270,10 +274,13 @@ spec:
           secretName: {{ include "charts-dotnet-core.fullname" . }}-secure-kv
       {{- end }}
       {{- if .Values.global.certificate.enabled }}
-      - name: cert-volume
+      {{- $secretNames := splitList "," .Values.global.certificate.secretNames }}
+      {{- range $index, $secretName := $secretNames }}
+      - name: cert-volume-{{ $index }}
         secret:
           defaultMode: 420
-          secretName: {{ .Values.global.certificate.secretName }}
+          secretName: {{ trim $secretName }}
+      {{- end }}
       {{- end }}
       {{ if .Values.global.appConfigFilesEnabled -}}
       - name: "configuration-volume"
