@@ -306,10 +306,14 @@ global:
 
   # Certificate mounting configuration (independent from ESO)
   certificate:
-    # Mount ecovadis-tls certificate to /app/cert (default: false)
+    # Mount certificates (default: false)
     enabled: false
-    secretName: "ecovadis-tls"
-    mountPath: "/app/cert"
+    # Comma-separated list of secret names containing certificates
+    # Example: "ecovadis-tls" or "ecovadis-tls,ecovadis-tls-green"
+    secretNames: "ecovadis-tls"
+    # Comma-separated list of mount paths (must match count of secretNames)
+    # Example: "/app/cert" or "/app/cert/blue,/app/cert/green"
+    mountPaths: "/app/cert"
     # Reloader configuration - automatically restart pods when certificate changes
     reloader:
       enabled: false
