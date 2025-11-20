@@ -1,4 +1,9 @@
-{{- range $index, $cronjob := $.Values.cronjobs }}
+{{- $cronjobs := $.Values.cronjobs }}
+{{- if not $cronjobs }}
+  {{- $cronjobs = list (dict) }}
+{{- end }}
+
+{{- range $index, $cronjob := $cronjobs }}
 
 {{- $global := $.Values.global }}
 
@@ -14,11 +19,12 @@
 {{- $completions := $cronjob.completions | default $global.completions }}
 
 {{- /* Image configuration */ -}}
-{{- $imagePullSecret := $cronjob.image.imagePullSecret | default $global.image.imagePullSecret }}
-{{- $imageRepository := $cronjob.image.repository | default $global.image.repository }}
-{{- $imageName := $cronjob.image.name | default $global.image.name }}
-{{- $imageTag := $cronjob.image.tag | default $global.image.tag | default $.Chart.AppVersion }}
-{{- $imagePullPolicy := $cronjob.image.pullPolicy | default $global.image.pullPolicy }}
+{{- $cronjobImage := $cronjob.image | default dict }}
+{{- $imagePullSecret := $cronjobImage.imagePullSecret | default $global.image.imagePullSecret }}
+{{- $imageRepository := $cronjobImage.repository | default $global.image.repository }}
+{{- $imageName := $cronjobImage.name | default $global.image.name }}
+{{- $imageTag := $cronjobImage.tag | default $global.image.tag | default $.Chart.AppVersion }}
+{{- $imagePullPolicy := $cronjobImage.pullPolicy | default $global.image.pullPolicy }}
 
 {{- /* Pod configuration */ -}}
 {{- $automountServiceAccountToken := $cronjob.automountServiceAccountToken | default $global.automountServiceAccountToken }}
@@ -68,26 +74,28 @@ spec:
               {{- toYaml $securityContext | nindent 14 }}
             image: "{{ $imageRepository }}/{{ $imageName }}:{{ $imageTag }}"
             imagePullPolicy: {{ $imagePullPolicy }}
-            {{- if $cronjob.image.command }}
-            command: {{- toYaml $cronjob.image.command | nindent 14 }}
+            {{- if $cronjobImage.command }}
+            command: {{- toYaml $cronjobImage.command | nindent 14 }}
             {{- else if $global.image.command }}
             command: {{- toYaml $global.image.command | nindent 14 }}
             {{- end }}
-            {{- if $cronjob.image.args }}
-            args: {{- toYaml $cronjob.image.args | nindent 14 }}
+            {{- if $cronjobImage.args }}
+            args: {{- toYaml $cronjobImage.args | nindent 14 }}
             {{- else if $global.image.args }}
             args: {{- toYaml $global.image.args | nindent 14 }}
             {{- end }}
 
             {{- if or $cronjob.envVarsEnabled $cronjob.secEnvVarsEnabled $global.envVarsEnabled $global.secEnvVarsEnabled}}
             envFrom:
-            {{- if or $cronjob.envVarsEnabled $global.envVarsEnabled}}
+            {{- if $global.envVarsEnabled }}
               - configMapRef:
-                  name: {{ include "charts-cron-job.fullname" (dict "root" $ "cronjob" $cronjob "index" $index) }}
+                  name: {{ $global.fullnameOverride | default (printf "%s-charts-core" $.Release.Name) }}
+                  optional: false
             {{- end }}
-            {{- if or $cronjob.secEnvVarsEnabled $global.secEnvVarsEnabled}}
+            {{- if $global.secEnvVarsEnabled }}
               - secretRef:
-                  name: {{ include "charts-cron-job.fullname" (dict "root" $ "cronjob" $cronjob "index" $index) }}-secure
+                  name: {{ $global.fullnameOverride | default (printf "%s-charts-core" $.Release.Name) }}-secure
+                  optional: false
             {{- end }}
             {{- end }}
             resources:
