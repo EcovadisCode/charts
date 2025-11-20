@@ -14,10 +14,10 @@ Usage for cronjob-specific name: include "charts-cron-job.fullname" (dict "root"
 Usage for global name only: include "charts-cron-job.fullname" .
 */}}
 {{- define "charts-cron-job.fullname" -}}
-{{- if .cronjob }}
+{{- if .root }}
   {{- /* Mode 1: Called with particular cronjob context */ -}}
   {{- $root := .root }}
-  {{- $cronjob := .cronjob }}
+  {{- $cronjob := .cronjob | default dict }}
   {{- $index := .index }}
   {{- $fullnameOverride := $cronjob.fullnameOverride | default $root.Values.global.fullnameOverride }}
   {{- $nameOverride := $cronjob.nameOverride | default $root.Values.global.nameOverride }}
@@ -66,10 +66,10 @@ Usage for cronjob-specific labels: include "charts-cron-job.labels" (dict "root"
 Usage for global labels only: include "charts-cron-job.labels" .
 */}}
 {{- define "charts-cron-job.labels" -}}
-{{- if .cronjob }}
+{{- if .root }}
   {{- /* Mode 1: Called with particular cronjob context */ -}}
   {{- $root := .root }}
-  {{- $cronjob := .cronjob }}
+  {{- $cronjob := .cronjob | default dict }}
 helm.sh/chart: {{ include "charts-cron-job.chart" $root }}
 {{ include "charts-cron-job.selectorLabels" $root }}
 {{- if $root.Chart.AppVersion }}
@@ -108,10 +108,10 @@ Usage for cronjob-specific SA: include "charts-cron-job.serviceAccountName" (dic
 Usage for global SA only: include "charts-cron-job.serviceAccountName" .
 */}}
 {{- define "charts-cron-job.serviceAccountName" -}}
-{{- if .cronjob }}
+{{- if .root }}
   {{- /* Mode 1: Called with particular cronjob context */ -}}
   {{- $root := .root }}
-  {{- $cronjob := .cronjob }}
+  {{- $cronjob := .cronjob | default dict }}
   {{- $index := .index }}
   {{- if $cronjob.serviceAccount }}
     {{- if $cronjob.serviceAccount.create }}

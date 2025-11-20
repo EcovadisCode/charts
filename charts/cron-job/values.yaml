@@ -2,17 +2,22 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Define cronjobs here. Each cronjob can override global settings.
-cronjobs:
-  - schedule: ""
-    image:
-      name: # app name
-      tag: ""
-    nameOverride: 
-    fullnameOverride:
-    additionalLabelsEnabled: true
-    additionalLabels:
-      team: #{team}#
+# Define multiple cronjobs here when you want to run multiple cron jobs from a single image/library.
+# Each cronjob can override global settings (schedule, resources, concurrency policy, etc.).
+# If this section is not defined, a single cronjob will be created using the global settings.
+#cronjobs:
+#  - schedule: ""
+#    nameOverride: 
+#    fullnameOverride:
+#    image:
+#      name: # app name
+#      tag: ""
+#      pullPolicy: ""
+#      command: []
+#      args: []
+#    additionalLabelsEnabled: true
+#    additionalLabels:
+#      team: #{team}#
 
 global:
   schedule: ""
