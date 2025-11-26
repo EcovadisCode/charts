@@ -168,6 +168,8 @@ spec:
                 secretKeyRef:
                   name: "azdevops-{{ .Values.buildAgentName }}"
                   key: ACR_NAME
+            - name: AZP_POOL_ID
+              value: "{{ .Values.devops.poolID }}"
             {{- if .Values.agent.os | eq "windows" }}
             - name: AZP_WORK
               value: "C:/builds"
