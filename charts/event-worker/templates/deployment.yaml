@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "charts-event-worker.labels" . | nindent 4 }}
 spec:
+  replicas: 2
   progressDeadlineSeconds: {{ .Values.global.progressDeadlineSeconds }}
   revisionHistoryLimit: {{ .Values.global.revisionHistoryLimit | default "3" }}
   minReadySeconds: {{ .Values.global.minReadySeconds | default "0"}}
