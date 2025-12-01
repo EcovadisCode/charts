@@ -13,6 +13,7 @@ Select the chart that you are modifying:
 - [ ] pact-broker
 - [ ] ado-build-agents
 - [ ] ado-agent-cleaner
+- [ ] event-worker
 
 ## Checklist
 - [ ] Description provided
