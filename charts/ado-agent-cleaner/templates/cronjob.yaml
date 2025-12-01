@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: aks-agent-cleaner
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  schedule: "{{ .Values.cronSettings.schedule }}"
+  concurrencyPolicy: "{{ .Values.cronSettings.concurrencyPolicy }}"
+  successfulJobsHistoryLimit: {{ .Values.cronSettings.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cronSettings.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: {{ .Values.cronSettings.activeDeadlineSeconds }}
+      parallelism: {{ .Values.cronSettings.parallelism }}
+      template:
+        metadata:
+          labels:
+            azure.workload.identity/use: "true"
+        spec:
+          restartPolicy: Never
+          nodeSelector:
+            kubernetes.io/os: linux
+          resources:
+            {{  toYaml .Values.resources | nindent 14 }}
+          serviceAccountName: "svc-acc-{{ .Values.podName }}"
+          containers:
+          - name: agent-cleaner
+            image: "{{ .Values.imageName }}"
+            imagePullPolicy: IfNotPresent
+            env:
+              - name: AZP_URL
+                value: "{{ .Values.devopsOrgUrl }}"
