@@ -67,7 +67,7 @@ linuxSidecarContainers:
 
 # Sidecar container that will be used for windows agent image.
 windowsSidecarContainers:
-  sqlServer:
+  sqlserver:
     enabled: false
     image: sqlserver
 
