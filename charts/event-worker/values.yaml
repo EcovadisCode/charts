@@ -140,11 +140,11 @@ global:
 
   monitoring:
     metrics:
-      enabled: true
+      enabled: false # TODO: Change when worker.template will be updated
       port: 9100
       path: /metrics
     servicemonitor:
-      enabled: true
+      enabled: false # TODO: Change when worker.template will be updated
     metricsServer:
       image:
         repository: "cicdcr01weuy01.azurecr.io"
