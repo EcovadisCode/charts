@@ -148,8 +148,8 @@ global:
     metricsServer:
       image:
         repository: "cicdcr01weuy01.azurecr.io"
-        name: "demo-metrics-server"
-        tag: "5"
+        name: "runtime-metrics-server"
+        tag: "latest"
         pullPolicy: IfNotPresent
       dir: "/metrics"
       fileName: "metrics.txt"
