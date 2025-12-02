@@ -54,8 +54,8 @@ agent:
   # Apparmor profile to be used for the build agent container, for now only "unconfined" is required and tested
   apparmor: unconfined
 
-# Sidecar container that will be used from agent image. Rootless docker is not yet tested.
-sidecarContainers:
+# Sidecar containers that will be used for linux agent image. Rootless docker is not yet tested.
+linuxSidecarContainers:
   docker:
     enabled: true
     image: docker:dind
@@ -64,6 +64,12 @@ sidecarContainers:
     image: buildkit:v0.21.1-rootless
   busybox:
     image: busybox:1.37
+
+# Sidecar container that will be used for windows agent image.
+windowsSidecarContainers:
+  sqlServer:
+    enabled: false
+    image: sqlserver
 
 keda:
   # Azure Identity to be used by Keda scaler

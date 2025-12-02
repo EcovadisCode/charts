@@ -11,11 +11,11 @@ spec:
     template:
       metadata:
         annotations:
-          {{- if .Values.sidecarContainers.buildkit.enabled }}
+          {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           container.apparmor.security.beta.kubernetes.io/buildkitd: unconfined
           {{- end }}
           container.apparmor.security.beta.kubernetes.io/{{ .Values.buildAgentName }}-staging: {{ .Values.agent.apparmor }}
-          {{- if .Values.sidecarContainers.docker.enabled}}
+          {{- if .Values.linuxSidecarContainers.docker.enabled}}
           container.apparmor.security.beta.kubernetes.io/dind: {{ .Values.agent.apparmor }}
           {{- end }}
         labels:
@@ -29,11 +29,11 @@ spec:
         terminationGracePeriodSeconds: 3600
         volumes:
         {{- if .Values.agent.os | eq "linux" }}
-          {{- if .Values.sidecarContainers.docker.enabled }}
+          {{- if .Values.linuxSidecarContainers.docker.enabled }}
           - name: dind-certs
             emptyDir: {}
           {{- end }}
-          {{- if .Values.sidecarContainers.buildkit.enabled }}
+          {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           - name: buildkitd-certs
             emptyDir: {}
           - name: buildkitd-workspace
@@ -49,11 +49,12 @@ spec:
         {{- if .Values.aks.sysbox.enabled }}
         runtimeClassName: "sysbox-runc-{{ .Values.buildAgentName }}"
         {{- end }}
-        {{- if .Values.agent.os | eq "linux" }}
+        {{- if or (eq (include "anyEnabled" .Values.linuxSidecarContainers) "true") (eq (include "anyEnabled" .Values.windowsSidecarContainers) "true") }}
         initContainers:
-          {{- if .Values.sidecarContainers.buildkit.enabled }}
+        {{- end }}
+          {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           - name: generate-mtls-cert
-            image: busybox:1.37
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.linuxSidecarContainers.busybox.image }}
             command:
               - /bin/sh
               - -c
@@ -71,9 +72,9 @@ spec:
               - name: buildkitd-certs
                 mountPath: /certs
           {{- end }}
-          {{- if .Values.sidecarContainers.buildkit.enabled }}
+          {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           - name: buildkitd
-            image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.sidecarContainers.buildkit.image }}
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.linuxSidecarContainers.buildkit.image }}
             imagePullPolicy: IfNotPresent
             restartPolicy: Always
             securityContext:
@@ -103,9 +104,9 @@ spec:
               - name: buildkitd-workspace
                 mountPath: /home/user/.local/share/buildkit
           {{- end }}
-          {{- if .Values.sidecarContainers.docker.enabled }}
+          {{- if .Values.linuxSidecarContainers.docker.enabled }}
           - name: dind
-            image: {{ .Values.sidecarContainers.docker.image | default "docker:dind" }}
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.linuxSidecarContainers.docker.image | default "docker:dind" }}
             restartPolicy: Always
             securityContext:
               privileged: true
@@ -116,7 +117,11 @@ spec:
               - mountPath: /dind-certs
                 name: dind-certs
           {{- end }}
-        {{- end }}
+          {{- if .Values.windowsSidecarContainers.sqlserver.enabled }}
+          - name: sqlserver
+            image: {{ .Values.devops.ACR_NAME }}/{{ .Values.windowsSidecarContainers.sqlserver.image }}
+            restartPolicy: Always
+          {{- end }}
         containers:
           # PROTIP - In Keda agent container has to be first, otherwise it will not be able to read value from AZP_URL
         - name: "{{ .Values.buildAgentName }}-staging"
@@ -133,19 +138,17 @@ spec:
               memory: {{ .Values.aks.memoryLimit }}
           env:
             {{- if .Values.agent.os | eq "linux" }}
-              {{- if .Values.sidecarContainers.docker.enabled }}
+              {{- if .Values.linuxSidecarContainers.docker.enabled }}
             - name: DOCKER_HOST
               value: "tcp://localhost:2376"
             - name: DOCKER_CERT_PATH
               value: "/dind-certs/client"
             - name: DOCKER_TLS_VERIFY
               value: "1"
-              {{- end }}
-              {{- if .Values.sidecarContainers.docker.enabled }}
             - name: DOCKER_ENABLED
               value: "TRUE"
               {{- end }}
-              {{- if .Values.sidecarContainers.buildkit.enabled }}
+              {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
             - name: BUILDKIT_ENABLED
               value: "TRUE"
             - name: BUILDX_BUILDER
@@ -185,12 +188,12 @@ spec:
             {{- end }}
           volumeMounts:
             {{- if .Values.agent.os | eq "linux" }}
-              {{- if .Values.sidecarContainers.buildkit.enabled }}
+              {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
             - name: buildkitd-certs
               mountPath: /certs
               readOnly: true
               {{- end}}
-              {{- if .Values.sidecarContainers.docker.enabled }}
+              {{- if .Values.linuxSidecarContainers.docker.enabled }}
             - name: dind-certs
               mountPath: /dind-certs
               readOnly: true
