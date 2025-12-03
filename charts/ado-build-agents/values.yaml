@@ -58,18 +58,22 @@ agent:
 linuxSidecarContainers:
   docker:
     enabled: true
-    image: docker:dind
+    image: docker
+    tag: "dind"
   buildkit:
     enabled: false
-    image: buildkit:v0.21.1-rootless
+    image: buildkit
+    tag: "v0.21.1-rootless"
   busybox:
-    image: busybox:1.37
+    image: busybox
+    tag: "1.37"
 
 # Sidecar container that will be used for windows agent image.
 windowsSidecarContainers:
   sqlserver:
     enabled: false
     image: sqlserver
+    tag: "1.0.0"
 
 keda:
   # Azure Identity to be used by Keda scaler

@@ -54,7 +54,7 @@ spec:
         {{- end }}
           {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           - name: generate-mtls-cert
-            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.linuxSidecarContainers.busybox.image }}
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.linuxSidecarContainers.busybox.image }}:{{ .Values.linuxSidecarContainers.busybox.tag }}
             command:
               - /bin/sh
               - -c
@@ -74,7 +74,7 @@ spec:
           {{- end }}
           {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           - name: buildkitd
-            image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.linuxSidecarContainers.buildkit.image }}
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/moby/{{ .Values.linuxSidecarContainers.buildkit.image }}:{{ .Values.linuxSidecarContainers.buildkit.tag }}
             imagePullPolicy: IfNotPresent
             restartPolicy: Always
             securityContext:
@@ -106,7 +106,7 @@ spec:
           {{- end }}
           {{- if .Values.linuxSidecarContainers.docker.enabled }}
           - name: dind
-            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.linuxSidecarContainers.docker.image | default "docker:dind" }}
+            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.linuxSidecarContainers.docker.image }}:{{ .Values.linuxSidecarContainers.docker.tag }}
             restartPolicy: Always
             securityContext:
               privileged: true
@@ -119,7 +119,7 @@ spec:
           {{- end }}
           {{- if .Values.windowsSidecarContainers.sqlserver.enabled }}
           - name: sqlserver
-            image: {{ .Values.devops.ACR_NAME }}/{{ .Values.windowsSidecarContainers.sqlserver.image }}
+            image: {{ .Values.devops.ACR_NAME }}/{{ .Values.windowsSidecarContainers.sqlserver.image }}:{{ .Values.windowsSidecarContainers.sqlserver.tag }}
             restartPolicy: Always
           {{- end }}
         containers:
