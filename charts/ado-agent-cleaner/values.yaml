@@ -1,0 +1,26 @@
+# User Assigned Azure Identity ID with the permissions on Azure DevOps to read/cleanup agents
+aadIdentity: "xxx"
+# Azure DevOps Organization URL
+devopsOrgUrl: "https://dev.azure.com/org"
+# Name of the Pod and Service Account
+podName: agent-cleaner
+# Container Image Name for the Agent Cleaner
+imageName: aksagentcleaner:1.0.0
+
+# Settings specific for the CronJob
+cronSettings:
+  schedule: "*/30 * * * *"
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: "Forbid"
+  parallelism: 1
+  activeDeadlineSeconds: 1200
+
+# Resource requests and limits for the Agent Cleaner container
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi

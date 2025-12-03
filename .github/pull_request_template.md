@@ -12,6 +12,7 @@ Select the chart that you are modifying:
 - [ ] app-reverse-proxy
 - [ ] pact-broker
 - [ ] ado-build-agents
+- [ ] ado-agent-cleaner
 - [ ] event-worker
 
 ## Checklist
