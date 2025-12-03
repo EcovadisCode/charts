@@ -138,6 +138,23 @@ global:
 
   terminationGracePeriodSeconds: 30 # Time to let pod shutdown itselft before it is killed. Time between SIGTERM and SIGKILL
 
+  monitoring:
+    metrics:
+      enabled: false # TODO: Change when worker.template will be updated
+      port: 9100
+      path: /metrics
+    servicemonitor:
+      enabled: false # TODO: Change when worker.template will be updated
+    metricsServer:
+      image:
+        repository: "cicdcr01weuy01.azurecr.io"
+        name: "runtime-metrics-server"
+        tag: "latest"
+        pullPolicy: IfNotPresent
+      dir: "/metrics"
+      fileName: "metrics.txt"
+      volumeSize: 10Mi
+
   # https://keda.sh/docs/latest/reference/scaledobject-spec/
   keda:
     autoscalingPaused: false        # If true, KEDA will not scale the worker
