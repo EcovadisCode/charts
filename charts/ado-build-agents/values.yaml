@@ -57,7 +57,7 @@ agent:
 # Sidecar containers that will be used for linux agent image. Rootless docker is not yet tested.
 linuxSidecarContainers:
   docker:
-    enabled: true
+    enabled: false
     image: docker
     tag: "dind"
   buildkit:
