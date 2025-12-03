@@ -1,5 +1,15 @@
 apiVersion: v1
 entries:
+  charts-ado-agent-cleaner:
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2025-12-03T07:22:52.197921412Z"
+    description: Helper to clean up stale AKS Azure DevOps agents
+    digest: c40d4aafd3e26aaa9f2768994b9488f73ec7f37fcafc2150b8e8443068b0bc22
+    name: charts-ado-agent-cleaner
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-ado-agent-cleaner-1.0.0/charts-ado-agent-cleaner-1.0.0.tgz
+    version: 1.0.0
   charts-ado-build-agents:
   - apiVersion: v2
     appVersion: "1.0"
@@ -2186,4 +2196,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2025-11-28T11:18:41.996747005Z"
+generated: "2025-12-03T07:22:52.199435181Z"
