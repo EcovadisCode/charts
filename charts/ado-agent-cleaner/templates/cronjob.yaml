@@ -20,8 +20,6 @@ spec:
           restartPolicy: Never
           nodeSelector:
             kubernetes.io/os: linux
-          resources:
-            {{  toYaml .Values.resources | nindent 14 }}
           serviceAccountName: "svc-acc-{{ .Values.podName }}"
           containers:
           - name: agent-cleaner
@@ -30,3 +28,5 @@ spec:
             env:
               - name: AZP_URL
                 value: "{{ .Values.devopsOrgUrl }}"
+            resources:
+              {{  toYaml .Values.resources | nindent 14 }}
