@@ -151,6 +151,12 @@ global:
         name: "runtime-metrics-server"
         tag: "latest"
         pullPolicy: IfNotPresent
+      livenessProbe:
+        timeoutSeconds: 5
+        initialDelaySeconds: 15
+        periodSeconds: 10
+        failureThreshold: 3
+        successThreshold: 1
       dir: "/metrics"
       fileName: "metrics.txt"
       volumeSize: 10Mi
