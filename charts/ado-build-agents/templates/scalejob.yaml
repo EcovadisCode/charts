@@ -53,23 +53,15 @@ spec:
         {{- end }}
           {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           - name: generate-mtls-cert
-            image: {{ .Values.devops.ACR_NAME }}/dockerhub/library/{{ .Values.linuxSidecarContainers.busybox.image }}:{{ .Values.linuxSidecarContainers.busybox.tag }}
-            command:
-              - /bin/sh
-              - -c
-              - |
-                cd ~ &&
-                wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64 -O mkcert &&
-                chmod +x mkcert &&
-                mkdir -p -- /certs/server /certs/client &&
-                CAROOT=$(pwd) ./mkcert -cert-file /certs/server/cert.pem -key-file /certs/server/key.pem 127.0.0.1 &&
-                cp rootCA.pem /certs/server/ca.pem &&
-                CAROOT=$(pwd) ./mkcert -client -cert-file /certs/client/cert.pem -key-file /certs/client/key.pem client &&
-                cp rootCA.pem /certs/client/ca.pem &&
-                chmod 744 /certs/client/ca.pem /certs/client/cert.pem /certs/client/key.pem /certs/server/ca.pem /certs/server/cert.pem /certs/server/key.pem
+            image: {{ .Values.devops.ACR_NAME }}/{{ .Values.linuxSidecarContainers.mtlsGenerator.image }}:{{ .Values.linuxSidecarContainers.mtlsGenerator.tag }}
+            env:
+              - name: CERT_HOSTNAMES
+                value: "{{ .Values.linuxSidecarContainers.mtlsGenerator.certHostnames }}"
+              - name: CERT_DESTINATION
+                value: "{{ .Values.linuxSidecarContainers.mtlsGenerator.certDestination }}"
             volumeMounts:
               - name: buildkitd-certs
-                mountPath: /certs
+                mountPath: {{ .Values.linuxSidecarContainers.mtlsGenerator.certDestination }}
           {{- end }}
           {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           - name: buildkitd
@@ -93,12 +85,12 @@ spec:
                   --oci-worker-no-process-sandbox \
                   --addr tcp://0.0.0.0:1234 \
                   --addr unix:///run/user/1000/buildkit/buildkitd.sock \
-                  --tlscacert /certs/server/ca.pem \
-                  --tlscert /certs/server/cert.pem \
-                  --tlskey /certs/server/key.pem
+                  --tlscacert {{ .Values.linuxSidecarContainers.mtlsGenerator.certDestination }}/server/ca.pem \
+                  --tlscert {{ .Values.linuxSidecarContainers.mtlsGenerator.certDestination }}/server/cert.pem \
+                  --tlskey {{ .Values.linuxSidecarContainers.mtlsGenerator.certDestination }}/server/key.pem
             volumeMounts:
               - name: buildkitd-certs
-                mountPath: /certs
+                mountPath: {{ .Values.linuxSidecarContainers.mtlsGenerator.certDestination }}
                 readOnly: true
               - name: buildkitd-workspace
                 mountPath: /home/user/.local/share/buildkit
@@ -189,7 +181,7 @@ spec:
             {{- if .Values.agent.os | eq "linux" }}
               {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
             - name: buildkitd-certs
-              mountPath: /certs
+              mountPath: {{ .Values.linuxSidecarContainers.mtlsGenerator.certDestination }}
               readOnly: true
               {{- end}}
               {{- if .Values.linuxSidecarContainers.docker.enabled }}

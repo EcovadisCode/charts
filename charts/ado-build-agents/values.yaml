@@ -64,9 +64,11 @@ linuxSidecarContainers:
     enabled: false
     image: buildkit
     tag: "v0.21.1-rootless"
-  busybox:
-    image: busybox
-    tag: "1.37"
+  mtlsGenerator:
+    image: mtlsgenerator
+    tag: "1.0.0"
+    certHostnames: "127.0.0.1"
+    certDestination: "/certs"
 
 # Sidecar container that will be used for windows agent image.
 windowsSidecarContainers:
