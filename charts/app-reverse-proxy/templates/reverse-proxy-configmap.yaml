@@ -10,8 +10,10 @@ data:
             listen      {{ .Values.global.service.port }} default_server ssl;
             server_name {{ .Values.global.ingressRoutes.subdomainName }}.{{ .Values.global.ingressRoutes.domain }};
             {{- if .Values.global.certificate.enabled }}
-            ssl_certificate {{ .Values.global.certificate.mountPath }}/tls.crt;
-            ssl_certificate_key {{ .Values.global.certificate.mountPath }}/tls.key;
+            {{- $mountPaths := splitList "," .Values.global.certificate.mountPaths }}
+            {{- $firstPath := index $mountPaths 0 }}
+            ssl_certificate {{ $firstPath }}/tls.crt;
+            ssl_certificate_key {{ $firstPath }}/tls.key;
             {{- else }}
             ssl_certificate /etc/ssl/ca.crt;
             ssl_certificate_key /etc/ssl/tls.key;

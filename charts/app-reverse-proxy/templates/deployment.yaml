@@ -10,7 +10,7 @@ metadata:
   {{- $envList := splitList "," $allowedEnvs }}
   {{- if or (eq $allowedEnvs "") (has $currentEnv $envList) }}
   annotations:
-    secret.reloader.stakater.com/reload: "{{ .Values.global.certificate.secretName }}"
+    secret.reloader.stakater.com/reload: "{{ .Values.global.certificate.secretNames }}"
   {{- end }}
   {{- end }}
 spec:
@@ -49,10 +49,20 @@ spec:
           volumeMounts:
             - mountPath: /etc/nginx/conf.d/
               name: nginx-default-config
-            {{- if .Values.global.certificate.enabled }}
-            - mountPath: /etc/ssl/
-              name: cert-volume
-            {{- end }}
+{{- if .Values.global.certificate.enabled }}
+{{- $secretNames := splitList "," .Values.global.certificate.secretNames }}
+{{- $mountPaths := splitList "," .Values.global.certificate.mountPaths }}
+{{- $secretCount := len $secretNames }}
+{{- $pathCount := len $mountPaths }}
+{{- if ne $secretCount $pathCount }}
+{{- fail (printf "Certificate configuration error: secretNames has %d items but mountPaths has %d items. They must have the same count." $secretCount $pathCount) }}
+{{- end }}
+{{- range $index, $secretName := $secretNames }}
+            - mountPath: {{ index $mountPaths $index }}
+              name: cert-volume-{{ $index }}
+              readOnly: true
+{{- end }}
+{{- end }}
           resources:
             {{- toYaml .Values.global.resources.nginx | nindent 12 }}
         - name: {{ .Chart.Name }}
@@ -103,10 +113,13 @@ spec:
             {{- toYaml .Values.global.resources.application | nindent 12 }}
       volumes:
       {{- if .Values.global.certificate.enabled }}
-      - name: cert-volume
+      {{- $secretNames := splitList "," .Values.global.certificate.secretNames }}
+      {{- range $index, $secretName := $secretNames }}
+      - name: cert-volume-{{ $index }}
         secret:
           defaultMode: 420
-          secretName: {{ .Values.global.certificate.secretName }}
+          secretName: {{ trim $secretName }}
+      {{- end }}
       {{- end }}
       - name : nginx-default-config
         configMap:

@@ -201,6 +201,11 @@ spec:
           {{- if .Values.global.certificate.enabled }}
           {{- $secretNames := splitList "," .Values.global.certificate.secretNames }}
           {{- $mountPaths := splitList "," .Values.global.certificate.mountPaths }}
+          {{- $secretCount := len $secretNames }}
+          {{- $pathCount := len $mountPaths }}
+          {{- if ne $secretCount $pathCount }}
+          {{- fail (printf "Certificate configuration error: secretNames has %d items but mountPaths has %d items. They must have the same count." $secretCount $pathCount) }}
+          {{- end }}
           {{- range $index, $secretName := $secretNames }}
           - mountPath: {{ index $mountPaths $index }}
             name: cert-volume-{{ $index }}
