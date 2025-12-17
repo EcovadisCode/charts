@@ -176,6 +176,20 @@ entries:
   charts-app-reverse-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2025-12-17T10:58:15.512963989Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.6.0
+    description: EcoVadis Helm chart for application exposed with nginx reverse proxy
+    digest: e4158ec9cd1cd3279084e13502ba2a30d7ce385db1cff4f9d9bbe6d6dabbaf72
+    name: charts-app-reverse-proxy
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-app-reverse-proxy-3.0.1/charts-app-reverse-proxy-3.0.1.tgz
+    version: 3.0.1
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2025-11-19T10:37:42.109728251Z"
     dependencies:
     - name: charts-core
@@ -1041,6 +1055,19 @@ entries:
     - https://github.com/EcovadisCode/charts/releases/download/charts-cron-job-2.0.0/charts-cron-job-2.0.0.tgz
     version: 2.0.0
   charts-dotnet-core:
+  - apiVersion: v2
+    created: "2025-12-17T10:58:15.666936915Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.6.0
+    description: EcoVadis Helm chart for .Net Core app
+    digest: b1a2e781f7493ac5d7838d2ce077adc289dfe3176e15e7eca84c24246f36513d
+    name: charts-dotnet-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-4.7.2/charts-dotnet-core-4.7.2.tgz
+    version: 4.7.2
   - apiVersion: v2
     created: "2025-11-20T12:55:53.023433129Z"
     dependencies:
@@ -2258,4 +2285,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2025-12-11T15:29:03.740374787Z"
+generated: "2025-12-17T10:58:15.668098795Z"
