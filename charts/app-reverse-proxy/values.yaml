@@ -120,10 +120,14 @@ global:
 
   # Certificate mounting configuration (independent from ESO)
   certificate:
-    # Mount ecovadis-tls certificate to /etc/ssl for nginx (default: false)
+    # Mount certificates (default: false)
     enabled: false
-    secretName: "ecovadis-tls"
-    mountPath: "/etc/ssl"
+    # Comma-separated list of secret names containing certificates
+    # Example: "ecovadis-tls" or "ecovadis-tls,ecovadis-saml-tls"
+    secretNames: "ecovadis-tls"
+    # Comma-separated list of mount paths (must match count of secretNames)
+    # Example: "/etc/ssl" or "/etc/ssl/tls,/etc/ssl/saml"
+    mountPaths: "/etc/ssl"
     # Reloader configuration - automatically restart pods when certificate changes
     reloader:
       enabled: false
