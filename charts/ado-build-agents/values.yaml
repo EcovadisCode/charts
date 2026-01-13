@@ -55,6 +55,8 @@ agent:
     privileged: false
   # Apparmor profile to be used for the build agent container, for now only "unconfined" is required and tested
   apparmor: unconfined
+  # Additional environment variables to be added to the build agent container
+  additionalEnvVars: {}
 
 # Sidecar containers that will be used for linux agent image. Rootless docker is not yet tested.
 linuxSidecarContainers:

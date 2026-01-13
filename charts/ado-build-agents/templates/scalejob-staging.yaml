@@ -180,6 +180,9 @@ spec:
               value: {{ .Values.agent.remoteArtifactsShare.fileShareName }}
               {{- end }}
             {{- end }}
+            {{- with .Values.agent.additionalEnvVars }}
+            {{ toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             {{- if .Values.agent.os | eq "linux" }}
               {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
