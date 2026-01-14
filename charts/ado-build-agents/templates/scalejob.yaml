@@ -128,7 +128,9 @@ spec:
               cpu: {{ .Values.aks.cpuRequest }}
             limits:
               memory: {{ .Values.aks.memoryLimit }}
+              {{- if .Values.aks.cpuLimit }}
               cpu: {{ .Values.aks.cpuLimit }}
+              {{- end }}
           env:
             {{- if .Values.agent.os | eq "linux" }}
               {{- if .Values.linuxSidecarContainers.docker.enabled }}
