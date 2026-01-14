@@ -8,7 +8,7 @@ aks:
   memoryRequest: 10G
   memoryLimit: 10G
   cpuRequest: "1"
-  cpuLimit: "2"
+  cpuLimit: ""
   # whether to deploy sysbox or not, should be disabled in most cases
   # https://github.com/nestybox/sysbox
   sysbox:
