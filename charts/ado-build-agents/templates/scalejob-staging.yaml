@@ -43,6 +43,12 @@ spec:
         {{- if .Values.agent.os | eq "windows" }}
           - name: agentmount
             emptyDir: {}
+          {{- if .Values.agent.useHostVolumeForAdoCache }}
+          - name: ado-task-cache
+            hostPath:
+              path: "C:\\adoTaskCache"
+              type: DirectoryOrCreate
+          {{- end }}
         {{- end }}
         nodeSelector:
           pool: "{{ .Values.aks.agentPool }}"
@@ -202,6 +208,11 @@ spec:
             - name: agentmount
               mountPath: "C:/builds"
               readOnly: false
+              {{- if .Values.agent.useHostVolumeForAdoCache }}
+            - name: ado-task-cache
+              mountPath: "C:/builds/_tasks"
+              readOnly: false
+              {{- end }}
             {{- end }}
         tolerations:
         - key: "pool"
