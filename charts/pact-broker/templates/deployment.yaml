@@ -13,36 +13,234 @@ spec:
     metadata:
       labels:
         {{- include "chart.labels" . | nindent 8 }}
+      {{- if .Values.broker.annotations }}
       annotations:
-        checksum/envconfig: {{ include (print $.Template.BasePath "/env-configmap.yaml") . | sha256sum }}
-        checksum/secretconfig: {{ include (print $.Template.BasePath "/env-secret.yaml") . | sha256sum }}
-        {{- if .Values.broker.annotations }}
         {{- with .Values.broker.annotations }}
         {{ toYaml . | trim | indent 8 }}
         {{- end }}
-        {{- end }}
+      {{- end }}
     spec:
+      terminationGracePeriodSeconds: 45
+      serviceAccountName: {{ include "broker.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      {{- if .Values.broker.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.broker.imagePullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      initContainers:
+        - name: wait-for-port-cleanup
+          image: busybox:1.35
+          command: ['sh', '-c', "for i in {1..30}; do (echo > /dev/tcp/127.0.0.1/9292) >/dev/null 2>&1 && sleep 2 || break; sleep 1; done"]
       {{- if .Values.broker.podSecurityContext.enabled }}
       securityContext: {{- omit .Values.broker.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ template "chart.fullname" . }}
           image: {{ template "broker.image" . }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.broker.imagePullPolicy }}
           {{- if .Values.broker.containerSecurityContext.enabled }}
           securityContext: {{- omit .Values.broker.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
+          # Override default Puma startup to use custom config
+          command: ["/bin/sh"]
+          args: ["-c", "bundle exec puma -C /etc/puma/puma.rb"]
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
           ports:
             - name: http
-              containerPort: {{ .Values.envVars.PACT_BROKER_PORT }}
+              containerPort: {{ .Values.broker.containerPorts.http }}
               protocol: TCP
-          envFrom:
-            - configMapRef:
-                name: "{{ include "chart.fullname" . }}"
-            - secretRef:
-                name: "{{ include "chart.fullname" . }}-secure"
+            - name: https
+              containerPort: {{ .Values.broker.containerPorts.https }}
+              protocol: TCP
+          env:
+            # Puma configuration
+            - name: PUMA_CONFIG
+              value: "/etc/puma/puma.rb"
+            # Socket options to fix port binding issues with IPv6
+            - name: PUMA_SOCKET_REUSE_TIMEOUT
+              value: "5"
+            # Logging
+            - name: PACT_BROKER_LOG_LEVEL
+              value: {{ .Values.broker.config.logLevel | quote }}
+            - name: PACT_BROKER_LOG_FORMAT
+              value: {{ .Values.broker.config.logFormat | quote }}
+            - name: PACT_BROKER_HTTP_DEBUG_LOGGING_ENABLED
+              value: {{ .Values.broker.config.httpDebugLoggingEnabled | quote }}
+            - name: PACT_BROKER_HIDE_PACTFLOW_MESSAGES
+              value: {{ .Values.broker.config.hidePactflowMessages | quote }}
+            # Database
+            - name: PACT_BROKER_DATABASE_ADAPTER
+              value: {{ .Values.database.adapter | default "postgres" | quote }}
+            - name: PACT_BROKER_DATABASE_HOST
+              value: {{ .Values.database.host }}
+            - name: PACT_BROKER_DATABASE_PORT
+              value: {{ .Values.database.port | default "5432" | quote }}
+            - name: PACT_BROKER_DATABASE_NAME
+              value: {{ .Values.database.databaseName | quote }}
+            - name: PACT_BROKER_DATABASE_USERNAME
+              value: {{ .Values.database.auth.username | quote }}
+            - name: PACT_BROKER_DATABASE_PASSWORD
+              {{- if .Values.database.auth.password }}
+              value: {{ .Values.database.auth.password | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "broker.databaseSecretName" . }}
+                  key: {{ include "broker.databaseSecretKey" . }}
+              {{- end }}
+            - name: PACT_BROKER_DATABASE_SSLMODE
+              value: {{ .Values.broker.config.databaseSslmode | quote }}
+            - name: PACT_BROKER_SQL_LOG_LEVEL
+              value: {{ .Values.broker.config.sqlLogLevel | quote }}
+            - name: PACT_BROKER_SQL_LOG_WARN_DURATION
+              value: {{ .Values.broker.config.sqlLogWarnDuration | quote }}
+            - name: PACT_BROKER_SQL_ENABLE_CALLER_LOGGING
+              value: {{ .Values.broker.config.sqlEnableCallerLogging | quote }}
+            - name: PACT_BROKER_DATABASE_MAX_CONNECTIONS
+              value: {{ .Values.broker.config.databaseMaxConnections | quote }}
+            - name: PACT_BROKER_DATABASE_POOL_TIMEOUT
+              value: {{ .Values.broker.config.databasePoolTimeout | quote }}
+            - name: PACT_BROKER_DATABASE_CONNECT_MAX_RETRIES
+              value: {{ .Values.broker.config.databaseConnectMaxRetries | quote }}
+            - name: PACT_BROKER_AUTO_MIGRATE_DB
+              value: {{ .Values.broker.config.autoMigrateDb | quote }}
+            - name: PACT_BROKER_AUTO_MIGRATE_DB_DATA
+              value: {{ .Values.broker.config.autoMigrateDbData | quote }}
+            - name: PACT_BROKER_ALLOW_MISSING_MIGRATION_FILES
+              value: {{ .Values.broker.config.allowMissingMigrationFiles | quote }}
+            - name: PACT_BROKER_DATABASE_STATEMENT_TIMEOUT
+              value: {{ .Values.broker.config.databaseStatementTimeout | quote }}
+            - name: PACT_BROKER_METRICS_SQL_STATEMENT_TIMEOUT
+              value: {{ .Values.broker.config.metricsSqlStatementTimeout | quote }}
+            - name: PACT_BROKER_DATABASE_CONNECTION_VALIDATION_TIMEOUT
+              value: {{ .Values.broker.config.databaseConnectionValidationTimeout | quote }}
+            # Database Cleanup (embedded mode)
+            {{- if and (.Values.broker.config.databaseClean.enabled) (eq .Values.broker.config.databaseClean.mode "embedded") }}
+            - name: PACT_BROKER_DATABASE_CLEAN_ENABLED
+              value: {{ .Values.broker.config.databaseClean.enabled | quote }}
+            - name: PACT_BROKER_DATABASE_CLEAN_CRON_SCHEDULE
+              value: {{ .Values.broker.config.databaseClean.cronSchedule | quote }}
+            - name: PACT_BROKER_DATABASE_CLEAN_DELETION_LIMIT
+              value: {{ .Values.broker.config.databaseClean.deletionLimit | quote }}
+            - name: PACT_BROKER_DATABASE_CLEAN_OVERWRITTEN_DATA_MAX_AGE
+              value: {{ .Values.broker.config.databaseClean.overwrittenDataMaxAge | quote }}
+            - name: PACT_BROKER_DATABASE_CLEAN_KEEP_VERSION_SELECTORS
+              value: {{ .Values.broker.config.databaseClean.keepVersionSelectors | quote }}
+            - name: PACT_BROKER_DATABASE_CLEAN_DRY_RUN
+              value: {{ .Values.broker.config.databaseClean.dryRun | quote }}
+            {{- end }}
+            # Authentication and authorization
+            - name: PACT_BROKER_BASIC_AUTH_ENABLED
+              value: {{ .Values.broker.config.basicAuth.enabled | quote }}
+            {{- if .Values.broker.config.basicAuth.enabled }}
+            - name: PACT_BROKER_BASIC_AUTH_USERNAME
+              {{- if .Values.broker.config.basicAuth.writeUser.username }}
+              value: {{ .Values.broker.config.basicAuth.writeUser.username }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.broker.config.basicAuth.writeUser.existingSecret }}
+                  key: {{ .Values.broker.config.basicAuth.writeUser.existingSecretUsernameKey }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.broker.config.basicAuth.enabled }}
+            - name: PACT_BROKER_BASIC_AUTH_PASSWORD
+              {{- if .Values.broker.config.basicAuth.writeUser.password }}
+              value: {{ .Values.broker.config.basicAuth.writeUser.password }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.broker.config.basicAuth.writeUser.existingSecret }}
+                  key: {{ .Values.broker.config.basicAuth.writeUser.existingSecretPasswordKey }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.broker.config.basicAuth.enabled }}
+            - name: PACT_BROKER_BASIC_AUTH_READ_ONLY_USERNAME
+              {{- if .Values.broker.config.basicAuth.readUser.username }}
+              value: {{ .Values.broker.config.basicAuth.readUser.username }}
+              {{- else if .Values.broker.config.basicAuth.readUser.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.broker.config.basicAuth.readUser.existingSecret }}
+                  key: {{ .Values.broker.config.basicAuth.readUser.existingSecretUsernameKey }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.broker.config.basicAuth.enabled }}
+            - name: PACT_BROKER_BASIC_AUTH_READ_ONLY_PASSWORD
+              {{- if .Values.broker.config.basicAuth.readUser.password }}
+              value: {{ .Values.broker.config.basicAuth.readUser.password }}
+              {{- else if .Values.broker.config.basicAuth.readUser.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.broker.config.basicAuth.readUser.existingSecret }}
+                  key: {{ .Values.broker.config.basicAuth.readUser.existingSecretPasswordKey }}
+              {{- end }}
+            {{- end }}
+            - name: PACT_BROKER_ALLOW_PUBLIC_READ
+              value: {{ .Values.broker.config.basicAuth.allowPublicRead | quote }}
+            - name: PACT_BROKER_PUBLIC_HEARTBEAT
+              value: {{ .Values.broker.config.basicAuth.publicHeartbeat | quote }}
+            - name: PACT_BROKER_ENABLE_PUBLIC_BADGE_ACCESS
+              value: {{ .Values.broker.config.basicAuth.enablePublicBadgeAccess | quote }}
+            # Webhooks
+            - name: PACT_BROKER_WEBHOOK_RETRY_SCHEDULE
+              value: {{ .Values.broker.config.webhookRetrySchedule | quote }}
+            - name: PACT_BROKER_WEBHOOK_HTTP_METHOD_WHITELIST
+              value: {{ .Values.broker.config.webhookHttpMethodWhitelist | quote }}
+            - name: PACT_BROKER_WEBHOOK_HTTP_CODE_SUCCESS
+              value: {{ .Values.broker.config.webhookHttpCodeSuccess | quote }}
+            - name: PACT_BROKER_WEBHOOK_SCHEME_WHITELIST
+              value: {{ .Values.broker.config.webhookSchemeWhitelist | quote }}
+            {{- if .Values.broker.config.webhookHostWhitelist }}
+            - name: PACT_BROKER_WEBHOOK_HOST_WHITELIST
+              value: {{ .Values.broker.config.webhookHostWhitelist | quote }}
+            {{- end }}
+            - name: PACT_BROKER_DISABLE_SSL_VERIFICATION
+              value: {{ .Values.broker.config.disable_ssl | quote }}
+            # Resources
+            - name: PACT_BROKER_PORT
+              value: {{ .Values.broker.containerPorts.http | quote }}
+            {{- if .Values.broker.config.baseUrl }}
+            - name: PACT_BROKER_BASE_URL
+              value: {{ .Values.broker.config.baseUrl | quote }}
+            {{- end }}
+            - name: PACT_BROKER_SHIELDS_IO_BASE_URL
+              value: {{ .Values.broker.config.shieldsIoBaseUrl | quote }}
+            - name: PACT_BROKER_BADGE_PROVIDER_MODE
+              value: {{ .Values.broker.config.badgeProviderMode | quote }}
+            - name: PACT_BROKER_ENABLE_DIAGNOSTIC_ENDPOINTS
+              value: {{ .Values.broker.config.enableDiagnosticEndpoints | quote }}
+            - name: PACT_BROKER_USE_HAL_BROWSER
+              value: {{ .Values.broker.config.useHalBrowser | quote }}
+            # Domain
+            - name: PACT_BROKER_CHECK_FOR_POTENTIAL_DUPLICATE_PACTICIPANT_NAMES
+              value: {{ .Values.broker.config.checkForPotentialDuplicatePacticipantNames | quote }}
+            - name: PACT_BROKER_CREATE_DEPLOYED_VERSIONS_FOR_TAGS
+              value: {{ .Values.broker.config.createDeployedVersionsForTags | quote }}
+            - name: PACT_BROKER_USE_FIRST_TAG_AS_BRANCH
+              value: {{ .Values.broker.config.useFirstTagAsBranch | quote }}
+            - name: PACT_BROKER_AUTO_DETECT_MAIN_BRANCH
+              value: {{ .Values.broker.config.autoDetectMainBranch | quote }}
+            - name: PACT_BROKER_MAIN_BRANCH_CANDIDATES
+              value: {{ .Values.broker.config.mainBranchCandidates | quote }}
+            - name: PACT_BROKER_ALLOW_DANGEROUS_CONTRACT_MODIFICATION
+              value: {{ .Values.broker.config.allowDangerousContractModification | quote }}
+            - name: PACT_BROKER_PACT_CONTENT_DIFF_TIMEOUT
+              value: {{ .Values.broker.config.pactContentDiffTimeout | quote }}
           resources:
             {{- toYaml .Values.broker.resources | nindent 12 }}
+          volumeMounts:
+            - name: puma-config
+              mountPath: /etc/puma
+              readOnly: true
+          {{- with .Values.broker.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.broker.livenessProbe.enabled }}
           livenessProbe: {{- omit .Values.broker.livenessProbe "enabled" | toYaml | nindent 12 }}
             httpGet:
@@ -55,3 +253,25 @@ spec:
               path: /diagnostic/status/heartbeat
               port: http
           {{- end }}
+      {{- with .Values.broker.extraContainers }}
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      {{- if .Values.broker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.broker.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.broker.tolerations }}
+      tolerations:
+        {{- toYaml .Values.broker.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.broker.affinity }}
+      affinity:
+        {{- toYaml .Values.broker.affinity | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: puma-config
+          configMap:
+            name: {{ include "chart.fullname" . }}-puma-config
+      {{- with .Values.broker.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

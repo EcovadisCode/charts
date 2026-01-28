@@ -1,5 +1,4 @@
 {{- if .Values.ingress.enabled -}}
-{{ if .Values.ingress.tlsRouteEnabled }}
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -18,46 +17,4 @@ spec:
           name: {{ include "chart.fullname" . }}
           namespace: {{ .Release.Namespace }}
           port: {{ .Values.service.ports.http }}
-  tls: {}
-{{- end }}
-{{ if .Values.ingress.nonTlsRouteEnabled }}
----
-apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
-metadata:
-  name: {{ include "chart.fullname" . }}-http
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "chart.labels" . | nindent 4 }}
-spec:
-  entryPoints:
-    - web
-  routes:
-    - kind: Rule  
-      match: Host(`{{ .Values.ingress.host }}`)
-      {{- if and .Values.ingress.redirectToHttps .Values.ingress.tlsRouteEnabled }}
-      middlewares:
-        - name: redirect-https
-      {{- end }}
-      services:
-        - kind: Service
-          name: {{ include "chart.fullname" . }}
-          namespace: {{ .Release.Namespace }}
-          port: {{ .Values.service.ports.http }}
-{{- if and .Values.ingress.redirectToHttps .Values.ingress.tlsRouteEnabled }}
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: redirect-https
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "chart.labels" . | nindent 4 }}
-spec:
-  redirectScheme:
-    permanent: true
-    port: '443'
-    scheme: https
-{{- end }}
-{{- end }}
 {{- end }}

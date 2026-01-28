@@ -4,12 +4,32 @@ metadata:
   name: {{ include "chart.fullname" . }}
   labels:
     {{- include "chart.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   type: {{ .Values.service.type }}
   ports:
     - name: http
       port: {{ .Values.service.ports.http }}
+      {{- if .Values.service.nodePorts.http }}
+      nodePort: {{ .Values.service.nodePorts.http }}
+      {{- end }}
       protocol: TCP
       targetPort: http
+    - name: https
+      port: {{ .Values.service.ports.https }}
+      {{- if .Values.service.nodePorts.https }}
+      nodePort: {{ .Values.service.nodePorts.https }}
+      {{- end }}
+      protocol: TCP
+      targetPort: https
+  {{- if .Values.service.clusterIP }}
+  clusterIP: {{ .Values.service.clusterIP }}
+  {{- end }}
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
   selector:
     {{- include "chart.selectorLabels" . | nindent 4 }}
