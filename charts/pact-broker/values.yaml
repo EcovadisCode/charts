@@ -1,91 +1,324 @@
-# -- Pact Broker image information
-image:
-  registry: cicdcr01weuy01.azurecr.io # -- Pact Broker image registry
-  repository: dockerhub/pactfoundation/pact-broker # -- Pact Broker image repository
-  tag: 2.102.2.0 # -- Pact Broker image tag (immutable tags are recommended) https://hub.docker.com/r/pactfoundation/pact-broker/tags
-  pullPolicy: IfNotPresent # -- Specify a imagePullPolicy
-
-envVars:
-  PACT_BROKER_DATABASE_ADAPTER: "postgres" # -- Database engine to use.
-  PACT_BROKER_DATABASE_HOST: "#{sqlServerHost}#" # -- Database host
-  PACT_BROKER_DATABASE_PORT: "#{databasePort}#" # -- Database port number
-  PACT_BROKER_DATABASE_NAME: "#{databaseName}#" # -- Database name
-  PACT_BROKER_PORT: "#{pactBrokerPort}#" # -- http port
-  PACT_BROKER_PUBLIC_HEARTBEAT: true # -- Set to true if you want the heartbeat endpoint to be publicly accessible.
-  PACT_BROKER_DISABLE_SSL_VERIFICATION: false # -- If set to true, SSL verification will be disabled for the HTTP requests made by the webhooks
-  PACT_BROKER_ALLOW_PUBLIC_READ: false # -- Set to true if you want public read access, but still require credentials for writing.
-  PACT_BROKER_ENABLE_PUBLIC_BADGE_ACCESS: false       # -- Set this to true to allow status badges to be embedded in README files without requiring a hardcoded password.
-  PACT_BROKER_HIDE_PACTFLOW_MESSAGES: true # -- Set to true to hide the messages in the logs about Pactflow
-  PACT_BROKER_DATABASE_SSLMODE: require # -- The Postgresql ssl mode. Allowed values: disable, allow, prefer, require, verify-ca, verify-full.
-
-secEnvVars:
-  PACT_BROKER_DATABASE_USERNAME: "#{pbDbUser}#" # -- Non-root username for the Pact Broker
-  PACT_BROKER_DATABASE_PASSWORD: "#{pbDbPassword}#" # -- Non-root user password for the Pact Broker
-  PACT_BROKER_BASIC_AUTH_USERNAME: "#{pbWriteUser}#" # -- Usermame for write access to the Pact Broker
-  PACT_BROKER_BASIC_AUTH_PASSWORD: "#{pbWriteUserPassword}#" # -- Password for write access to the Pact Broker
-  PACT_BROKER_BASIC_AUTH_READ_ONLY_USERNAME: "#{pbReadUser}#" # -- Usermame for read access to the Pact Broker
-  PACT_BROKER_BASIC_AUTH_READ_ONLY_PASSWORD: "#{pbReadUserPassword}#" # -- Password for read access to the Pact Broker
-
 # -- Broker configuration
 broker:
-  annotations: {} # -- Additional annotations that can be added to the Broker deployment
-  replicaCount: 1 # -- Number of Pact Broker replicas to deploy
+  # -- Pact Broker image url
+  image: cicdcr01weuy01.azurecr.io/dockerhub/pactfoundation/pact-broker:#{imageTag}#
+  
+  # -- Specify imagePullPolicy
+  imagePullPolicy: IfNotPresent
+
+  # -- Additional labels that can be added to the Broker deployment
+  labels: {}
+
+  # -- Additional annotations that can be added to the Broker deployment
+  annotations: {}
+
+  # -- Number of Pact Broker replicas to deploy
+  replicaCount: 1
+
+  # -- Number of Deployment Revisions to set
+  revisionHistoryLimit: 10
+
+  # -- Container port configuration
+  containerPorts:
+    # -- http port
+    http: 9292
+    # -- https port
+    https: 8443
 
   # -- Pact Broker pods' [SecurityContext](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
   podSecurityContext:
-    enabled: true # -- Enable Pact Broker pods' Security Context
-    fsGroup: 1001 # -- Set Pact Broker pod's Security Context fsGroup
+    # -- Enable Pact Broker pods' Security Context
+    enabled: true
+    # -- Set Pact Broker pod's Security Context fsGroup
+    fsGroup: 1001
 
   # -- Pact Broker containers' [Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
   containerSecurityContext:
-    enabled: true # -- Enable Pact Broker containers' Security Context
-    runAsUser: 1001 # -- Set Pact Broker container's Security Context runAsUser
-    runAsNonRoot: true # -- Set Pact Broker container's Security Context runAsNonRoot
+    # -- Enable Pact Broker containers' Security Context
+    enabled: true
+    # -- Set Pact Broker container's Security Context runAsUser
+    runAsUser: 1001
+    # -- Set Pact Broker container's Security Context runAsNonRoot
+    runAsNonRoot: true
+
+  # -- Pact Broker Config
+  config:
+    # -- The application log level. Allowed values: debug, info, warn, error, fatal
+    logLevel: info
+    # -- The application log format. Can be any value supported by Semantic Logger. Allowed values: default, json, color
+    logFormat: default
+    # -- Enable this setting to print the entire request and response to the logs at debug level.
+    httpDebugLoggingEnabled: false
+    # -- Set to true to hide the messages in the logs about PactFlow
+    hidePactflowMessages: true
+    # -- The Postgresql ssl mode. Allowed values: disable, allow, prefer, require, verify-ca, verify-full
+    databaseSslmode: require
+    # -- The log level that will be used when the SQL query statements are logged. Allowed values: none, debug, info, warn, error, fatal
+    sqlLogLevel: none
+    # -- The number of seconds after which to log an SQL query at warn level. Use this for detecting slow queries.
+    sqlLogWarnDuration: 5
+    # -- When enabled it logs source path that caused SQL query.
+    sqlEnableCallerLogging: false
+    # -- The maximum size of the connection pool (4 connections by default on most databases)
+    databaseMaxConnections: 4
+    # -- The number of seconds to wait if a connection cannot be acquired before raising an error
+    databasePoolTimeout: 5
+    # -- Setting the max retries to a non-zero number will allow it to retry the connection the configured number of times, waiting 3 seconds between attempts.
+    databaseConnectMaxRetries: 0
+    # -- Whether or not to run the database schema migrations on start up. It is recommended to set this to true.
+    autoMigrateDb: true
+    # -- Whether or not to run the database data migrations on start up. It is recommended to set this to true.
+    autoMigrateDbData: true
+    # -- If true, will not raise an error if a database migration is recorded in the database that does not have an equivalent file in the codebase.
+    allowMissingMigrationFiles: true
+    # -- The number of seconds after which an SQL query will be aborted. Only supported for Postgresql connections.
+    databaseStatementTimeout: 15
+    # -- The number of seconds after which the SQL queries used for the metrics endpoint will be aborted.
+    metricsSqlStatementTimeout: 30
+    # -- The number of seconds after which to check the health of a connection from a connection pool before passing it to the application.
+    databaseConnectionValidationTimeout: 3600
+
+    # -- Pact Broker Basic Authentication
+    basicAuth:
+      # -- Set to true if you basic authentication to be enabled
+      enabled: true
+      # -- Set to true if you want public read access, but still require credentials for writing.
+      allowPublicRead: false
+      # -- Set to true if you want the heartbeat endpoint to be publicly accessible. This will have to be true if you have enabled basic auth.
+      publicHeartbeat: true
+      # -- Set this to true to allow status badges to be embedded in README files without requiring a hardcoded password.
+      enablePublicBadgeAccess: false
+
+      # -- Pact Broker Basic Authentication Credentials For Write user
+      writeUser:
+        # -- Username for write access to the Pact Broker
+        username: "evPbWrite"
+        # -- Password for write access to the Pact Broker
+        password: "#{pbWriteUserPassword}#"
+        # -- Name of an existing Kubernetes secret containing credentials to access the Pact Broker
+        existingSecret: ""
+        # -- The key to which holds the value of the username within the existingSecret
+        existingSecretUsernameKey: ""
+        # -- The key to which holds the value of the password within the existingSecret
+        existingSecretPasswordKey: ""
+
+      # -- Pact Broker Basic Authentication Credentials For Read user
+      readUser:
+        # -- Username for read access to the Pact Broker
+        username: "evPbRead"
+        # -- Password for read access to the Pact Broker
+        password: "#{pbReadUserPassword}#"
+        # -- Name of an existing Kubernetes secret containing credentials to access the Pact Broker
+        existingSecret: ""
+        # -- The key to which holds the value of the username within the existingSecret
+        existingSecretUsernameKey: ""
+        # -- The key to which holds the value of the password within the existingSecret
+        existingSecretPasswordKey: ""
+
+    # -- Webhooks configuration
+    webhookRetrySchedule: "10 60 120 300 600 1200"
+    webhookHttpMethodWhitelist: "POST"
+    webhookHttpCodeSuccess: "200 201 202 203 204 205 206"
+    webhookSchemeWhitelist: "https"
+    webhookHostWhitelist: ""
+    disable_ssl: false
+
+    # -- Base URL can be configured for architectures that use gateways or proxies
+    baseUrl: ""
+    shieldsIoBaseUrl: "https://img.shields.io"
+    badgeProviderMode: "redirect"
+
+    # -- Enable diagnostic endpoints
+    enableDiagnosticEndpoints: true
+    useHalBrowser: true
+    checkForPotentialDuplicatePacticipantNames: true
+    createDeployedVersionsForTags: true
+    useFirstTagAsBranch: true
+    autoDetectMainBranch: true
+    mainBranchCandidates: "develop main master"
+    allowDangerousContractModification: false
+    pactContentDiffTimeout: 15
+
+    # -- Database cleanup configuration
+    databaseClean:
+      # -- Set to true to enable the automatic data cleanup.
+      enabled: false
+      # -- Set the mode of the cleanup task. Can either be `embedded` or `external`.
+      mode: embedded
+      # -- Set to a cron schedule that will run when your Broker is under the least operational load.
+      cronSchedule: "15 2 * * *"
+      # -- The maximum number of records to delete at a time for each of the removable data categories.
+      deletionLimit: 500
+      # -- The maximum number of days to keep "overwritten" data.
+      overwrittenDataMaxAge: 90
+      # -- A JSON string containing a list of the "keep" selectors.
+      keepVersionSelectors: '[{"latest": true}, { "max_age": 180 }]'
+      # -- Defaults to false. Set to true to see the output of what would have been deleted if the task had run.
+      dryRun: false
 
   # -- The resources requests and limits for the Pact Broker containers
   resources:
+    # -- The resources limits for the Pact Broker containers
     limits:
       memory: 1024Mi
       cpu: 2500m
+    # -- The requested resources for the Pact Broker containers
     requests:
       memory: 512Mi
       cpu: 100m
 
+  # -- Pact Broker [Affinity](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity)
+  affinity: {}
+
+  # -- Pact Broker [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
+  tolerations: []
+
+  # -- Pact Broker [Node Selector](https://kubernetes.io/docs/user-guide/node-selection/)
+  nodeSelector: {}
+
   # -- Pact Broker [Liveness Probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
   livenessProbe:
-    enabled: true # -- Enable livenessProbe on Pact Broker containers
-    initialDelaySeconds: 300 # -- Initial delay seconds for livenessProbe
-    periodSeconds: 1 # -- Period seconds for livenessProbe
-    timeoutSeconds: 5 # -- Timeout seconds for livenessProbe
-    failureThreshold: 3 # -- Failure threshold for livenessProbe
-    successThreshold: 1 # -- Success threshold for livenessProbe
+    # -- Enable livenessProbe on Pact Broker containers
+    enabled: true
+    # -- Initial delay seconds for livenessProbe
+    initialDelaySeconds: 300
+    # -- Period seconds for livenessProbe
+    periodSeconds: 1
+    # -- Timeout seconds for livenessProbe
+    timeoutSeconds: 5
+    # -- Failure threshold for livenessProbe
+    failureThreshold: 3
+    # -- Success threshold for livenessProbe
+    successThreshold: 1
 
   # -- Pact Broker [Readiness Probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
   readinessProbe:
-    enabled: true # -- Enable readinessProbe on Pact Broker containers
-    initialDelaySeconds: 30 # -- Initial delay seconds for readinessProbe
-    periodSeconds: 10 # -- Period seconds for readinessProbe
-    timeoutSeconds: 1 # -- Timeout seconds for readinessProbe
-    failureThreshold: 3 # -- Failure threshold for readinessProbe
-    successThreshold: 1 # -- Success threshold for readinessProbe
+    # -- Enable readinessProbe on Pact Broker containers
+    enabled: true
+    # -- Initial delay seconds for readinessProbe
+    initialDelaySeconds: 120
+    # -- Period seconds for readinessProbe
+    periodSeconds: 10
+    # -- Timeout seconds for readinessProbe
+    timeoutSeconds: 5
+    # -- Failure threshold for readinessProbe
+    failureThreshold: 5
+    # -- Success threshold for readinessProbe
+    successThreshold: 1
+
+  # -- Pact Broker [Pod Disruption Budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget)
+  podDisruptionBudget:
+    # -- Max Unavailable Pods (alternatively one can define `minAvailable`)
+    maxUnavailable: 1
+
+  # -- Volumes to mount
+  volumes: []
+
+  # -- Volume mounts
+  volumeMounts: []
+
+  # -- Additional containers to add to the Pact Broker pods
+  extraContainers: []
 
 # -- Service configuration
 service:
-  type: "ClusterIP" # -- Kubernetes service type
+  # -- Kubernetes service type
+  type: "ClusterIP"
+
+  # -- service.annotations Additional annotations for the Service resource
+  annotations: {}
+
+  # -- Service port configuration
   ports:
-    http: 80 # -- Pact service HTTP port
+    # -- Pact service HTTP port
+    http: 80
+    # -- Pact service HTTPS port
+    https: 443
 
-# -- Service Account configuration
-serviceAccount:
-  create: true # -- Enable the creation of a ServiceAccount for Pact Broker pods
-  name: pact-broker-sa # -- Name of the created ServiceAccount. If not set and `serviceAccount.create` is true, a name is generated
-  annotations: {} # -- Additional custom annotations for the ServiceAccount.
-  automountServiceAccountToken: true # -- Auto-mount the service account token in the pod
+  # -- Service [NodePort configuration](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
+  nodePorts:
+    # -- http nodePort
+    http: ""
+    # -- https nodePort
+    https: ""
 
-# -- Traefik ingress routes configuration
+  # -- Pact Broker service clusterIP
+  clusterIP: ""
+
+  # -- Pact Broker Service [loadBalancerIP](https://kubernetes.io/docs/user-guide/services/#type-loadbalancer)
+  loadBalancerIP: ""
+
+# -- Ingress parameters
 ingress:
-  enabled: true # -- Enables or disables all Traefik CRDs: Ingress routes, middleware.
-  nonTlsRouteEnabled: false # -- Non-TLS Traefik route for pact-broker. You can consider turning this off if you are redirecting your traffic from http to https on different load balancer etc. Use case - redirecting traffic on Azure AppGateway that stands before Traefik.
-  tlsRouteEnabled: true # -- TLS Traefik route. Your Traefik instance should be preconfigured with certificate to terminate TLS for pact-broker.
-  redirectToHttps: false # -- Enable or disable redirecting traffic from http to https with Traefik middleware. Takes effect only when isTlsRouteEnabled is true.
-  host: "#{pactBrokerHost}#" # -- Full pact-broker host URL like 'pact-broker.your-domain.com'. WIll be used for matching routes in Traefik.
+  # -- ingress.enabled Enable the creation of the ingress resource
+  enabled: true
+
+  # -- ingress.className Name of the IngressClass cluster resource which defines which controller will implement the resource (e.g nginx)
+  className: ""
+
+  # -- ingress.annotations Additional annotations for the Ingress resource
+  annotations: {}
+
+  # -- host Hostname to be used to expose the route to access the Pact Broker
+  host: "#{pactBrokerHost}#"
+
+  # -- Ingress TLS parameters
+  tls:
+    # -- ingress.tls.enabled Enable TLS configuration for the host defined at `ingress.host` parameter
+    enabled: false
+    # -- ingress.tls.secretName The name to which the TLS Secret will be called
+    secretName: ""
+
+# -- Database configuration
+# Note: As of v4.0.0, only external databases are supported.
+# You must provide your own PostgreSQL instance (cloud-managed, self-hosted, or via an operator).
+database:
+  # -- Database host
+  host: "app-pbr-dv-psql01-weu-a03.postgres.database.azure.com"
+
+  # -- Database port number
+  port: "5432"
+
+  # -- Database engine to use. Only allowed values are `postgres` or `sqlite`.
+  adapter: postgres
+
+  # -- External database name
+  databaseName: "#{databaseName}#"
+
+  # -- External database auth details that the Pact Broker will use to connect
+  auth:
+    # -- Non-root username for the Pact Broker
+    username: "pact_broker"
+
+    # -- Password for the non-root username for the Pact Broker
+    password: "#{pbDbPassword}#"
+
+    # -- Name of an existing Kubernetes secret containing the database credentials
+    existingSecret: ""
+
+    # -- The key to which the password will be stored under within existing secret.
+    existingSecretPasswordKey: "user-password"
+
+# -- Service Account Configuration
+serviceAccount:
+  # -- Enable the creation of a ServiceAccount for Pact Broker pods
+  create: true
+
+  # -- Name of the ServiceAccount
+  # If `serviceAccount.create` is `true` and `serviceAccount.name` is not set, a name is generated based on the release name.
+  # If `serviceAccount.create` is `true` and `serviceAccount.name` is set, a service account is created and named after value set in `serviceAccount.name`
+  # If `serviceAccount.create` is `false` and `serviceAccount.name` is not set, the `default` service account is used for the Deployment.
+  # If `serviceAccount.create` is `false` and `serviceAccount.name` is set, the service account specified at `serviceAccount.name` is used for the Deployment.
+  name: ""
+
+  # -- Additional custom labels to the service ServiceAccount.
+  labels: {}
+
+  # -- Additional custom annotations for the ServiceAccount.
+  annotations: {}
+
+  # -- Auto-mount the service account token in the pod
+  automountServiceAccountToken: true
+
+  # -- Name of image pull secrets that should be attached to the service account
+  imagePullSecrets: []

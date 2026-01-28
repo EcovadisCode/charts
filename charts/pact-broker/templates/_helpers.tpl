@@ -48,8 +48,34 @@ This allows us to not have image: .Values.xxxx.ssss/.Values.xxx.xxx:.Values.ssss
 in every single template.
 */}}
 {{- define "broker.image" -}}
-{{- $registryName := .Values.image.registry -}}
-{{- $imageName := .Values.image.repository -}}
-{{- $tag := .Values.image.tag -}}
-{{- printf "%s/%s:%s" $registryName $imageName $tag -}}
+{{- .Values.broker.image -}}
+{{- end -}}
+
+{{/*
+Return the Database Secret Name
+*/}}
+{{- define "broker.databaseSecretName" -}}
+{{- if .Values.database.auth.existingSecret }}
+    {{- .Values.database.auth.existingSecret -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the databaseSecret key to retrieve credentials for database
+*/}}
+{{- define "broker.databaseSecretKey" -}}
+{{- if .Values.database.auth.existingSecret -}}
+    {{- .Values.database.auth.existingSecretPasswordKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "broker.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "chart.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
 {{- end -}}
