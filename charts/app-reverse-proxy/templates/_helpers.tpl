@@ -41,7 +41,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- if .Values.global.additionalLabelsEnabled }}
-{{ toYaml .Values.global.additionalLabels }}
+{{- toYaml .Values.global.additionalLabels | nindent 0 }}
 {{- end }}
 {{- end }}
 
