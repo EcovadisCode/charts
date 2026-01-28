@@ -221,6 +221,20 @@ entries:
   charts-app-reverse-proxy:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2026-01-28T13:06:57.630366327Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.6.0
+    description: EcoVadis Helm chart for application exposed with nginx reverse proxy
+    digest: b6800d64c91e2bd0dca3a3e7682c71994cf49792a8d28c2ffc8e037193ba5e24
+    name: charts-app-reverse-proxy
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-app-reverse-proxy-3.1.1/charts-app-reverse-proxy-3.1.1.tgz
+    version: 3.1.1
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2026-01-28T12:57:09.895245109Z"
     dependencies:
     - name: charts-core
@@ -2384,4 +2398,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2026-01-28T12:57:09.896039535Z"
+generated: "2026-01-28T13:06:57.631184206Z"
