@@ -42,6 +42,12 @@ spec:
         {{- if .Values.agent.os | eq "windows" }}
           - name: agentmount
             emptyDir: {}
+          {{- if .Values.agent.useHostVolumeForAdoCache }}
+          - name: ado-task-cache
+            hostPath:
+              path: "C:\\adoTaskCache"
+              type: DirectoryOrCreate
+          {{- end }}
         {{- end }}
         nodeSelector:
           pool: "{{ .Values.aks.agentPool }}"
@@ -125,8 +131,12 @@ spec:
           resources:
             requests:
               memory: {{ .Values.aks.memoryRequest }}
+              cpu: {{ .Values.aks.cpuRequest }}
             limits:
               memory: {{ .Values.aks.memoryLimit }}
+              {{- if .Values.aks.cpuLimit }}
+              cpu: {{ .Values.aks.cpuLimit }}
+              {{- end }}
           env:
             {{- if .Values.agent.os | eq "linux" }}
               {{- if .Values.linuxSidecarContainers.docker.enabled }}
@@ -146,6 +156,14 @@ spec:
               value: buildkitd
               {{- end }}
             {{- end }}
+            - name: NODE_INTERNAL_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             - name: AZP_IGNORE_SECRETS_SHORTER_THAN
               value: "4"
             - name: AZP_URL
@@ -177,6 +195,9 @@ spec:
               value: {{ .Values.agent.remoteArtifactsShare.fileShareName }}
               {{- end }}
             {{- end }}
+            {{- with .Values.agent.additionalEnvVars }}
+            {{ toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             {{- if .Values.agent.os | eq "linux" }}
               {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
@@ -194,6 +215,11 @@ spec:
             - name: agentmount
               mountPath: "C:/builds"
               readOnly: false
+              {{- if .Values.agent.useHostVolumeForAdoCache }}
+            - name: ado-task-cache
+              mountPath: "C:/builds/_tasks"
+              readOnly: false
+              {{- end }}
             {{- end }}
         tolerations:
         - key: "pool"

@@ -7,6 +7,8 @@ aks:
   namespace: "build-agents"
   memoryRequest: 10G
   memoryLimit: 10G
+  cpuRequest: "1"
+  cpuLimit: ""
   # whether to deploy sysbox or not, should be disabled in most cases
   # https://github.com/nestybox/sysbox
   sysbox:
@@ -53,6 +55,10 @@ agent:
     privileged: false
   # Apparmor profile to be used for the build agent container, for now only "unconfined" is required and tested
   apparmor: unconfined
+  # Additional environment variables to be added to the build agent container
+  additionalEnvVars: {}
+  # Specify if host volume should be used for caching Azure DevOps tasks on windows agents
+  useHostVolumeForAdoCache: false
 
 # Sidecar containers that will be used for linux agent image. Rootless docker is not yet tested.
 linuxSidecarContainers:
