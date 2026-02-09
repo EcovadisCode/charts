@@ -25,7 +25,7 @@ spec:
         shareProcessNamespace: true
         serviceAccountName: "svc-acc-{{ .Values.buildAgentName }}"
         restartPolicy: Never
-        terminationGracePeriodSeconds: 3600
+        terminationGracePeriodSeconds: {{ .Values.agent.terminationGracePeriodSeconds }}
         volumes:
         {{- if .Values.agent.os | eq "linux" }}
           {{- if .Values.linuxSidecarContainers.docker.enabled }}
@@ -123,6 +123,33 @@ spec:
           # PROTIP - In Keda agent container has to be first, otherwise it will not be able to read value from AZP_URL
         - name: {{ .Values.buildAgentName }}
           image: {{ .Values.devops.ACR_NAME }}/{{ .Values.agent.primary.imageName }}:{{ .Values.agent.primary.imageVersion }}
+          {{- if .Values.agent.debugMode }}
+            {{- if eq .Values.agent.os "windows" }}
+          command:
+            - "powershell"
+            - "-Command"
+            - "Write-Host 'Debug container started'; while ($true) { Start-Sleep -Seconds 3600 }"
+            {{- end }}
+            {{- if eq .Values.agent.os "linux" }}
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              echo "Debug container started"
+              sleep infinity
+            {{- end }}
+          {{- end }}
+          {{- if and (eq .Values.agent.os "windows") (default false .Values.agent.preStopHook.enabled) }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - "powershell.exe"
+                  - "-NoLogo"
+                  - "-NoProfile"
+                  - "-Command"
+                  - "Start-Sleep -Seconds {{ .Values.agent.terminationGracePeriodSeconds }}"
+          {{- end }}
           imagePullPolicy: IfNotPresent
           {{- with .Values.agent.securityContext }}
           securityContext:

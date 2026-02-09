@@ -33,6 +33,10 @@ devops:
 agent:
   # Operating system of the build agent, either windows or linux
   os: linux
+  # If enabled it will start container in debug mode which will keep it alive for 1 hour and allow to connect to it and troubleshoot any issues with the agent configuration or custom image. Not recommended to be used in production environments.
+  debugMode: false
+  # Time in seconds given to the build agent container to terminate gracefully before it gets killed by Kubernetes
+  terminationGracePeriodSeconds: 3600
   # # Only applicable for os: windows, passes required parameters for mounting azure file share
   remoteArtifactsShare:
     enabled: false
@@ -59,6 +63,10 @@ agent:
   additionalEnvVars: {}
   # Specify if host volume should be used for caching Azure DevOps tasks on windows agents
   useHostVolumeForAdoCache: false
+  # Windows only - when enabled it will keep pod alive when Kubernetes tries to remove pod to allow ADO job to complete.
+  # It provides same behavior as on Linux containers but ducktaped to work on Windows.
+  preStopHook:
+    enabled: false
 
 # Sidecar containers that will be used for linux agent image. Rootless docker is not yet tested.
 linuxSidecarContainers:
