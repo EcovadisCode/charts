@@ -144,11 +144,19 @@ spec:
             preStop:
               exec:
                 command:
-                  - "powershell.exe"
-                  - "-NoLogo"
-                  - "-NoProfile"
-                  - "-Command"
-                  - "Start-Sleep -Seconds {{ .Values.agent.terminationGracePeriodSeconds }}"
+                  - powershell.exe
+                  - -NoLogo
+                  - -NoProfile
+                  - -Command
+                  - |
+                    $token = Get-Content C:\azp\.token
+                    while($true) {
+                      C:\azp\agent\config.cmd remove --unattended --auth PAT --token $token >> C:\azp\cleanup.log 2>&1
+                      if ($LASTEXITCODE -eq 0) {
+                        break
+                      }
+                      Start-Sleep -Seconds 30
+                    }
           {{- end }}
           imagePullPolicy: IfNotPresent
           {{- with .Values.agent.securityContext }}
