@@ -2290,6 +2290,19 @@ entries:
   pact-broker:
   - apiVersion: v2
     appVersion: 2.102.2.0
+    created: "2026-02-20T11:25:22.912053593Z"
+    description: EcoVadis public Helm chart for Pact Broker
+    digest: cdd60a20240553e1e6fad274ecc09ce86248ed849260d48f240d2f0bdc620833
+    name: pact-broker
+    sources:
+    - https://github.com/pact-foundation/pact_broker
+    - https://github.com/ChrisJBurns/pact-broker-chart
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/pact-broker-1.6.0/pact-broker-1.6.0.tgz
+    version: 1.6.0
+  - apiVersion: v2
+    appVersion: 2.102.2.0
     created: "2026-01-28T09:17:07.825939863Z"
     description: EcoVadis public Helm chart for Pact Broker
     digest: 058472d357f79498c6c2595ebec1b030d2fea009ed40c9cccd5734d55519f91a
@@ -2416,4 +2429,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-10T11:39:39.091570941Z"
+generated: "2026-02-20T11:25:22.912886889Z"
