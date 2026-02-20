@@ -43,16 +43,10 @@ agent:
     fileShareResourceGroup: ""
     fileShareStorageAccountName: ""
     fileShareName: ""
-  primary:
-    # Image name to be used for the main build agent
+  image:
+    # Image name to be used for the build agent
     imageName: build-agent-1
-    # Image version to be used for the main build agent
-    imageVersion: 1.0.0
-  staging:
-    enabled: false
-    # Image name to be used for the secondary/staging build agent
-    imageName: build-agent-1-staging
-    # Image version to be used for the secondary/staging build agent
+    # Image version to be used for the build agent
     imageVersion: 1.0.0
   # Security context object attached to build agent container
   securityContext:

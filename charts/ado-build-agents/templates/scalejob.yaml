@@ -122,7 +122,7 @@ spec:
         containers:
           # PROTIP - In Keda agent container has to be first, otherwise it will not be able to read value from AZP_URL
         - name: {{ .Values.buildAgentName }}
-          image: {{ .Values.devops.ACR_NAME }}/{{ .Values.agent.primary.imageName }}:{{ .Values.agent.primary.imageVersion }}
+          image: {{ .Values.devops.ACR_NAME }}/{{ .Values.agent.image.imageName }}:{{ .Values.agent.image.imageVersion }}
           {{- if .Values.agent.debugMode }}
             {{- if eq .Values.agent.os "windows" }}
           command:
