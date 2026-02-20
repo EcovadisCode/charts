@@ -274,7 +274,7 @@ ingress:
 # You must provide your own PostgreSQL instance (cloud-managed, self-hosted, or via an operator).
 database:
   # -- Database host
-  host: "#{sqlServerName}#"
+  host: "#{sqlServerHost}#"
 
   # -- Database port number
   port: "5432"
