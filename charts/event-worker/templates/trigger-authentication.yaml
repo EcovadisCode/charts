@@ -6,6 +6,7 @@ metadata:
   labels:
     {{- include "charts-event-worker.labels" . | nindent 4 }}
 spec:
+  {{- if .Values.global.keda.triggers.azureServiceBus.connectionStringKeyVaultSecretName }}
   azureKeyVault:
     vaultUri: {{ .Values.global.secEnvVars.KeyVault__Url | default "" }}
     credentials:
@@ -21,4 +22,8 @@ spec:
     secrets:
     - parameter: connection
       name: {{ .Values.global.keda.triggers.azureServiceBus.connectionStringKeyVaultSecretName }}
+  {{- else }}
+  podIdentity:
+    provider: azure-workload
+  {{ end }}
 {{ end }}
