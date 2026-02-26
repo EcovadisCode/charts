@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "charts-job.labels" . | nindent 4 }}
 spec:
-  {{- if .Values.global.keda.triggers.connectionStringKeyVaultSecretName }}
+  {{- if .Values.global.keda.triggers.azureServiceBus.connectionStringKeyVaultSecretName }}
   azureKeyVault:
     vaultUri: {{ .Values.global.secEnvVars.KeyVault__Url | default "" }}
     credentials:
