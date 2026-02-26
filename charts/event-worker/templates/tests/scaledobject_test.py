@@ -86,6 +86,9 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
             values= {
                 "global": {
                     "keda": {
+                        "azure": {
+                          "clientIdSecretKey": 'AzureIdentity__ClientSecret' 
+                        },
                         "triggers": {
                             "azureServiceBus": {
                                 "connectionStringKeyVaultSecretName": "ConnectionStrings--ServiceBus",

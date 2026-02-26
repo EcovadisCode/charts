@@ -130,12 +130,12 @@ global:
     maxReplicaCount: 5 # Maximum number of JOBS to run at the same time
     successfulJobsHistoryLimit: 2 # Number of successful jobs to keep in history
     failedJobsHistoryLimit: 1 # Number of failed jobs to keep in history
-    azure: # DEPRECATED, now uses workload identity
-      clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
-      # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-job.fullname" . }}-secure'
+    # azure: # DEPRECATED, now uses workload identity
+    #   clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
+    #   # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-job.fullname" . }}-secure'
     triggers:
       azureServiceBus:
-        connectionStringKeyVaultSecretName: 'ConnectionStrings--ServiceBus' #DEPRECATED: Name of secret in Azure Keyvault that is containing a connection string to Service Bus
+        # connectionStringKeyVaultSecretName: 'ConnectionStrings--ServiceBus' #DEPRECATED: Name of secret in Azure Keyvault that is containing a connection string to Service Bus
         triggers:
         - enabled: true             # Must be enabled. However, in order to enable this trigger, settings below must be provided.
           serviceBusName:           # Required. Name of the ServiceBus Namespace
