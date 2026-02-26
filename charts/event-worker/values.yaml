@@ -170,12 +170,12 @@ global:
     cooldownPeriod:   300           # Optional. Default: 300 seconds
     initialCooldownPeriod:  0       # Optional. Default: 0 seconds
     fallbackReplicasCount:          # Optional. Number of replicas to set when event metrics cannot be gathered, defaults to half of maxReplicaCount (rounded up)
-    azure: # DEPRECATED, now uses workload identity
-      clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
-      # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-event-worker.fullname" . }}-secure'
+    # azure: # DEPRECATED, now uses workload identity
+    #   clientIdSecretKey: 'AzureIdentity__ClientSecret' # Key in k8s secret containing service principal data.
+    #   # clientIdSecretName: Optional. Name of k8s secret containing service principal data. Default is '{{ include "charts-event-worker.fullname" . }}-secure'
     triggers:
       azureServiceBus:
-        connectionStringKeyVaultSecretName: 'ConnectionStrings--ServiceBus' #DEPRECATED: Name of secret in Azure Keyvault that is containing a connection string to Service Bus
+        # connectionStringKeyVaultSecretName: 'ConnectionStrings--ServiceBus' #DEPRECATED: Name of secret in Azure Keyvault that is containing a connection string to Service Bus
         triggers:
         - enabled: true             # Must be enabled. However, in order to enable this trigger, settings below must be provided.
           serviceBusName:           # Required. Name of the ServiceBus Namespace
