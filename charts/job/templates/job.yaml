@@ -22,6 +22,9 @@ spec:
         name: 
           {{ include "charts-job.fullname" $ }}-servicebus
       metadata:
+        {{- if .serviceBusName }}
+        namespace: {{ .serviceBusName | quote }}
+        {{- end }}
         {{- if .queueName }}
         queueName: {{ .queueName | quote }}
         {{- end }}

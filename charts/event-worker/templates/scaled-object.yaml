@@ -27,6 +27,9 @@ spec:
         name: 
           {{ include "charts-event-worker.fullname" $ }}-servicebus
       metadata:
+        {{- if .serviceBusName }}
+        namespace: {{ .serviceBusName | quote }}
+        {{- end }}
         {{- if .queueName }}
         queueName: {{ .queueName | quote }}
         {{- end }}
