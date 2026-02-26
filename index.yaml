@@ -1984,6 +1984,19 @@ entries:
     version: 2.0.0
   charts-event-worker:
   - apiVersion: v2
+    created: "2026-02-26T10:00:17.364417761Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.4.2
+    description: EcoVadis Helm chart for K8s Event driven Deployment
+    digest: aeaafd3aace44052c4094afc87d4595a2750de08eb8c66278f6e6ead9c3da557
+    name: charts-event-worker
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-event-worker-1.4.0/charts-event-worker-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v2
     created: "2025-12-04T09:04:32.436312784Z"
     dependencies:
     - name: charts-core
@@ -2062,6 +2075,19 @@ entries:
     - https://github.com/EcovadisCode/charts/releases/download/charts-event-worker-1.0.0/charts-event-worker-1.0.0.tgz
     version: 1.0.0
   charts-job:
+  - apiVersion: v2
+    created: "2026-02-26T10:00:17.60404226Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.4.2
+    description: EcoVadis Helm chart for K8s Event driven Job
+    digest: 438c490979339c21db7bda177eec3f638c509ab972aca5295c09b6540a42e23f
+    name: charts-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-job-2.9.0/charts-job-2.9.0.tgz
+    version: 2.9.0
   - apiVersion: v2
     created: "2025-07-30T12:05:44.124365521Z"
     dependencies:
@@ -2438,4 +2464,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-23T10:24:50.976111495Z"
+generated: "2026-02-26T10:00:17.604827434Z"
