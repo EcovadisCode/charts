@@ -98,7 +98,7 @@ spec:
                   fieldPath: metadata.name
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
-          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled }}
+          {{- if or .Values.global.persistentVolumes .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled .Values.global.monitoring.metrics.enabled }}
           volumeMounts:
           {{- range .Values.global.persistentVolumes }}
           - mountPath: {{ .mountPath }}
