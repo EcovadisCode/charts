@@ -193,6 +193,10 @@ spec:
             {{- toYaml .Values.global.resources | nindent 12 }}
           {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled .Values.global.eso.enabled .Values.global.certificate.enabled }}
           volumeMounts:
+          {{- if .Values.global.persistentVolume.create -}}
+          - mountPath: {{ .Values.global.persistentVolume.mountPath }}
+            name: data-volume
+          {{- end }}
           {{- if .Values.global.eso.enabled }}
           - mountPath: /var/run/secrets/app
             name: app-secrets-vol
@@ -272,6 +276,11 @@ spec:
           {{- end }}
         {{- end }}          
       volumes:
+      {{- if .Values.global.persistentVolume.create -}}
+      - name: "data-volume"
+        persistentVolumeClaim:
+          claimName: {{ include "charts-event-worker.fullname" . }}-pvc-0
+      {{- end }}
       {{- if .Values.global.eso.enabled }}
       - name: app-secrets-vol
         secret:

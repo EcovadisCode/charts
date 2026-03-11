@@ -151,3 +151,10 @@ global:
     findRegex: ".*"
     # Optional: override conversion strategy (default: Unicode)
     conversionStrategy: "Unicode"
+ 
+  # Setting to enable or disable creation of Persistent Volume Claim
+  persistentVolume:
+    create: false
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    storageClassName: managed-csi
