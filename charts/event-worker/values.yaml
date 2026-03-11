@@ -184,3 +184,13 @@ global:
           subscriptionName:         # Optional. Required if topic is specified. ServiceBus Subscripion name
           messageCount: 5           # Optional. Count of messages to trigger scaling out: 1 -> N. Default: 5 messages
           activationMessageCount:   # Target value for activating the scaler: 0 -> 1. Default: 0
+          
+  # Setting to enable or disable creation of Persistent Volume Claims
+  # Each entry creates a separate PVC and a corresponding volume mount in the deployment.
+  # persistentVolumes:
+  # - name: data           # required – used as the volume/mount name suffix and PVC name suffix
+  #   mountPath: /mnt/data # required – path inside the container
+  #   accessMode: ReadWriteOnce
+  #   size: 1Gi
+  #   storageClassName: managed-csi
+  persistentVolumes: []
