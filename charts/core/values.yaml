@@ -159,5 +159,5 @@ global:
   #   mountPath: /mnt/data # required – path inside the container
   #   accessMode: ReadWriteMany
   #   size: 1Gi
-  #   storageClassName: managed-csi
+  #   storageClassName: azurefile-csi
   persistentVolumes: []

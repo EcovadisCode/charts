@@ -12,5 +12,5 @@ spec:
   resources:
     requests:
       storage: {{ .size | default "1Gi" }}
-  storageClassName: {{ .storageClassName | default "managed-csi" }}
+  storageClassName: {{ .storageClassName | default "azurefile-csi" }}
 {{- end }}
