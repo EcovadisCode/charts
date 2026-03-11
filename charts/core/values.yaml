@@ -152,9 +152,12 @@ global:
     # Optional: override conversion strategy (default: Unicode)
     conversionStrategy: "Unicode"
  
-  # Setting to enable or disable creation of Persistent Volume Claim
-  persistentVolume:
-    create: false
-    accessMode: ReadWriteOnce
-    size: 1Gi
-    storageClassName: managed-csi
+  # Setting to enable or disable creation of Persistent Volume Claims
+  # Each entry creates a separate PVC and a corresponding volume mount in the deployment.
+  # persistentVolumes:
+  # - name: data           # required – used as the volume/mount name suffix and PVC name suffix
+  #   mountPath: /mnt/data # required – path inside the container
+  #   accessMode: ReadWriteOnce
+  #   size: 1Gi
+  #   storageClassName: managed-csi
+  persistentVolumes: []

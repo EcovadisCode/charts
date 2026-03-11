@@ -100,9 +100,9 @@ spec:
             {{- toYaml .Values.global.resources | nindent 12 }}
           {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled }}
           volumeMounts:
-          {{- if .Values.global.persistentVolume.create -}}
-          - mountPath: {{ .Values.global.persistentVolume.mountPath }}
-            name: data-volume
+          {{- range .Values.global.persistentVolumes }}
+          - mountPath: {{ .mountPath }}
+            name: pvc-{{ .name }}
           {{- end }}
           {{- if .Values.global.monitoring.metrics.enabled }}
           - mountPath: "{{- .Values.global.monitoring.metricsServer.dir }}"
@@ -167,10 +167,10 @@ spec:
             name: metrics-volume
         {{- end }}
       volumes:
-      {{- if .Values.global.persistentVolume.create -}}
-      - name: "data-volume"
+      {{- range .Values.global.persistentVolumes }}
+      - name: pvc-{{ .name }}
         persistentVolumeClaim:
-          claimName: {{ include "charts-event-worker.fullname" . }}-pvc-0
+          claimName: {{ include "charts-event-worker.fullname" $ }}-{{ .name }}-pvc
       {{- end }}
       {{- if .Values.global.monitoring.metrics.enabled }}
       - name: "metrics-volume"

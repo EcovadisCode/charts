@@ -193,9 +193,9 @@ spec:
             {{- toYaml .Values.global.resources | nindent 12 }}
           {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled .Values.global.eso.enabled .Values.global.certificate.enabled }}
           volumeMounts:
-          {{- if .Values.global.persistentVolume.create -}}
-          - mountPath: {{ .Values.global.persistentVolume.mountPath }}
-            name: data-volume
+          {{- range .Values.global.persistentVolumes }}
+          - mountPath: {{ .mountPath }}
+            name: pvc-{{ .name }}
           {{- end }}
           {{- if .Values.global.eso.enabled }}
           - mountPath: /var/run/secrets/app
@@ -276,10 +276,10 @@ spec:
           {{- end }}
         {{- end }}          
       volumes:
-      {{- if .Values.global.persistentVolume.create -}}
-      - name: "data-volume"
+      {{- range .Values.global.persistentVolumes }}
+      - name: pvc-{{ .name }}
         persistentVolumeClaim:
-          claimName: {{ include "charts-event-worker.fullname" . }}-pvc-0
+          claimName: {{ include "charts-dotnet-core.fullname" $ }}-{{ .name }}-pvc
       {{- end }}
       {{- if .Values.global.eso.enabled }}
       - name: app-secrets-vol

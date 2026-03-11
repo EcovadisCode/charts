@@ -1,15 +1,16 @@
-{{- if .Values.global.persistentVolume.create -}}
+{{- range .Values.global.persistentVolumes }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  namespace: {{ .Release.Namespace }}
-  name: {{ include "charts-core.fullname" . }}-pvc-0
+  namespace: {{ $.Release.Namespace }}
+  name: {{ include "charts-core.fullname" $ }}-{{ .name }}-pvc
 spec:
   accessModes:
-    - {{ .Values.global.persistentVolume.accessMode }}
+    - {{ .accessMode | default "ReadWriteOnce" }}
   volumeMode: Filesystem
   resources:
     requests:
-      storage: {{ .Values.global.persistentVolume.size }}
-  storageClassName: {{ .Values.global.persistentVolume.storageClassName }}
+      storage: {{ .size | default "1Gi" }}
+  storageClassName: {{ .storageClassName | default "managed-csi" }}
 {{- end }}
