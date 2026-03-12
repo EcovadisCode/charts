@@ -1179,6 +1179,19 @@ entries:
     version: 2.0.0
   charts-dotnet-core:
   - apiVersion: v2
+    created: "2026-03-12T11:58:31.929451432Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.7.0
+    description: EcoVadis Helm chart for .Net Core app
+    digest: e5cb677ac20947e266b2b3915c8c15ebe72a339ea265881ed52769991ecbab8d
+    name: charts-dotnet-core
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-dotnet-core-4.8.1/charts-dotnet-core-4.8.1.tgz
+    version: 4.8.1
+  - apiVersion: v2
     created: "2026-03-12T11:53:14.936859336Z"
     dependencies:
     - name: charts-core
@@ -2006,6 +2019,19 @@ entries:
     version: 2.0.0
   charts-event-worker:
   - apiVersion: v2
+    created: "2026-03-12T11:58:32.152218001Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.7.0
+    description: EcoVadis Helm chart for K8s Event driven Deployment
+    digest: 304f0a81a12530e659e73397d129b46673e1d29c5e56c01434323dad5e315dfe
+    name: charts-event-worker
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-event-worker-1.5.1/charts-event-worker-1.5.1.tgz
+    version: 1.5.1
+  - apiVersion: v2
     created: "2026-03-12T11:53:15.08716985Z"
     dependencies:
     - name: charts-core
@@ -2538,4 +2564,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2026-03-12T11:53:15.088061094Z"
+generated: "2026-03-12T11:58:32.153714873Z"
