@@ -191,8 +191,12 @@ spec:
                   fieldPath: metadata.name
           resources:
             {{- toYaml .Values.global.resources | nindent 12 }}
-          {{- if or .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled .Values.global.eso.enabled .Values.global.certificate.enabled }}
+          {{- if or .Values.global.persistentVolumes .Values.global.appConfigFilesEnabled .Values.global.additionalVolumesEnabled .Values.global.eso.enabled .Values.global.certificate.enabled }}
           volumeMounts:
+          {{- range .Values.global.persistentVolumes }}
+          - mountPath: {{ .mountPath }}
+            name: pvc-{{ .name }}
+          {{- end }}
           {{- if .Values.global.eso.enabled }}
           - mountPath: /var/run/secrets/app
             name: app-secrets-vol
@@ -272,6 +276,11 @@ spec:
           {{- end }}
         {{- end }}          
       volumes:
+      {{- range .Values.global.persistentVolumes }}
+      - name: pvc-{{ .name }}
+        persistentVolumeClaim:
+          claimName: {{ include "charts-dotnet-core.fullname" $ }}-{{ .name }}-pvc
+      {{- end }}
       {{- if .Values.global.eso.enabled }}
       - name: app-secrets-vol
         secret:
