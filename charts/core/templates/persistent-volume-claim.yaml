@@ -12,5 +12,5 @@ spec:
   resources:
     requests:
       storage: {{ .size | default "1Gi" }}
-  storageClassName: {{ include "charts-core.fullname" $ }}-azurefile-csi
+  storageClassName: {{ .storageClassName | default "azurefile-csi" }}
 {{- end }}

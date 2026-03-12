@@ -158,7 +158,6 @@ global:
   # - name: data           # required – used as the volume/mount name suffix and PVC name suffix
   #   mountPath: /mnt/data # required – path inside the container
   #   accessMode: ReadWriteMany
+  #   storageClassName: azurefile-csi
   #   size: 1Gi
   persistentVolumes: []
-
-  persistentVolumesSkuName: Standard_LRS # default sku name for azure file, used when storageClassName is not specified in persistentVolumes configuration

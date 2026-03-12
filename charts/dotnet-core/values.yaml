@@ -329,6 +329,7 @@ global:
   # - name: data           # required – used as the volume/mount name suffix and PVC name suffix
   #   mountPath: /mnt/data # required – path inside the container
   #   accessMode: ReadWriteMany
+  #   storageClassName: azurefile-csi
   #   size: 1Gi
   persistentVolumes: []
 
