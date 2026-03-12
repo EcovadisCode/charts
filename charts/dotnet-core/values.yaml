@@ -332,5 +332,3 @@ global:
   #   storageClassName: azurefile-csi
   #   size: 1Gi
   persistentVolumes: []
-
-  persistentVolumesSkuName: Standard_LRS # default sku name for azure file, used when storageClassName is not specified in persistentVolumes configuration
