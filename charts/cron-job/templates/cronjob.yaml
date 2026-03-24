@@ -36,6 +36,12 @@
 {{- $nodeSelector := $cronjob.nodeSelector | default $global.nodeSelector }}
 {{- $affinity := $cronjob.affinity | default $global.affinity }}
 {{- $tolerations := $cronjob.tolerations | default $global.tolerations }}
+
+{{- /* Annotations configuration */ -}}
+{{- $annotationsEnabled := $cronjob.annotationsEnabled | default $global.annotationsEnabled }}
+{{- $annotations := $cronjob.annotations | default $global.annotations }}
+{{- $podAnnotationsEnabled := $cronjob.podAnnotationsEnabled | default $global.podAnnotationsEnabled }}
+{{- $podAnnotations := $cronjob.podAnnotations | default $global.podAnnotations }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -43,6 +49,10 @@ metadata:
   name: {{ include "charts-cron-job.fullname" (dict "root" $ "cronjob" $cronjob "index" $index) }}
   labels:
     {{- include "charts-cron-job.labels" (dict "root" $ "cronjob" $cronjob) | nindent 4 }}
+  {{- if $annotationsEnabled }}
+  annotations:
+    {{- toYaml $annotations | nindent 4 }}
+  {{- end }}
 spec:
   schedule: "{{ $schedule }}"
   concurrencyPolicy: "{{ $concurrencyPolicy }}"
@@ -61,6 +71,10 @@ spec:
         metadata:
           labels:
             {{- include "charts-cron-job.labels" (dict "root" $ "cronjob" $cronjob) | nindent 12 }}
+          {{- if $podAnnotationsEnabled }}
+          annotations:
+            {{- toYaml $podAnnotations | nindent 12 }}
+          {{- end }}
         spec:
           {{- if $imagePullSecret }}
           imagePullSecrets:

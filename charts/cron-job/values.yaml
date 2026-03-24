@@ -6,7 +6,7 @@
 # Define cronjobs array when you need multiple jobs with different configurations.
 #cronjobs:
 #  - schedule: ""
-#    nameOverride: 
+#    nameOverride:
 #    fullnameOverride:
 #    image:
 #      name: # app name
@@ -17,6 +17,12 @@
 #    additionalLabelsEnabled: true
 #    additionalLabels:
 #      team: #{team}#
+#    annotationsEnabled: true
+#    annotations:
+#      example.com/annotation: value
+#    podAnnotationsEnabled: true
+#    podAnnotations:
+#      example.com/pod-annotation: value
 
 global:
   schedule: ""
@@ -61,6 +67,16 @@ global:
 
   additionalLabelsEnabled: false
   additionalLabels: {}
+
+  # Annotations added to the CronJob resource metadata
+  annotationsEnabled: false
+  annotations: {}
+    #example.com/annotation: value
+
+  # Annotations added to the pod template metadata
+  podAnnotationsEnabled: false
+  podAnnotations: {}
+    #example.com/pod-annotation: value
 
   securityContext:
     allowPrivilegeEscalation: false
