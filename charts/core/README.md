@@ -7,6 +7,7 @@ This chart supports integration with External Secrets Operator for syncing secre
 ### Prerequisites
 
 ESO requires the following secrets to be defined in `secEnvVars`:
+
 - `AZURE_CLIENT_ID` - Azure Service Principal Client ID
 - `AZURE_CLIENT_SECRET` - Azure Service Principal Client Secret
 - `AZURE_TENANT_ID` - Azure Tenant ID
@@ -34,17 +35,39 @@ global:
 ### Generated Resources
 
 When ESO is enabled, the chart creates:
+
 - **ClusterSecretStore**: `<release-name>-cluster-secret-store` - connects to Azure Key Vault
 - **ExternalSecret**: `<release-name>-external-secret` - syncs secrets to `<release-name>-secure-kv`
 
 The ESO will use the existing `<release-name>-secure` secret (created from `secEnvVars`) for authentication to Azure Key Vault.
 
-# How to test locally
+## Sticky Sessions
+
+Enables cookie-based session affinity for Traefik IngressRoutes. **Mutually exclusive with canary deployments** — when `global.canary.enabled` is `true`, sticky config is ignored. Flagger officially doesn't support sticky sessions, as well as it breaks user weighted routing when rollout is happening.
+
+### Configuration
+
+```yaml
+global:
+  ingressRoutes:
+    routes:
+    - ruleName: private
+      sticky:
+        enabled: true
+        name: my-cookie    # default: <release-name>-sticky
+        secure: false       # default: true
+        httpOnly: true      # default: true
+        sameSite: strict    # default: strict
+```
+
+## How to test locally
+
 1. Install prerequisites as specified in tests requirements.txt
 2. in charts\charts\core type "helm template ." make sure the template renders correctly
 3. in charts\charts\core type "pytest" all tests should pass
 
-# How to debug in VS code
+## How to debug in VS code
+
 https://code.visualstudio.com/docs/python/testing
 test discovery in subfolders is based on existence of __init__.py file
 to run tests succesfully you need to set test working directory go to File->Preferences->settings, search Tests, select Python and find "Optional working directory for tests." Set it to charts\core
