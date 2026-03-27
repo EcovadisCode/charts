@@ -24,6 +24,14 @@ spec:
           name: {{ $rangeItem.serviceName | default ( include "charts-core.fullname" . ) }}
           namespace: {{ $rangeItem.serviceNamespace | default .Release.Namespace | quote}}
           port: {{ $rangeItem.servicePort | default 80 }}
+          {{- if and $rangeItem.sticky $rangeItem.sticky.enabled (not .Values.global.canary.enabled) }}
+          sticky:
+            cookie:
+              name: {{ $rangeItem.sticky.name | default (printf "%s-sticky" (include "charts-core.fullname" .)) }}
+              secure: {{ if kindIs "invalid" $rangeItem.sticky.secure }}true{{ else }}{{ $rangeItem.sticky.secure }} {{ end }}
+              httpOnly: {{ if kindIs "invalid" $rangeItem.sticky.httpOnly }}true{{ else }}{{ $rangeItem.sticky.httpOnly }} {{ end }}
+              sameSite: {{ $rangeItem.sticky.sameSite | default "strict" }}
+          {{- end }}
 {{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes (ne "false" ($rangeItem.isRetryEnabled | toString)) $rangeItem.isCircuitBreakerEnabled }}
       middlewares:
 {{- end }}
