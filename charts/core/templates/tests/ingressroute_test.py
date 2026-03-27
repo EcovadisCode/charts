@@ -287,3 +287,234 @@ class IngressRouteTemplateFileTest(unittest.TestCase):
             jmespath.search(
                 "spec.circuitBreaker.expression", docs[1])
         )
+
+    def test_sticky_session_rendered_when_enabled(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": True
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertIsNotNone(jmespath.search(
+            "spec.routes[0].services[0].sticky.cookie", docs[0]))
+
+    def test_sticky_session_not_rendered_when_disabled(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": False
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertIsNone(jmespath.search(
+            "spec.routes[0].services[0].sticky", docs[0]))
+
+    def test_sticky_session_not_rendered_when_canary_enabled(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "canary": {
+                        "enabled": True
+                    },
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": True
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertIsNone(jmespath.search(
+            "spec.routes[0].services[0].sticky", docs[0]))
+
+    def test_sticky_session_custom_cookie_name(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": True,
+                                    "name": "my-cookie"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertEqual(
+            "my-cookie",
+            jmespath.search(
+                "spec.routes[0].services[0].sticky.cookie.name", docs[0])
+        )
+
+    def test_sticky_session_secure_defaults_to_true(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": True
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertTrue(jmespath.search(
+            "spec.routes[0].services[0].sticky.cookie.secure", docs[0]))
+
+    def test_sticky_session_http_only_defaults_to_true(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": True
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertTrue(jmespath.search(
+            "spec.routes[0].services[0].sticky.cookie.httpOnly", docs[0]))
+
+    def test_sticky_session_http_only_false_is_respected(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": True,
+                                    "httpOnly": False
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertFalse(jmespath.search(
+            "spec.routes[0].services[0].sticky.cookie.httpOnly", docs[0]))
+
+    def test_sticky_session_same_site_defaults_to_strict(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": True
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertEqual(
+            "strict",
+            jmespath.search(
+                "spec.routes[0].services[0].sticky.cookie.sameSite", docs[0])
+        )
+
+    def test_sticky_session_custom_same_site(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "ingressRoutes": {
+                        "enabled": True,
+                        "routes": [
+                            {
+                                "ruleName": "http",
+                                "isRetryEnabled": False,
+                                "sticky": {
+                                    "enabled": True,
+                                    "sameSite": "lax"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/CRD/ingressroute.yaml"]
+        )
+        self.assertEqual(
+            "lax",
+            jmespath.search(
+                "spec.routes[0].services[0].sticky.cookie.sameSite", docs[0])
+        )
