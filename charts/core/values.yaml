@@ -98,6 +98,12 @@ global:
       #  - /vadisservice
       #isRetryEnabled: true
       #isCircuitBreakerEnabled: true
+      #sticky: # Preview feature. Currently works only with canary deployments disabled.
+        #enabled: false
+        #name: cookie-name
+        #secure: true
+        #httpOnly: true
+        #sameSite: strict
 
   envVarsEnabled: true
   envVars: 
