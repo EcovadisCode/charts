@@ -160,4 +160,4 @@ global:
 
   helmTest:
     enabled: true
-    image: alpine/k8s:latest # Image used by the helm test pod; must contain kubectl
+    image: dockerhub/alpine/kubectl:latest # Image used by the helm test pod; must contain kubectl

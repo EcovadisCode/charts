@@ -11,12 +11,16 @@
 {{- $activeDeadlineSeconds := $cronjob.activeDeadlineSeconds | default $global.activeDeadlineSeconds }}
 {{- $cronjobName := include "charts-cron-job.fullname" (dict "root" $ "cronjob" $cronjob "index" $index) }}
 {{- $saName := printf "%s-helm-test" $cronjobName | trunc 63 | trimSuffix "-" }}
-{{- $jobName := printf "%s-helm-test" $cronjobName | trunc 63 | trimSuffix "-" }}
+{{- $executorName := printf "%s-helm-test-executor" $cronjobName | trunc 63 | trimSuffix "-" }}
+{{- /* Spawned test Job name base: truncated to 46 chars so the runtime suffix
+     "-<10-digit-epoch>-<5-digit-random>" (17 chars max) fits within the
+     63-char Kubernetes resource name limit. */ -}}
+{{- $jobNameBase := printf "%s-test" $cronjobName | trunc 46 | trimSuffix "-" }}
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: {{ printf "%s-helm-test" $cronjobName | trunc 63 | trimSuffix "-" }}
+  name: {{ $executorName }}
   namespace: {{ $.Release.Namespace }}
   labels:
     {{- include "charts-cron-job.labels" (dict "root" $ "cronjob" $cronjob) | nindent 4 }}
@@ -24,69 +28,97 @@ metadata:
     helm.sh/hook: test
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
 spec:
-  serviceAccountName: {{ $saName }}
-  restartPolicy: Never
-  containers:
-    - name: helm-test
-      image: {{ $.Values.global.helmTest.image }}
-      command:
-        - /bin/sh
-        - -c
-        - |
-          set -e
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        {{- include "charts-cron-job.labels" (dict "root" $ "cronjob" $cronjob) | nindent 8 }}
+    spec:
+      serviceAccountName: {{ $saName }}
+      restartPolicy: Never
+      containers:
+        - name: helm-test
+          image: {{ $.Values.global.image.repository }}/{{ $.Values.global.helmTest.image }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
 
-          CRONJOB="{{ $cronjobName }}"
-          NAMESPACE="{{ $.Release.Namespace }}"
-          POLICY="{{ $concurrencyPolicy }}"
-          JOB_NAME="{{ $jobName }}"
-          TIMEOUT="{{ $activeDeadlineSeconds }}"
+              CRONJOB="{{ $cronjobName }}"
+              NAMESPACE="{{ $.Release.Namespace }}"
+              POLICY="{{ $concurrencyPolicy }}"
+              TIMEOUT="{{ $activeDeadlineSeconds }}"
 
-          echo "==> Helm test for CronJob: ${CRONJOB}"
-          echo "    ConcurrencyPolicy : ${POLICY}"
-          echo "    Test Job name     : ${JOB_NAME}"
-          echo "    Timeout           : ${TIMEOUT}s"
+              # Unique suffix: epoch seconds + shell $RANDOM (0-32767).
+              # Base is pre-truncated to 46 chars at render time so the full name
+              # stays within the 63-char Kubernetes resource name limit.
+              JOB_NAME="{{ $jobNameBase }}-$(date +%s)-${RANDOM}"
 
-          # ── Forbid: wait for any currently-active job to finish ──────────
-          if [ "$POLICY" = "Forbid" ]; then
-            echo "==> ConcurrencyPolicy=Forbid: waiting for active jobs to finish before creating test job..."
-            ELAPSED=0
-            while true; do
-              ACTIVE=$(kubectl get jobs -n "${NAMESPACE}" \
-                --selector="batch.kubernetes.io/controller-uid=$(kubectl get cronjob "${CRONJOB}" -n "${NAMESPACE}" -o jsonpath='{.metadata.uid}')" \
-                -o jsonpath='{range .items[*]}{.status.active}{"\n"}{end}' 2>/dev/null \
-                | grep -c '^[1-9]' || true)
-              if [ "${ACTIVE}" -eq 0 ]; then
-                echo "    No active jobs found. Proceeding."
-                break
+              echo "==> Helm test for CronJob: ${CRONJOB}"
+              echo "    ConcurrencyPolicy : ${POLICY}"
+              echo "    Test Job name     : ${JOB_NAME}"
+              echo "    Timeout           : ${TIMEOUT}s"
+
+              # ── Forbid: wait for any currently-active job to finish ──────────
+              if [ "$POLICY" = "Forbid" ]; then
+                echo "==> ConcurrencyPolicy=Forbid: waiting for active jobs to finish before creating test job..."
+
+                # Resolve the CronJob UID at runtime. Jobs spawned by this CronJob
+                # carry an ownerReference pointing to this UID — the authoritative
+                # way to identify all jobs that belong to a specific CronJob instance
+                # (as seen in the job's .metadata.ownerReferences[].uid field).
+                CRONJOB_UID=$(kubectl get cronjob "${CRONJOB}" -n "${NAMESPACE}" \
+                  -o jsonpath="{.metadata.uid}")
+                echo "    CronJob UID: ${CRONJOB_UID}"
+
+                ELAPSED=0
+                while true; do
+                  # Emit "<ownerUID> <activeCount>" for every job, then keep only
+                  # lines where the ownerUID matches this CronJob and activeCount > 0.
+                  ACTIVE=$(kubectl get jobs -n "${NAMESPACE}" \
+                    -o jsonpath="{range .items[*]}{.metadata.ownerReferences[0].uid}{' '}{.status.active}{'\n'}{end}" \
+                    | awk -v uid="${CRONJOB_UID}" \
+                        "NF==2 && \$1==uid && \$2+0>0 {count++} END {print count+0}")
+                  if [ "${ACTIVE}" -eq 0 ]; then
+                    echo "    No active jobs found. Proceeding."
+                    break
+                  fi
+                  if [ "${ELAPSED}" -ge "${TIMEOUT}" ]; then
+                    echo "ERROR: Timed out after ${TIMEOUT}s waiting for active jobs to finish."
+                    exit 1
+                  fi
+                  echo "    ${ACTIVE} active job(s) still running. Waiting 10s... (${ELAPSED}s elapsed)"
+                  sleep 10
+                  ELAPSED=$((ELAPSED + 10))
+                done
+
+              # ── Replace: delete any active scheduler-spawned jobs first ──────
+              elif [ "$POLICY" = "Replace" ]; then
+                echo "==> ConcurrencyPolicy=Replace: deleting active jobs owned by this CronJob..."
+                CRONJOB_UID=$(kubectl get cronjob "${CRONJOB}" -n "${NAMESPACE}" \
+                  -o jsonpath="{.metadata.uid}")
+                # Find names of all jobs whose ownerReference points to this CronJob
+                # and that currently have active pods, then delete them.
+                kubectl get jobs -n "${NAMESPACE}" \
+                  -o jsonpath="{range .items[*]}{.metadata.ownerReferences[0].uid}{' '}{.status.active}{' '}{.metadata.name}{'\n'}{end}" \
+                  | awk -v uid="${CRONJOB_UID}" "NF==3 && \$1==uid && \$2+0>0 {print \$3}" \
+                  | xargs -r kubectl delete job -n "${NAMESPACE}" --ignore-not-found
+                echo "    Done."
               fi
-              if [ "${ELAPSED}" -ge "${TIMEOUT}" ]; then
-                echo "ERROR: Timed out after ${TIMEOUT}s waiting for active jobs to finish."
-                exit 1
-              fi
-              echo "    ${ACTIVE} active job(s) still running. Waiting 10s... (${ELAPSED}s elapsed)"
-              sleep 10
-              ELAPSED=$((ELAPSED + 10))
-            done
 
-          # ── Replace: delete any existing test job first ──────────────────
-          elif [ "$POLICY" = "Replace" ]; then
-            echo "==> ConcurrencyPolicy=Replace: deleting existing test job if present..."
-            kubectl delete job "${JOB_NAME}" -n "${NAMESPACE}" --ignore-not-found
-            echo "    Done."
-          fi
+              # ── Create the test job from the CronJob ─────────────────────────
+              echo "==> Creating test job '${JOB_NAME}' from CronJob '${CRONJOB}'..."
+              kubectl create job "${JOB_NAME}" --from=cronjob/"${CRONJOB}" -n "${NAMESPACE}"
 
-          # ── Create the test job from the CronJob ─────────────────────────
-          echo "==> Creating test job '${JOB_NAME}' from CronJob '${CRONJOB}'..."
-          kubectl create job "${JOB_NAME}" --from=cronjob/"${CRONJOB}" -n "${NAMESPACE}"
+              # ── Wait for completion ───────────────────────────────────────────
+              echo "==> Waiting for job '${JOB_NAME}' to complete (timeout: ${TIMEOUT}s)..."
+              kubectl wait job/"${JOB_NAME}" \
+                -n "${NAMESPACE}" \
+                --for=condition=complete \
+                --timeout="${TIMEOUT}s"
 
-          # ── Wait for completion ───────────────────────────────────────────
-          echo "==> Waiting for job '${JOB_NAME}' to complete (timeout: ${TIMEOUT}s)..."
-          kubectl wait job/"${JOB_NAME}" \
-            -n "${NAMESPACE}" \
-            --for=condition=complete \
-            --timeout="${TIMEOUT}s"
-
-          echo "==> Test job completed successfully."
+              echo "==> Test job completed successfully."
 {{- end }}
 
 {{- end }}
