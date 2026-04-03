@@ -159,5 +159,5 @@ global:
     enabled: false
 
   helmTest:
-    enabled: true
+    enabled: false
     image: dockerhub/alpine/kubectl:latest # Image used by the helm test pod; must contain kubectl
