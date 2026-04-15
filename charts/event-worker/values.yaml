@@ -186,6 +186,12 @@ global:
           messageCount: 5           # Optional. Count of messages to trigger scaling out: 1 -> N. Default: 5 messages
           activationMessageCount:   # Target value for activating the scaler: 0 -> 1. Default: 0
 
+  # Can only used when keda scaling is disabled
+  autoscaling:
+    enabled: false
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+
   # Setting to enable or disable creation of Persistent Volume Claims
   # Each entry creates a separate PVC and a corresponding volume mount in the deployment.
   # persistentVolumes:
