@@ -163,6 +163,7 @@ global:
 
   # https://keda.sh/docs/latest/reference/scaledobject-spec/
   keda:
+    enabled: true
     autoscalingPaused: false        # If true, KEDA will not scale the worker
     pollingInterval: 30             # Polling interval in seconds
     minReplicaCount: 2              # Minimum number of instances to run at the same time
