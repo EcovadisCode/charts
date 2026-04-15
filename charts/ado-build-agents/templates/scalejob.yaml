@@ -31,6 +31,8 @@ spec:
           {{- if .Values.linuxSidecarContainers.docker.enabled }}
           - name: dind-certs
             emptyDir: {}
+          - name: dind-share
+            emptyDir: {}
           {{- end }}
           {{- if .Values.linuxSidecarContainers.buildkit.enabled }}
           - name: buildkitd-certs
@@ -113,6 +115,9 @@ spec:
             volumeMounts:
               - mountPath: /dind-certs
                 name: dind-certs
+              - mountPath: /dind-share
+                name: dind-share
+                readOnly: false
           {{- end }}
           {{- if .Values.windowsSidecarContainers.sqlserver.enabled }}
           - name: sqlserver
@@ -244,6 +249,9 @@ spec:
             - name: dind-certs
               mountPath: /dind-certs
               readOnly: true
+            - name: dind-share
+              mountPath: /dind-share
+              readOnly: false
               {{- end }}
             {{- end }}
             {{- if .Values.agent.os | eq "windows" }}
