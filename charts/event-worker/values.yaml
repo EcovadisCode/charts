@@ -163,6 +163,7 @@ global:
 
   # https://keda.sh/docs/latest/reference/scaledobject-spec/
   keda:
+    enabled: true
     autoscalingPaused: false        # If true, KEDA will not scale the worker
     pollingInterval: 30             # Polling interval in seconds
     minReplicaCount: 2              # Minimum number of instances to run at the same time
@@ -184,6 +185,12 @@ global:
           subscriptionName:         # Optional. Required if topic is specified. ServiceBus Subscripion name
           messageCount: 5           # Optional. Count of messages to trigger scaling out: 1 -> N. Default: 5 messages
           activationMessageCount:   # Target value for activating the scaler: 0 -> 1. Default: 0
+
+  # Can only used when keda scaling is disabled
+  autoscaling:
+    enabled: false
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
 
   # Setting to enable or disable creation of Persistent Volume Claims
   # Each entry creates a separate PVC and a corresponding volume mount in the deployment.

@@ -1,3 +1,4 @@
+{{- if .Values.global.keda.enabled }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -48,3 +49,4 @@ spec:
         cloud: AzurePublicCloud
     {{- end }}
     {{- end }}
+{{- end }}

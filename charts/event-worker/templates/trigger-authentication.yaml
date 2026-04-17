@@ -1,3 +1,4 @@
+{{- if .Values.global.keda.enabled }}
 {{- if .Values.global.keda.triggers.azureServiceBus.triggers }}
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
@@ -26,4 +27,5 @@ spec:
   podIdentity:
     provider: azure-workload
   {{ end }}
+{{ end }}
 {{ end }}
