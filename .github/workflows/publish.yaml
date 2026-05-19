@@ -7,7 +7,7 @@ on:
 
 
 jobs:
-  release:
+  release-core:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,21 +26,73 @@ jobs:
       - name: Helm tool installer
         uses: azure/setup-helm@v1
         with:
-          version: '3.5.4' # default is latest stable
+          version: '3.5.4'
         id: install
-
-      # - name: Parse Chart.yaml
-      #   id: parse-chart
-      #   run: |
-      #     name=$(yq ".name" < Chart.yaml)
-      #     version=$(yq ".version" < Chart.yaml)
-      #     echo "::set-output name=tagname::${name}-${version}"
 
       - name: Add dependency chart repos
         run: |
           helm repo add ecovadis https://ecovadiscode.github.io/charts/
 
-      - name: Run chart-releaser
+      - name: Remove all charts except core
+        run: |
+          find charts/ -mindepth 1 -maxdepth 1 -type d ! -name core -exec rm -rf {} +
+
+      - name: Run chart-releaser for core
+        uses: helm/chart-releaser-action@v1.4.0
+        with:
+          charts_dir: "charts"
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  release-remaining:
+    needs: release-core
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Helm tool installer
+        uses: azure/setup-helm@v1
+        with:
+          version: '3.5.4'
+        id: install
+
+      - name: Add dependency chart repos
+        run: |
+          helm repo add ecovadis https://ecovadiscode.github.io/charts/
+
+      - name: Wait for core chart availability in Helm repo
+        run: |
+          # Find the highest core version required by any dependent chart
+          NEEDED_VERSION=$(grep -A1 'name: charts-core' charts/*/Chart.yaml | grep 'version:' | sed 's/.*version:[[:space:]]*//' | tr -d '"' | sort -V | tail -1)
+          if [ -z "$NEEDED_VERSION" ]; then
+            echo "No charts depend on charts-core, skipping wait."
+            exit 0
+          fi
+          echo "Highest charts-core version needed by dependent charts: ${NEEDED_VERSION}"
+          for i in $(seq 1 30); do
+            helm repo update 2>/dev/null
+            if helm search repo ecovadis/charts-core --version "${NEEDED_VERSION}" | grep -q "${NEEDED_VERSION}"; then
+              echo "charts-core ${NEEDED_VERSION} is available!"
+              exit 0
+            fi
+            echo "Attempt ${i}/30 - not yet available, waiting 10s..."
+            sleep 10
+          done
+          echo "Timeout waiting for charts-core ${NEEDED_VERSION} after 5 minutes"
+          exit 1
+
+      - name: Run chart-releaser for remaining charts
         uses: helm/chart-releaser-action@v1.4.0
         with:
           charts_dir: "charts"
