@@ -7,7 +7,7 @@ on:
 
 
 jobs:
-  release:
+  release-core:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,21 +26,54 @@ jobs:
       - name: Helm tool installer
         uses: azure/setup-helm@v1
         with:
-          version: '3.5.4' # default is latest stable
+          version: '3.5.4'
         id: install
-
-      # - name: Parse Chart.yaml
-      #   id: parse-chart
-      #   run: |
-      #     name=$(yq ".name" < Chart.yaml)
-      #     version=$(yq ".version" < Chart.yaml)
-      #     echo "::set-output name=tagname::${name}-${version}"
 
       - name: Add dependency chart repos
         run: |
           helm repo add ecovadis https://ecovadiscode.github.io/charts/
 
-      - name: Run chart-releaser
+      - name: Isolate core chart for release
+        run: |
+          mkdir -p _core-release
+          cp -r charts/core _core-release/core
+
+      - name: Run chart-releaser for core
+        uses: helm/chart-releaser-action@v1.4.0
+        with:
+          charts_dir: "_core-release"
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  release-remaining:
+    needs: release-core
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Helm tool installer
+        uses: azure/setup-helm@v1
+        with:
+          version: '3.5.4'
+        id: install
+
+      - name: Add dependency chart repos and update
+        run: |
+          helm repo add ecovadis https://ecovadiscode.github.io/charts/
+          helm repo update
+
+      - name: Run chart-releaser for remaining charts
         uses: helm/chart-releaser-action@v1.4.0
         with:
           charts_dir: "charts"
