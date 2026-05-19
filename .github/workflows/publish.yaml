@@ -33,15 +33,14 @@ jobs:
         run: |
           helm repo add ecovadis https://ecovadiscode.github.io/charts/
 
-      - name: Isolate core chart for release
+      - name: Remove all charts except core
         run: |
-          mkdir -p _core-release
-          cp -r charts/core _core-release/core
+          find charts/ -mindepth 1 -maxdepth 1 -type d ! -name core -exec rm -rf {} +
 
       - name: Run chart-releaser for core
         uses: helm/chart-releaser-action@v1.4.0
         with:
-          charts_dir: "_core-release"
+          charts_dir: "charts"
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
@@ -73,18 +72,23 @@ jobs:
 
       - name: Wait for core chart availability in Helm repo
         run: |
-          CORE_VERSION=$(grep '^version:' charts/core/Chart.yaml | awk '{print $2}')
-          echo "Waiting for charts-core ${CORE_VERSION} to be available..."
+          # Find the highest core version required by any dependent chart
+          NEEDED_VERSION=$(grep -A2 'name: charts-core' charts/*/Chart.yaml | grep 'version:' | awk '{print $2}' | tr -d '"' | sort -V | tail -1)
+          if [ -z "$NEEDED_VERSION" ]; then
+            echo "No charts depend on charts-core, skipping wait."
+            exit 0
+          fi
+          echo "Highest charts-core version needed by dependent charts: ${NEEDED_VERSION}"
           for i in $(seq 1 30); do
             helm repo update 2>/dev/null
-            if helm search repo ecovadis/charts-core --version "${CORE_VERSION}" | grep -q "${CORE_VERSION}"; then
-              echo "charts-core ${CORE_VERSION} is available!"
+            if helm search repo ecovadis/charts-core --version "${NEEDED_VERSION}" | grep -q "${NEEDED_VERSION}"; then
+              echo "charts-core ${NEEDED_VERSION} is available!"
               exit 0
             fi
             echo "Attempt ${i}/30 - not yet available, waiting 10s..."
             sleep 10
           done
-          echo "Timeout waiting for charts-core ${CORE_VERSION} after 5 minutes"
+          echo "Timeout waiting for charts-core ${NEEDED_VERSION} after 5 minutes"
           exit 1
 
       - name: Run chart-releaser for remaining charts
