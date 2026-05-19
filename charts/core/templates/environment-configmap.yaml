@@ -1,0 +1,15 @@
+{{- if .Values.global.envVarsEnabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "charts-core.fullname" . }}"
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    {{- include "charts-core.labels" . | nindent 4 }}
+data:
+  {{- if .Values.global.envVars -}}
+  {{ range $key, $val := .Values.global.envVars }}
+    {{ $key }}: {{ $val | quote }}
+  {{ end }}
+  {{- end }}
+{{- end -}}

@@ -1,0 +1,20 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "chart.fullname" . }}-https
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule  
+      match: Host(`{{ .Values.ingress.host }}`)
+      services:
+        - kind: Service
+          name: {{ include "chart.fullname" . }}
+          namespace: {{ .Release.Namespace }}
+          port: {{ .Values.service.ports.http }}
+{{- end }}

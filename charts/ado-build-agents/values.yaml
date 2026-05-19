@@ -1,0 +1,94 @@
+buildAgentName: build-agent-1
+
+aks:
+  # Name of the AKS node pool where agents will be deployed
+  agentPool: linux
+  # namespace to deploy
+  namespace: "build-agents"
+  memoryRequest: 10G
+  memoryLimit: 10G
+  cpuRequest: "1"
+  cpuLimit: ""
+  # whether to deploy sysbox or not, should be disabled in most cases
+  # https://github.com/nestybox/sysbox
+  sysbox:
+    enabled: false
+
+# Application ID of identity used by build agent
+agentAadIdentity: xxxxxx-xxxx-xxxx-xxxx
+# Tenant ID of the kubelet user assigned identity from Azure
+tenantId : xxxxxx-xxxx-xxxx-xxxx
+
+devops:
+  # Azure DevOps organization URL
+  # e.g. https://dev.azure.com/{organization}
+  AZP_URL: "https://dev.azure.com/contoso"
+  # Azure DevOps pool name
+  AZP_POOL: "build-agent"
+  # Pool ID of the Azure DevOps pool, can be found in the Azure DevOps portal from Organization agent pools pane
+  poolID: "99"
+  # Azure Container Registry name
+  ACR_NAME: "myazacr.azurecr.io"
+
+agent:
+  # Operating system of the build agent, either windows or linux
+  os: linux
+  # If enabled it will start container in debug mode which will keep it alive for 1 hour and allow to connect to it and troubleshoot any issues with the agent configuration or custom image. Not recommended to be used in production environments.
+  debugMode: false
+  # Time in seconds given to the build agent container to terminate gracefully before it gets killed by Kubernetes
+  terminationGracePeriodSeconds: 3600
+  # # Only applicable for os: windows, passes required parameters for mounting azure file share
+  remoteArtifactsShare:
+    enabled: false
+    fileShareResourceGroup: ""
+    fileShareStorageAccountName: ""
+    fileShareName: ""
+  image:
+    # Image name to be used for the build agent
+    imageName: build-agent-1
+    # Image version to be used for the build agent
+    imageVersion: 1.0.0
+  # Security context object attached to build agent container
+  securityContext:
+    privileged: false
+  # Apparmor profile to be used for the build agent container, for now only "unconfined" is required and tested
+  apparmor: unconfined
+  # Additional environment variables to be added to the build agent container
+  additionalEnvVars: {}
+  # Specify if host volume should be used for caching Azure DevOps tasks on windows agents
+  useHostVolumeForAdoCache: false
+  # Windows only - when enabled it will keep pod alive when Kubernetes tries to remove pod to allow ADO job to complete.
+  # It provides same behavior as on Linux containers but ducktaped to work on Windows.
+  preStopHook:
+    enabled: false
+
+# Sidecar containers that will be used for linux agent image. Rootless docker is not yet tested.
+linuxSidecarContainers:
+  docker:
+    enabled: false
+    image: docker
+    tag: "dind"
+  buildkit:
+    enabled: false
+    image: buildkit
+    tag: "v0.21.1-rootless"
+  mtlsGenerator:
+    image: mtlsgenerator
+    tag: "1.0.0"
+    certHostnames: "127.0.0.1"
+    certDestination: "/certs"
+
+# Sidecar container that will be used for windows agent image.
+windowsSidecarContainers:
+  sqlserver:
+    enabled: false
+    image: sqlserver
+    tag: "1.0.0"
+
+keda:
+  # Azure Identity to be used by Keda scaler
+  aadIdentity: xxxxxx-xxxx-xxxx-xxxx
+  # Minimum number of replicas to be deployed, should be >= 1
+  minReplicas: "1"
+  # Maximum number of replicas to be deployed
+  maxReplicas: "30"

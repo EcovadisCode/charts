@@ -1,0 +1,88 @@
+{{- if .Values.global.ingressRoutes.enabled -}}
+{{- range .Values.global.ingressRoutes.routes }}
+{{- $rangeItem := . -}}
+{{- with $ }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "charts-core.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - {{ $rangeItem.entrypoint | default "websecure" }}
+  routes:
+    - kind: Rule  
+      match: {{ $rangeItem.rule | default (include "defaultIngressRule" (dict "root" .Values "sub" $rangeItem )) }}
+      services:
+      {{- if .Values.global.canary.enabled }}
+        - kind: TraefikService
+      {{- else }}
+        - kind: Service
+      {{- end }}
+          name: {{ $rangeItem.serviceName | default ( include "charts-core.fullname" . ) }}
+          namespace: {{ $rangeItem.serviceNamespace | default .Release.Namespace | quote}}
+          port: {{ $rangeItem.servicePort | default 80 }}
+          {{- if and (dig "sticky" "enabled" false $rangeItem) (not .Values.global.canary.enabled) }}
+          sticky:
+            cookie:
+              name: {{ $rangeItem.sticky.name | default (printf "%s-sticky" (include "charts-core.fullname" .)) }}
+              secure: {{ if kindIs "invalid" $rangeItem.sticky.secure }}true{{ else }}{{ $rangeItem.sticky.secure }} {{ end }}
+              httpOnly: {{ if kindIs "invalid" $rangeItem.sticky.httpOnly }}true{{ else }}{{ $rangeItem.sticky.httpOnly }} {{ end }}
+              sameSite: {{ $rangeItem.sticky.sameSite | default "strict" }}
+          {{- end }}
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes (ne "false" ($rangeItem.isRetryEnabled | toString)) $rangeItem.isCircuitBreakerEnabled }}
+      middlewares:
+{{- end }}
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes}}
+        - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-stripprefix
+{{- end }}
+{{- if ne "false" ($rangeItem.isRetryEnabled | toString)}}
+        - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-retry
+{{- end }}
+{{- if (default $rangeItem.isCircuitBreakerEnabled false)}}
+        - name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName}}-circuitbreaker
+{{- end }}
+
+{{- if kindIs "invalid" $rangeItem.isTlsEnabled }}
+  tls: {}
+{{ else if eq $rangeItem.isTlsEnabled true }}
+  tls: {}
+{{- end }}
+{{- if or $rangeItem.isStripprefixEnabled $rangeItem.stripPrefixes}}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      {{- toYaml $rangeItem.stripPrefixes | nindent 6 }}
+{{- end }}
+{{- if ne "false" ($rangeItem.isRetryEnabled | toString)}}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-retry
+spec:
+  retry:
+    attempts: {{ if $rangeItem.retry -}} {{ default 3 $rangeItem.retry.attempts | quote }} {{- else -}} 3 {{- end }}
+    initialInterval: {{ if $rangeItem.retry -}} {{ default "100ms" $rangeItem.retry.initialInterval | quote }} {{- else -}} "100ms" {{- end }}
+{{- end }}
+{{- if (default $rangeItem.isCircuitBreakerEnabled false)}}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "charts-core.fullname" . }}-{{ $rangeItem.ruleName | default "http" }}-circuitbreaker
+spec:
+  circuitBreaker:
+    expression: {{ if $rangeItem.circuitBreaker -}} {{ default "ResponseCodeRatio(500, 600, 0, 600) > 0.50 || LatencyAtQuantileMS(50.0) > 30000" $rangeItem.circuitBreaker.expression | quote }} {{- else -}} "ResponseCodeRatio(500, 600, 0, 600) > 0.50 || LatencyAtQuantileMS(50.0) > 60000" {{- end }}
+{{- end }}
+---
+{{- end }}
+{{ end -}}
+{{- end -}}

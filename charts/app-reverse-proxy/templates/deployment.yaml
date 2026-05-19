@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "charts-app-reverse-proxy.fullname" . }}
+  labels:
+    {{- include "charts-app-reverse-proxy.labels" . | nindent 4 }}
+  {{- if and .Values.global.certificate.enabled .Values.global.certificate.reloader.enabled }}
+  {{- $currentEnv := .Values.global.envVars.ASPNETCORE_ENVIRONMENT | default "" }}
+  {{- $allowedEnvs := .Values.global.certificate.reloader.environments }}
+  {{- $envList := splitList "," $allowedEnvs }}
+  {{- if or (eq $allowedEnvs "") (has $currentEnv $envList) }}
+  annotations:
+    secret.reloader.stakater.com/reload: "{{ .Values.global.certificate.secretNames }}"
+  {{- end }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.global.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "charts-app-reverse-proxy.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/appsettings-secret: {{ include (print $.Template.BasePath "/appsettings-secret.yaml") . | sha256sum }}
+        checksum/reverseproxy-configmap: {{ include (print $.Template.BasePath "/reverse-proxy-configmap.yaml") . | sha256sum }}        
+      {{- with .Values.global.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "charts-app-reverse-proxy.labels" . | nindent 8 }}
+    spec:
+      # {{- if .Values.global.imagePullSecrets }}
+      # {{- with .Values.global.imagePullSecrets }}
+      # imagePullSecrets:
+      #   {{- toYaml . | nindent 8 }}
+      # {{- end }}
+      # {{- end }}
+      serviceAccountName: {{ include "charts-app-reverse-proxy.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      containers:
+        - name: nginx-reverse-proxy
+          image: "{{ .Values.global.image.nginx.repository }}/{{ .Values.global.image.nginx.name}}:{{ .Values.global.image.nginx.tag }}"
+          imagePullPolicy: {{ .Values.global.image.nginx.pullPolicy }}
+          ports:
+            - name: https
+              containerPort: {{ .Values.global.image.nginx.containerPort | default 8443 }}
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d/
+              name: nginx-default-config
+{{- if .Values.global.certificate.enabled }}
+{{- $secretNames := splitList "," .Values.global.certificate.secretNames }}
+{{- $mountPaths := splitList "," .Values.global.certificate.mountPaths }}
+{{- $secretCount := len $secretNames }}
+{{- $pathCount := len $mountPaths }}
+{{- if ne $secretCount $pathCount }}
+{{- fail (printf "Certificate configuration error: secretNames has %d items but mountPaths has %d items. They must have the same count." $secretCount $pathCount) }}
+{{- end }}
+{{- range $index, $secretName := $secretNames }}
+            - mountPath: {{ index $mountPaths $index }}
+              name: cert-volume-{{ $index }}
+              readOnly: true
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.global.resources.nginx | nindent 12 }}
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.global.securityContext | nindent 12 }}
+          image: "{{ .Values.global.image.application.repository }}/{{ .Values.global.image.application.name}}:{{ .Values.global.image.application.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.image.application.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.global.image.application.containerPort | default 8080 }}
+              protocol: TCP
+          {{- if or .Values.global.envVarsEnabled .Values.secEnvVarsEnabled }}
+          envFrom:
+          {{- if .Values.global.envVarsEnabled }}
+            - configMapRef:
+                name: "{{ include "charts-app-reverse-proxy.fullname" . }}"
+          {{- end }}
+          {{- if .Values.global.secEnvVarsEnabled }}
+            - secretRef:
+                name: "{{ include "charts-app-reverse-proxy.fullname" . }}-secure"
+          {{- end }}
+          {{- end }}
+          {{- if or .Values.global.appConfigFilesEnabled }}
+          volumeMounts:
+          {{- if .Values.global.appConfigFilesEnabled }}
+          {{- $currentScope := .}}
+            {{- range $path, $_ :=  .Files.Glob .Values.global.appConfigFiles.globPattern }}
+            {{- with $currentScope}}
+          - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $path }}"
+            name: configuration-volume
+            subPath: "{{ $path }}"
+            {{- end }}
+            {{- end }}
+          {{- if .Values.global.appConfigFiles.filesList -}}
+            {{- $files := .Files }}
+            {{- range .Values.global.appConfigFiles.filesList }}
+            {{- $rangeItem := . -}}
+            {{- with $ }}
+          - mountPath: "{{- .Values.global.appConfigFiles.dir -}}{{ $rangeItem }}"
+            name: configuration-volume
+            subPath: "{{ $rangeItem }}"
+            {{- end }}
+            {{- end }}
+           {{- end }}
+          {{- end }}
+	  {{- end }}
+          resources:
+            {{- toYaml .Values.global.resources.application | nindent 12 }}
+      volumes:
+      {{- if .Values.global.certificate.enabled }}
+      {{- $secretNames := splitList "," .Values.global.certificate.secretNames }}
+      {{- range $index, $secretName := $secretNames }}
+      - name: cert-volume-{{ $index }}
+        secret:
+          defaultMode: 420
+          secretName: {{ trim $secretName }}
+      {{- end }}
+      {{- end }}
+      - name : nginx-default-config
+        configMap:
+          name: {{ include "charts-app-reverse-proxy.fullname" . }}-reverse-proxy
+          items:
+            - key: server_conf
+              path: default.conf
+      # - name : ecovadis-cert
+      #   secret:
+      #     secretName: ecovadis-cert
+      #     items:
+      #       - key: tls.crt
+      #         path: tls.crt
+      #       - key: tls.key 
+      #         path: tls.key
+      #       - key: ca.crt 
+      #         path: ca.crt
+      - name: "configuration-volume"
+        secret:
+          secretName: {{ include "charts-app-reverse-proxy.fullname" . }}-files
+      {{- with .Values.global.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

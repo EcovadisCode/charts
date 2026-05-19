@@ -1,0 +1,15 @@
+{{- if .Values.global.serviceAccount.create -}}
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name:  {{ include "charts-core.fullname" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name:  {{ include "charts-core.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "charts-core.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

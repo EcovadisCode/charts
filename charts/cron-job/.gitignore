@@ -1,0 +1,6 @@
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
+.vs/charts-cron-job/v16/.suo
+Chart.lock
+*.pyc
+*.tgz

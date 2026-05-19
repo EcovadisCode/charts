@@ -1,0 +1,77 @@
+name: PR Gate
+
+on:
+  pull_request:
+    branches: [ master ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Helm tool installer
+      uses: azure/setup-helm@v1
+      with:
+        version: '3.5.4' # default is latest stable
+      id: install
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10.9'
+        architecture: 'x64'
+
+    - name: Install PyTest
+      run: |
+        python -m pip install --upgrade pip
+        pip install jsonschema pytest jmespath kubernetes
+
+    - name: Set up chart-testing
+      uses: helm/chart-testing-action@v2.2.1
+
+    - name: Run chart-testing (list-changed)
+      id: list-changed
+      run: |
+        changed=$(ct list-changed --config .github/linters/ct.yaml)
+        if [[ -n "$changed" ]]; then
+          echo "::set-output name=isChanged::true"
+          echo "::set-output name=changed::$changed"
+        fi
+
+    - name: Check if Py tests exist
+      id: tests-check
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
+      run: |
+        if [[ -d templates/tests ]]; then
+          echo "Directory with tests exists."
+          echo "::set-output name=testsExist::true"
+        fi
+
+    - name: Add dependency chart repos
+      if: ${{ steps.list-changed.outputs.isChanged }}
+      run: |
+        helm repo add ecovadis https://ecovadiscode.github.io/charts/
+
+    - name: Update dependencies
+      if: ${{ steps.list-changed.outputs.isChanged }}
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
+      run: |
+        helm dependency update
+
+    - name: Helm - Lint Chart
+      if: ${{ steps.list-changed.outputs.isChanged }}
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
+      run: helm lint
+
+    - name: Helm - Render chart
+      if: ${{ steps.list-changed.outputs.isChanged }}
+      working-directory: ./${{ steps.list-changed.outputs.changed }}
+      run: helm template .
+
+    - name: Python - Run Unit Test
+      run: pytest
+      if: steps.list-changed.outputs.isChanged && steps.tests-check.outputs.testsExist
+      working-directory: ./${{ steps.list-changed.outputs.changed }}

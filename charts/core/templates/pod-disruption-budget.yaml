@@ -1,0 +1,13 @@
+{{- if and (.Values.global.podDisruptionBudget.enabled) (gt (int $.Values.global.replicaCount) 1) -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "charts-core.fullname" . }}-pdb
+  labels:
+    {{- include "charts-core.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.global.podDisruptionBudget.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "charts-core.name" . }}{{ if .Values.global.canary.enabled }}-primary{{ end }}
+{{- end -}}

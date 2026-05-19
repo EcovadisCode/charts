@@ -1,0 +1,132 @@
+{{- if .Values.global.defaultNetworkPolicyEnabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "charts-core.fullname" . }}
+  labels:
+    {{- include "charts-core.labels" . | nindent 4 }}
+    networkPolicyType: default
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "charts-core.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Egress
+  - Ingress
+  ingress:
+    - from: #any pod in current namespace
+        - podSelector: {}
+
+  {{- if .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
+    - from:
+        - namespaceSelector: {}
+  {{ else }}
+    - from: #any pod from *-infra, *-backend, *-frontend namespace
+      - namespaceSelector:
+          matchLabels:
+            environment: {{ (split "-" .Release.Namespace)._0 }}
+  {{- end }}
+
+  {{- if .Values.global.monitoring.servicemonitor.enabled }}
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            environment: {{ .Values.global.monitoring.prometheusNamespace }}
+  {{- end }}
+
+    - from: #outside world - sentry, optimizely, etc
+      - ipBlock:
+          cidr: 0.0.0.0/0
+      ports:
+        - port: 443
+        - port: 80
+        - port: 8443
+        - port: 8000
+  {{- if .Values.global.monitoring.metrics.enabled }}
+        - port: {{ .Values.global.monitoring.metrics.port }}  #metrics port
+  {{- end }}
+  {{- if .Values.global.servicebusNetworkPolicyEnabled }}
+        - port: 5671  #servicebus
+  {{- end }}
+
+  egress:
+    - to: #any pod in current namespace
+        - podSelector: {}
+
+    - to: #kube-dns
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+
+  {{- if .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
+    - to:
+        - namespaceSelector: {}
+  {{ else }}
+    - to: #any pod from *-infra, *-backend, *-frontend namespace
+        - namespaceSelector:
+            matchLabels:
+              environment: {{ (split "-" .Release.Namespace)._0 }}
+  {{- end }}
+      ports:
+        - port: 8443
+        - port: 8000
+        - port: 80
+        - port: 443
+
+    - to: #outside world - sentry, optimizely, etc
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - port: 443
+        - port: 80
+        - port: 8433
+        - port: 8000
+        - port: 8200
+        - port: 53
+          protocol: UDP
+  {{- if .Values.global.elasticNetworkPolicyEnabled }}
+        - port: 9243  #elasticcloud
+  {{- end }}
+  {{- if .Values.global.postgresNetworkPolicyEnabled }}
+        - port: 5432  #postgres
+  {{- end }}  
+  {{- if .Values.global.zyteProxyNetworkPolicyEnabled }}
+        - port: 8010   #Zyte Proxy
+        - port: 8011
+        - port: 8014
+  {{- end }}
+  {{- if .Values.global.mongodbNetworkPolicyEnabled}}
+        # Use mongodbStrictNetworkPolicy if possible to avoid opening unnecessary ports
+        - port: 1024
+          endPort: 65535
+  {{- end }}
+  {{- if .Values.global.mongodbStrictNetworkPolicyEnabled}}
+        - port: 27017  # Only open port 27017 when Strict Network Policy is enabled
+  {{- end }}
+   {{- if .Values.global.eventHubNetworkPolicyEnabled }} 
+        - port: 5671 # - AMQP Ports
+        - port: 5672
+        - port: 9093 # - Kafka Port
+  {{- end }}
+  {{- if .Values.global.servicebusNetworkPolicyEnabled }}
+        - port: 5671  #servicebus
+  {{- end }}
+  {{- if .Values.global.redisNetworkPolicyEnabled }}
+        - port: 6380
+  {{- end }}
+  {{- if .Values.global.sqlNetworkPolicyEnabled }}
+        - port: 1433  #mssql
+        - port: 11000  # Redirect connection policy (default)
+          endPort: 11999
+  {{- end }}
+  {{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
+        - port: 9201
+  {{- end }}
+  {{- if .Values.global.cosmosNetworkPolicyEnabled }}
+        - port: 10255
+  {{- end }}
+{{- end -}}

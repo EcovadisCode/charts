@@ -1,0 +1,16 @@
+{{- range .Values.global.persistentVolumes }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: {{ $.Release.Namespace }}
+  name: {{ include "charts-core.fullname" $ }}-{{ .name }}-pvc
+spec:
+  accessModes:
+    - {{ .accessMode | default "ReadWriteMany" }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .size | default "1Gi" }}
+  storageClassName: {{ .storageClassName | default "azurefile-csi" }}
+{{- end }}

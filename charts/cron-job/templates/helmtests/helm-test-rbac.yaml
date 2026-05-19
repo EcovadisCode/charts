@@ -1,0 +1,61 @@
+{{- if .Values.global.helmTest.enabled }}
+
+{{- $cronjobs := $.Values.cronjobs }}
+{{- if not $cronjobs }}
+  {{- $cronjobs = list (dict) }}
+{{- end }}
+
+{{- range $index, $cronjob := $cronjobs }}
+{{- $cronjobName := include "charts-cron-job.fullname" (dict "root" $ "cronjob" $cronjob "index" $index) }}
+{{- $saName := printf "%s-helm-test" $cronjobName | trunc 63 | trimSuffix "-" }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $saName }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "charts-cron-job.labels" (dict "root" $ "cronjob" $cronjob) | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $saName }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "charts-cron-job.labels" (dict "root" $ "cronjob" $cronjob) | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+rules:
+  - apiGroups: ["batch"]
+    resources: ["cronjobs"]
+    verbs: ["get"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $saName }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "charts-cron-job.labels" (dict "root" $ "cronjob" $cronjob) | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $saName }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $saName }}
+    namespace: {{ $.Release.Namespace }}
+{{- end }}
+
+{{- end }}

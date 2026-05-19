@@ -1,0 +1,34 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "charts-dotnet-core.fullname" . }}
+  labels:
+    {{- include "charts-dotnet-core.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "charts-dotnet-core.fullname" . }}
+  minReplicas: {{ .Values.global.replicaCount }}
+{{- if .Values.global.autoscaling.enabled }}
+  maxReplicas: {{ .Values.global.autoscaling.maxReplicas }}
+{{ else }}
+  maxReplicas: {{ .Values.global.replicaCount }}
+{{- end }}
+  metrics:
+  {{- if .Values.global.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.global.autoscaling.targetCPUUtilizationPercentage }}
+  {{- end }}
+  {{- if .Values.global.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.global.autoscaling.targetMemoryUtilizationPercentage }}
+  {{- end }}

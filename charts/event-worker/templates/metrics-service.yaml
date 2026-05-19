@@ -1,0 +1,17 @@
+{{- if .Values.global.monitoring.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "charts-event-worker.fullname" . }}
+  labels:
+    {{- include "charts-event-worker.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.global.monitoring.metrics.port }}
+      targetPort: {{ .Values.global.monitoring.metrics.port }}
+      protocol: TCP
+      name: "metrics"
+  selector:
+    {{- include "charts-event-worker.selectorLabels" . | nindent 4 }}
+{{- end }}
