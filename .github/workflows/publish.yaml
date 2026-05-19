@@ -1,10 +1,5 @@
 name: Release a chart
 
-# on:
-#   push:
-#     branches:
-#       - master
-
 on:
   push:
     branches:
@@ -74,10 +69,25 @@ jobs:
           version: '3.5.4'
         id: install
 
-      - name: Add dependency chart repos and update
+      - name: Add dependency chart repos
         run: |
           helm repo add ecovadis https://ecovadiscode.github.io/charts/
-          helm repo update
+
+      - name: Wait for core chart availability in Helm repo
+        run: |
+          CORE_VERSION=$(grep '^version:' charts/core/Chart.yaml | awk '{print $2}')
+          echo "Waiting for charts-core ${CORE_VERSION} to be available..."
+          for i in $(seq 1 30); do
+            helm repo update 2>/dev/null
+            if helm search repo ecovadis/charts-core --version "${CORE_VERSION}" | grep -q "${CORE_VERSION}"; then
+              echo "charts-core ${CORE_VERSION} is available!"
+              exit 0
+            fi
+            echo "Attempt ${i}/30 - not yet available, waiting 10s..."
+            sleep 10
+          done
+          echo "Timeout waiting for charts-core ${CORE_VERSION} after 5 minutes"
+          exit 1
 
       - name: Run chart-releaser for remaining charts
         uses: helm/chart-releaser-action@v1.4.0
