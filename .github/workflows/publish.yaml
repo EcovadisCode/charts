@@ -1,9 +1,15 @@
 name: Release a chart
 
+# on:
+#   push:
+#     branches:
+#       - master
+
 on:
   push:
     branches:
       - master
+      - test/pipeline-ordering
 
 
 jobs:
