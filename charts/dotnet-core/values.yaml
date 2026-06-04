@@ -169,6 +169,12 @@ global:
   secEnvVarsEnabled: true
   secEnvVars: {}
 
+  extraEnvFrom: []
+  #   - secretRef:
+  #       name: my-existing-secret
+  #   - configMapRef:
+  #       name: my-existing-configmap
+
   appConfigFilesEnabled: true
   appConfigFiles:
     globPattern: "**.json"

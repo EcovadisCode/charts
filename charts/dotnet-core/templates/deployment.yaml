@@ -173,7 +173,7 @@ spec:
           {{- end }}
           {{- end }}
 
-          {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled }}
+          {{- if or .Values.global.envVarsEnabled .Values.global.secEnvVarsEnabled .Values.global.extraEnvFrom }}
           envFrom:
           {{- if .Values.global.envVarsEnabled }}
             - configMapRef:
@@ -182,6 +182,9 @@ spec:
           {{- if .Values.global.secEnvVarsEnabled }}
             - secretRef:
                 name: "{{ include "charts-dotnet-core.fullname" . }}-secure"
+          {{- end }}
+          {{- if .Values.global.extraEnvFrom }}
+            {{- toYaml .Values.global.extraEnvFrom | nindent 12 }}
           {{- end }}
           {{- end }}
           env:
