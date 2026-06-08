@@ -648,6 +648,88 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             ],
             jmespath.search("spec.template.spec.topologySpreadConstraints", docs[0]))
 
+    def test_should_add_extra_env_from_with_secret_ref(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "envVarsEnabled": False,
+                    "secEnvVarsEnabled": False,
+                    "extraEnvFrom": [
+                        {
+                            "secretRef": {
+                                "name": "my-existing-secret"
+                            }
+                        }
+                    ]
+                }
+            },
+            name=".",
+            show_only=["templates/deployment.yaml"]
+        )
+        self.assertEqual(
+            "my-existing-secret",
+            jmespath.search(
+                "spec.template.spec.containers[0].envFrom[0].secretRef.name", docs[0])
+        )
+
+    def test_should_add_extra_env_from_with_config_map_ref(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "envVarsEnabled": False,
+                    "secEnvVarsEnabled": False,
+                    "extraEnvFrom": [
+                        {
+                            "configMapRef": {
+                                "name": "my-existing-configmap"
+                            }
+                        }
+                    ]
+                }
+            },
+            name=".",
+            show_only=["templates/deployment.yaml"]
+        )
+        self.assertEqual(
+            "my-existing-configmap",
+            jmespath.search(
+                "spec.template.spec.containers[0].envFrom[0].configMapRef.name", docs[0])
+        )
+
+    def test_should_add_extra_env_from_alongside_existing_refs(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "envVarsEnabled": True,
+                    "secEnvVarsEnabled": True,
+                    "extraEnvFrom": [
+                        {
+                            "secretRef": {
+                                "name": "my-existing-secret"
+                            }
+                        }
+                    ]
+                }
+            },
+            name=".",
+            show_only=["templates/deployment.yaml"]
+        )
+        self.assertEqual(
+            "release-name-charts-dotnet-core",
+            jmespath.search(
+                "spec.template.spec.containers[0].envFrom[0].configMapRef.name", docs[0])
+        )
+        self.assertEqual(
+            "release-name-charts-dotnet-core-secure",
+            jmespath.search(
+                "spec.template.spec.containers[0].envFrom[1].secretRef.name", docs[0])
+        )
+        self.assertEqual(
+            "my-existing-secret",
+            jmespath.search(
+                "spec.template.spec.containers[0].envFrom[2].secretRef.name", docs[0])
+        )
+
     def test_fileshare_mount(self):
 
         share_name = "files"
