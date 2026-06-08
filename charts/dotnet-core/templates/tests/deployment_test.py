@@ -715,12 +715,12 @@ class DeploymentTemplateFileTest(unittest.TestCase):
             show_only=["templates/deployment.yaml"]
         )
         self.assertEqual(
-            "release-name-charts-dotnet-core",
+            "RELEASE-NAME-charts-dotnet-core",
             jmespath.search(
                 "spec.template.spec.containers[0].envFrom[0].configMapRef.name", docs[0])
         )
         self.assertEqual(
-            "release-name-charts-dotnet-core-secure",
+            "RELEASE-NAME-charts-dotnet-core-secure",
             jmespath.search(
                 "spec.template.spec.containers[0].envFrom[1].secretRef.name", docs[0])
         )
