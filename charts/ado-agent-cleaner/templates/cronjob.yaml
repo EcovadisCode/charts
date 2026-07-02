@@ -28,5 +28,8 @@ spec:
             env:
               - name: AZP_URL
                 value: "{{ .Values.devopsOrgUrl }}"
+              {{- with .Values.extraEnv }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
             resources:
               {{  toYaml .Values.resources | nindent 14 }}
