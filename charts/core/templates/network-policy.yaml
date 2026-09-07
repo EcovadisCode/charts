@@ -95,8 +95,7 @@ spec:
       ports:
         - port: 443
         - port: 80
-        - port: 8433  # DEPRECATED: typo for 8443, kept until confirmed unused
-        - port: 8443
+        - port: 8433
         - port: 8000
         - port: 8200
         - port: 53
