@@ -191,9 +191,11 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
             "2",
             jmespath.search("metadata.activationTargetValue", trigger)
         )
+        # Compared case-insensitively: the release name casing rendered by Helm
+        # differs between versions (3.x renders RELEASE-NAME, 4.x release-name).
         self.assertEqual(
             "release-name-charts-event-worker-servicebus",
-            jmespath.search("authenticationRef.name", trigger)
+            jmespath.search("authenticationRef.name", trigger).lower()
         )
 
     def test_mssql_trigger_port_should_default_to_1433(self):
