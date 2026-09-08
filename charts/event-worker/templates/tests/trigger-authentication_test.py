@@ -52,3 +52,37 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
             jmespath.search("spec.azureKeyVault.secrets[0].name", docs[0])
         )
 
+    def test_should_render_with_pod_identity_when_only_mssql_trigger_configured(self):
+        # Regression test: TriggerAuthentication must render (using pod identity)
+        # even when azureServiceBus.triggers is empty/unset, since mssql triggers
+        # share the same authenticationRef and rely on this resource existing.
+        docs = render_chart(
+            values={
+                "global": {
+                    "keda": {
+                        "triggers": {
+                            "mssql": {
+                                "triggers": [{
+                                    "enabled": True,
+                                    "host": "myserver.database.windows.net",
+                                    "database": "mydb",
+                                    "username": "myuser",
+                                    "query": "SELECT 1",
+                                    "targetValue": 1,
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/trigger-authentication.yaml"]
+        )
+
+        self.assertEqual(1, len(docs))
+        self.assertEqual("TriggerAuthentication", docs[0]["kind"])
+        self.assertEqual(
+            "azure-workload",
+            jmespath.search("spec.podIdentity.provider", docs[0])
+        )
+
