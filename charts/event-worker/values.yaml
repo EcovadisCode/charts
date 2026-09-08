@@ -188,12 +188,10 @@ global:
       mssql:
         triggers:
         - enabled: false            # Must be enabled. However, in order to enable this trigger, settings below must be provided.
-          host: <AZURE_SQL_SERVER_FQDN>  # Required (unless connectionStringFromEnv is used). FQDN of the Azure SQL server
+          host: <AZURE_SQL_SERVER_FQDN>  # Required. FQDN of the Azure SQL server
           port: "1433"              # Optional. Default: 1433
-          database: <DB_NAME>       # Required (unless connectionStringFromEnv is used). Database name
-          username: <UAMI_NAME>     # Required (unless connectionStringFromEnv is used). Must match the contained-database user backing the workload identity
-          # passwordFromEnv:        # Optional. Name of env var holding the password. Not needed when using azure-workload identity
-          # connectionStringFromEnv: # Optional. Name of env var holding a full connection string, as an alternative to host/port/database/username
+          database: <DB_NAME>       # Required. Database name
+          username: <UAMI_NAME>     # Required. Must match the contained-database user backing the workload identity
           query: "SELECT COUNT(*) FROM backlog WHERE state='running' OR state='queued'" # Required. T-SQL query returning a single numeric value
           targetValue: 1            # Required. Threshold value passed to the HPA
           activationTargetValue:    # Optional. Threshold that activates the scaler (0 -> 1). Default: 0
