@@ -130,3 +130,198 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
             "23",
             jmespath.search("spec.triggers[0].metadata.activationMessageCount", docs[0])
         )
+
+    def test_mssql_trigger_should_be_set_with_discrete_params(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "keda": {
+                        "triggers": {
+                            "azureServiceBus": {
+                                "triggers": []
+                            },
+                            "mssql": {
+                                "triggers": [{
+                                    "enabled": True,
+                                    "host": "myserver.database.windows.net",
+                                    "port": "1433",
+                                    "database": "mydb",
+                                    "username": "myuser",
+                                    "query": "SELECT COUNT(*) FROM backlog WHERE state='running' OR state='queued'",
+                                    "targetValue": 1,
+                                    "activationTargetValue": 2,
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/scaled-object.yaml"]
+        )
+        mssql_triggers = jmespath.search("spec.triggers[?type=='mssql']", docs[0])
+        self.assertEqual(1, len(mssql_triggers))
+        trigger = mssql_triggers[0]
+
+        self.assertEqual(
+            "myserver.database.windows.net",
+            jmespath.search("metadata.host", trigger)
+        )
+        self.assertEqual(
+            "1433",
+            jmespath.search("metadata.port", trigger)
+        )
+        self.assertEqual(
+            "mydb",
+            jmespath.search("metadata.database", trigger)
+        )
+        self.assertEqual(
+            "myuser",
+            jmespath.search("metadata.username", trigger)
+        )
+        self.assertEqual(
+            "SELECT COUNT(*) FROM backlog WHERE state='running' OR state='queued'",
+            jmespath.search("metadata.query", trigger)
+        )
+        self.assertEqual(
+            "1",
+            jmespath.search("metadata.targetValue", trigger)
+        )
+        self.assertEqual(
+            "2",
+            jmespath.search("metadata.activationTargetValue", trigger)
+        )
+        # Compared case-insensitively: the release name casing rendered by Helm
+        # differs between versions (3.x renders RELEASE-NAME, 4.x release-name).
+        self.assertEqual(
+            "release-name-charts-event-worker-servicebus",
+            jmespath.search("authenticationRef.name", trigger).lower()
+        )
+
+    def test_mssql_trigger_port_should_default_to_1433(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "keda": {
+                        "triggers": {
+                            "azureServiceBus": {
+                                "triggers": []
+                            },
+                            "mssql": {
+                                "triggers": [{
+                                    "enabled": True,
+                                    "host": "myserver.database.windows.net",
+                                    "database": "mydb",
+                                    "username": "myuser",
+                                    "query": "SELECT 1",
+                                    "targetValue": 1,
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/scaled-object.yaml"]
+        )
+
+        self.assertEqual(
+            "1433",
+            jmespath.search("spec.triggers[?type=='mssql']|[0].metadata.port", docs[0])
+        )
+
+    def test_mssql_trigger_should_use_connection_string_from_env_when_provided(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "keda": {
+                        "triggers": {
+                            "azureServiceBus": {
+                                "triggers": []
+                            },
+                            "mssql": {
+                                "triggers": [{
+                                    "enabled": True,
+                                    "connectionStringFromEnv": "MSSQL_CONNECTION_STRING",
+                                    "query": "SELECT 1",
+                                    "targetValue": 1,
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/scaled-object.yaml"]
+        )
+        mssql_trigger = jmespath.search("spec.triggers[?type=='mssql']|[0]", docs[0])
+
+        self.assertEqual(
+            "MSSQL_CONNECTION_STRING",
+            jmespath.search("metadata.connectionStringFromEnv", mssql_trigger)
+        )
+        self.assertIsNone(
+            jmespath.search("metadata.host", mssql_trigger)
+        )
+
+    def test_mssql_trigger_should_not_be_rendered_when_disabled(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "keda": {
+                        "triggers": {
+                            "mssql": {
+                                "triggers": [{
+                                    "enabled": False,
+                                    "host": "myserver.database.windows.net",
+                                    "database": "mydb",
+                                    "username": "myuser",
+                                    "query": "SELECT 1",
+                                    "targetValue": 1,
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/scaled-object.yaml"]
+        )
+
+        self.assertEqual(
+            [],
+            jmespath.search("spec.triggers[?type=='mssql']", docs[0])
+        )
+
+    def test_mssql_and_servicebus_triggers_can_coexist(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "keda": {
+                        "triggers": {
+                            "azureServiceBus": {
+                                "triggers": [{
+                                    "enabled": True,
+                                    "queueName": "testqueue",
+                                }]
+                            },
+                            "mssql": {
+                                "triggers": [{
+                                    "enabled": True,
+                                    "host": "myserver.database.windows.net",
+                                    "database": "mydb",
+                                    "username": "myuser",
+                                    "query": "SELECT 1",
+                                    "targetValue": 1,
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/scaled-object.yaml"]
+        )
+
+        types = jmespath.search("spec.triggers[*].type", docs[0])
+        self.assertEqual(["azure-servicebus", "mssql"], types)
