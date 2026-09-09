@@ -178,7 +178,7 @@ global:
       azureServiceBus:
         # connectionStringKeyVaultSecretName: 'ConnectionStrings--ServiceBus' #DEPRECATED: Name of secret in Azure Keyvault that is containing a connection string to Service Bus
         triggers:
-        - enabled: true             # Must be enabled. However, in order to enable this trigger, settings below must be provided.
+        - enabled: false             # Must be enabled. However, in order to enable this trigger, settings below must be provided.
           serviceBusName:           # Required. Name of the ServiceBus Namespace
           queueName:                # Optional. ServiceBus Queue name
           topicName:                # Optional. ServiceBus Topic name
