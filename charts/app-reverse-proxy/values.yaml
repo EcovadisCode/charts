@@ -107,7 +107,6 @@ global:
   eventHubNetworkPolicyEnabled: false
   lnmElasticNetworkPolicyEnabled: false
   redisNetworkPolicyEnabled: true
-  redisCidr: "#{redisCidr}#"
   sqlNetworkPolicyEnabled: true
   servicebusNetworkPolicyEnabled: true
 
