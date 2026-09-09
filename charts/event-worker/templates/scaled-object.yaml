@@ -49,4 +49,29 @@ spec:
         cloud: AzurePublicCloud
     {{- end }}
     {{- end }}
+    {{- range .Values.global.keda.triggers.mssql.triggers }}
+    {{- if .enabled }}
+    - type: mssql
+      authenticationRef:
+        name: 
+          {{ include "charts-event-worker.fullname" $ }}-servicebus
+      metadata:
+        {{- if .connectionStringFromEnv }}
+        connectionStringFromEnv: {{ .connectionStringFromEnv | quote }}
+        {{- else }}
+        host: {{ .host | quote }}
+        port: {{ .port | default 1433 | quote }}
+        database: {{ .database | quote }}
+        username: {{ .username | quote }}
+        {{- if .passwordFromEnv }}
+        passwordFromEnv: {{ .passwordFromEnv | quote }}
+        {{- end }}
+        {{- end }}
+        query: {{ .query | quote }}
+        targetValue: {{ .targetValue | quote }}
+        {{- if .activationTargetValue }}
+        activationTargetValue: {{ .activationTargetValue | quote }}
+        {{- end }}
+    {{- end }}
+    {{- end }}
 {{- end }}
