@@ -288,9 +288,11 @@ class ScaledObjectTemplateFileTest(unittest.TestCase):
             show_only=["templates/scaled-object.yaml"]
         )
 
+        # spec.triggers may render as an empty block (None) when no other
+        # triggers are enabled either, rather than an empty list.
         self.assertEqual(
             [],
-            jmespath.search("spec.triggers[?type=='mssql']", docs[0])
+            jmespath.search("spec.triggers[?type=='mssql']", docs[0]) or []
         )
 
     def test_mssql_and_servicebus_triggers_can_coexist(self):
