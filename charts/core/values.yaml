@@ -62,9 +62,7 @@ global:
   servicebusNetworkPolicyEnabled: true
   redisNetworkPolicyEnabled: true
   cosmosNetworkPolicyEnabled: false
-  
-  redisCidr: ""
-  
+
   service:
     enabled: true
     type: ClusterIP

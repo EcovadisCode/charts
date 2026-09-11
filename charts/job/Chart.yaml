@@ -2,8 +2,8 @@ apiVersion: v2
 description: EcoVadis Helm chart for K8s Event driven Job
 name: charts-job
 type: application
-version: 2.9.2
+version: 2.10.0
 dependencies:
 - name: charts-core
-  version: 2.4.2
+  version: 2.9.0
   repository: "https://ecovadiscode.github.io/charts/"

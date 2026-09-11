@@ -37,6 +37,12 @@ spec:
     - from: #outside world - sentry, optimizely, etc
       - ipBlock:
           cidr: 0.0.0.0/0
+      # Cilium never matches Pod IPs through ipBlock, so without these peers
+      # in-cluster clients lose access to the ports below. Under NPM they change
+      # nothing: 0.0.0.0/0 already covers Pods. Reference:
+      # https://learn.microsoft.com/en-us/azure/aks/migrate-from-npm-to-cilium-network-policy
+      - namespaceSelector: {}
+      - podSelector: {}
       ports:
         - port: 443
         - port: 80
@@ -80,6 +86,12 @@ spec:
     - to: #outside world - sentry, optimizely, etc
         - ipBlock:
             cidr: 0.0.0.0/0
+        # Cilium never matches Pod IPs through ipBlock, so without these peers
+        # in-cluster destinations lose access to the ports below. Under NPM they
+        # change nothing: 0.0.0.0/0 already covers Pods.
+        # https://learn.microsoft.com/en-us/azure/aks/migrate-from-npm-to-cilium-network-policy
+        - namespaceSelector: {}
+        - podSelector: {}
       ports:
         - port: 443
         - port: 80
