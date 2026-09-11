@@ -71,6 +71,23 @@ jobs:
         run: |
           helm repo add ecovadis https://ecovadiscode.github.io/charts/
 
+      - name: Exclude already-released core chart from this job
+        run: |
+          # release-core already tagged+released charts-core on this same commit.
+          # If we don't drop that tag locally, chart-releaser's `git describe`
+          # resolves it as the "latest tag" for this checkout too, diffs HEAD
+          # against itself, finds no changes, and skips every other chart that
+          # was actually bumped in this push.
+          CORE_TAGS=$(git tag --points-at HEAD | grep '^charts-core-' || true)
+          if [ -n "$CORE_TAGS" ]; then
+            echo "Dropping local ref(s) for core tag(s) created by release-core: $CORE_TAGS"
+            echo "$CORE_TAGS" | xargs -r git tag -d
+          fi
+          # core is already released by release-core; exclude it here so it
+          # isn't re-packaged/re-released (which would fail with tag_name
+          # already_exists).
+          rm -rf charts/core
+
       - name: Wait for core chart availability in Helm repo
         run: |
           # Find the highest core version required by any dependent chart
