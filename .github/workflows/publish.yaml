@@ -74,15 +74,15 @@ jobs:
       - name: Exclude already-released core chart from this job
         run: |
           # release-core already tagged+released charts-core on this same commit.
-          # If we don't drop that tag locally, chart-releaser's `git describe`
-          # resolves it as the "latest tag" for this checkout too, diffs HEAD
-          # against itself, finds no changes, and skips every other chart that
-          # was actually bumped in this push.
-          CORE_TAGS=$(git tag --points-at HEAD | grep '^charts-core-' || true)
-          if [ -n "$CORE_TAGS" ]; then
-            echo "Dropping local ref(s) for core tag(s) created by release-core: $CORE_TAGS"
-            echo "$CORE_TAGS" | xargs -r git tag -d
-          fi
+          # chart-releaser resolves its "latest tag" baseline via `git describe`
+          # and re-runs `git fetch --tags` itself before that, so merely deleting
+          # the local charts-core-* tag isn't enough - it gets re-fetched from
+          # origin. A negative refspec stops it from being fetched back, so
+          # `git describe` falls through to the true previous tag and this job
+          # still sees the actual chart changes instead of diffing HEAD against
+          # itself.
+          git config --add remote.origin.fetch '^refs/tags/charts-core-*'
+          git tag -l 'charts-core-*' | xargs -r git tag -d
           # core is already released by release-core; exclude it here so it
           # isn't re-packaged/re-released (which would fail with tag_name
           # already_exists).
