@@ -67,6 +67,8 @@ spec:
       ports:
         - port: 53
           protocol: UDP
+        - port: 53
+          protocol: TCP
 
   {{- if .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
     - to:
@@ -100,6 +102,8 @@ spec:
         - port: 8200
         - port: 53
           protocol: UDP
+        - port: 53
+          protocol: TCP
   {{- if .Values.global.elasticNetworkPolicyEnabled }}
         - port: 9243  #elasticcloud
   {{- end }}
