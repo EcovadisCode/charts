@@ -13,6 +13,13 @@
   peers in network-policy.yaml cost ~18 entries per cluster identity, which
   overflows the map on a large cluster and blocks pod creation on the node.
 
+  Rules, in both directions:
+    - pods talk to any pod in the SAME ENVIRONMENT, on any port
+    - plus explicit exceptions: kube-dns, and the monitoring namespace when
+      monitoring is enabled
+    - nodes and the API server are always reachable
+  Everything leaving the cluster is allowed on any port - outbound traffic is
+  filtered by Azure Firewall, not here.
 */}}
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
@@ -94,18 +101,29 @@ spec:
   {{- end }}
 
   egress:
-    # --- same namespace, all ports (NP egress rule 1) ---
+    # --- same namespace, all ports ---
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: {{ .Release.Namespace }}
 
-    # --- kube-dns (NP egress rule 2) ---
+  {{- if .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
+    # --- any pod in the cluster, all ports (allowAll variant) ---
+    - toEndpoints:
+        - matchExpressions:
+            - key: "k8s:io.kubernetes.pod.namespace"
+              operator: "Exists"
+  {{- else }}
+    # --- same environment, all ports ---
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.environment: {{ (split "-" .Release.Namespace)._0 }}
+  {{- end }}
+
+    # --- kube-dns ---
     #
     # The namespace MUST be stated. A selector in a namespaced CNP is implicitly
-    # scoped to the policy's own namespace, so `k8s-app: kube-dns` alone means
-    # "kube-dns pods in THIS namespace" - which is none, and all DNS is denied.
-    # The Kubernetes NetworkPolicy expresses the same thing as a combined
-    # namespaceSelector: {} + podSelector peer.
+    # scoped to the policy's own namespace, so `k8s-app: kube-dns` alone matches
+    # nothing and all DNS is denied.
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: kube-system
@@ -117,115 +135,27 @@ spec:
             - port: "53"
               protocol: TCP
 
-  {{- if .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
-    # --- any pod in the cluster (NP egress rule 3, allowAll variant) ---
-    #
-    # See the ingress allowAll note: `- {}` is own-namespace only.
-    - toEndpoints:
-        - matchExpressions:
-            - key: "k8s:io.kubernetes.pod.namespace"
-              operator: "Exists"
-  {{- else }}
-    # --- same environment (NP egress rule 3) ---
-    #
-    # Port list dropped: ingress rule 2 already allows the same peers on every
-    # port, so this only makes egress symmetric with ingress. Costs 1 map entry
-    # per identity instead of 4.
+  {{- if .Values.global.monitoring.servicemonitor.enabled }}
+    # --- monitoring namespace, all ports ---
     - toEndpoints:
         - matchLabels:
-            k8s:io.cilium.k8s.namespace.labels.environment: {{ (split "-" .Release.Namespace)._0 }}
+            k8s:io.cilium.k8s.namespace.labels.environment: {{ .Values.global.monitoring.prometheusNamespace }}
   {{- end }}
 
-    # --- node egress (no NP equivalent - Kubernetes NetworkPolicy cannot select a node) ---
+    # --- nodes and API server, all ports ---
     #
-    # Node addresses resolve to host/remote-node and are never matched by an
-    # ipBlock. NPM additionally allowed pod -> own-node egress implicitly.
-    # Neither carries over to Cilium. kube-apiserver is its own reserved
-    # identity on managed AKS. Port-less: a few reserved identities, 1 entry each.
+    # Node addresses resolve to host/remote-node and are never matched by a CIDR
+    # selector. kube-apiserver is its own reserved identity on managed AKS.
     - toEntities:
         - host
         - remote-node
         - kube-apiserver
 
-    # --- outside world - sentry, optimizely, PaaS endpoints (NP egress rule 4) ---
+    # --- everything outside the cluster, all ports ---
     #
-    # The namespaceSelector/podSelector peers on the NPM rule are NOT translated.
-    # Every destination below is external or PaaS and resolves to `world`;
-    # in-cluster traffic is carried by the same-namespace and same-environment
-    # rules above. Those peers are what cost ~12 entries per cluster identity.
+    # `world` is any address Cilium has no more specific identity for: the
+    # internet and PaaS private endpoints, not pods or nodes. Outbound traffic is
+    # filtered by Azure Firewall, so no port list here.
     - toEntities:
         - world
-      toPorts:
-        - ports:
-            - port: "443"
-              protocol: TCP
-            - port: "80"
-              protocol: TCP
-            - port: "8433"
-              protocol: TCP
-            - port: "8000"
-              protocol: TCP
-            - port: "8200"
-              protocol: TCP
-            - port: "53"
-              protocol: UDP
-            - port: "53"
-              protocol: TCP
-  {{- if .Values.global.elasticNetworkPolicyEnabled }}
-            - port: "9243"  #elasticcloud
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.postgresNetworkPolicyEnabled }}
-            - port: "5432"  #postgres
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.zyteProxyNetworkPolicyEnabled }}
-            - port: "8010"   #Zyte Proxy
-              protocol: TCP
-            - port: "8011"
-              protocol: TCP
-            - port: "8014"
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.mongodbNetworkPolicyEnabled }}
-            # Use mongodbStrictNetworkPolicy if possible to avoid opening unnecessary ports
-            - port: "1024"
-              endPort: 65535
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.mongodbStrictNetworkPolicyEnabled }}
-            - port: "27017"  # Only open port 27017 when Strict Network Policy is enabled
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.eventHubNetworkPolicyEnabled }}
-            - port: "5671" # - AMQP Ports
-              protocol: TCP
-            - port: "5672"
-              protocol: TCP
-            - port: "9093" # - Kafka Port
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.servicebusNetworkPolicyEnabled }}
-            - port: "5671"  #servicebus
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.redisNetworkPolicyEnabled }}
-            - port: "6380"
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.sqlNetworkPolicyEnabled }}
-            - port: "1433"  #mssql
-              protocol: TCP
-            - port: "11000"  # Redirect connection policy (default)
-              endPort: 11999
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.lnmElasticNetworkPolicyEnabled }}
-            - port: "9201"
-              protocol: TCP
-  {{- end }}
-  {{- if .Values.global.cosmosNetworkPolicyEnabled }}
-            - port: "10255"
-              protocol: TCP
-  {{- end }}
 {{- end -}}
