@@ -1,0 +1,161 @@
+{{- if and .Values.global.defaultNetworkPolicyEnabled (eq (include "charts-core.useCilium" .) "true") -}}
+{{/*
+  CiliumNetworkPolicy equivalent of network-policy.yaml, for clusters running
+  Azure CNI powered by Cilium.
+
+  Only one of the two templates renders per release - see the
+  "charts-core.useCilium" helper in _helpers.tpl.
+
+  This is NOT a line-for-line translation. Cilium enforces policy through a
+  per-endpoint BPF map (cilium_policy_v2_<id>, default 16384 entries) keyed on
+  (identity, port, protocol, direction), so a selector matching every pod in the
+  cluster costs one entry per identity PER PORT. The `namespaceSelector: {}`
+  peers in network-policy.yaml cost ~18 entries per cluster identity, which
+  overflows the map on a large cluster and blocks pod creation on the node.
+
+  Rules, in both directions:
+    - pods talk to any pod in the SAME ENVIRONMENT, on any port
+    - plus explicit exceptions: kube-dns, and the monitoring namespace when
+      monitoring is enabled
+    - nodes and the API server are always reachable
+  Everything leaving the cluster is allowed on any port - outbound traffic is
+  filtered by Azure Firewall, not here.
+*/}}
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: {{ include "charts-core.fullname" . }}
+  labels:
+    {{- include "charts-core.labels" . | nindent 4 }}
+    networkPolicyType: default
+spec:
+  endpointSelector:
+    matchLabels:
+      {{- include "charts-core.selectorLabels" . | nindent 6 }}
+
+  ingress:
+    # --- same namespace, all ports (NP ingress rule 1) ---
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: {{ .Release.Namespace }}
+
+  {{- if .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
+    # --- any pod in the cluster, all ports (NP ingress rule 2, allowAll variant) ---
+    #
+    # `- {}` would mean "all endpoints in THIS namespace" - a namespaced CNP
+    # implicitly scopes an empty selector to its own namespace. Matching every
+    # namespace requires the Exists operator on the namespace label.
+    - fromEndpoints:
+        - matchExpressions:
+            - key: "k8s:io.kubernetes.pod.namespace"
+              operator: "Exists"
+  {{- else }}
+    # --- same environment (*-infra, *-backend, *-frontend), all ports (NP ingress rule 2) ---
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.environment: {{ (split "-" .Release.Namespace)._0 }}
+  {{- end }}
+
+  {{- if .Values.global.monitoring.servicemonitor.enabled }}
+    # --- prometheus scrape, all ports (NP ingress rule 3) ---
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.environment: {{ .Values.global.monitoring.prometheusNamespace }}
+  {{- end }}
+
+    # --- outside world + node-sourced traffic (NP ingress rule 4) ---
+    #
+    # world       : genuine external clients (sentry, optimizely, probes)
+    # host /
+    # remote-node : LoadBalancer and NodePort Services on the default
+    #               externalTrafficPolicy: Cluster SNAT the client to a node IP.
+    #               Node addresses resolve to host/remote-node, which no CIDR
+    #               selector can ever match. NPM did not enforce ingress policy
+    #               on this path at all; Cilium does, so it must be stated.
+    #
+    # The namespaceSelector/podSelector peers on the NPM rule are NOT translated
+    # here - in-cluster clients are already covered by the same-namespace and
+    # same-environment rules above. Those peers are what cost 6 entries per
+    # cluster identity on ingress.
+    - fromEntities:
+        - world
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "80"
+              protocol: TCP
+            - port: "8443"
+              protocol: TCP
+            - port: "8000"
+              protocol: TCP
+  {{- if .Values.global.monitoring.metrics.enabled }}
+            - port: "{{ .Values.global.monitoring.metrics.port }}"  #metrics port
+              protocol: TCP
+  {{- end }}
+  {{- if .Values.global.servicebusNetworkPolicyEnabled }}
+            - port: "5671"  #servicebus
+              protocol: TCP
+  {{- end }}
+
+  egress:
+    # --- same namespace, all ports ---
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: {{ .Release.Namespace }}
+
+  {{- if .Values.global.allowAllInternalClusterTrafficNetworkPolicy }}
+    # --- any pod in the cluster, all ports (allowAll variant) ---
+    - toEndpoints:
+        - matchExpressions:
+            - key: "k8s:io.kubernetes.pod.namespace"
+              operator: "Exists"
+  {{- else }}
+    # --- same environment, all ports ---
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.environment: {{ (split "-" .Release.Namespace)._0 }}
+  {{- end }}
+
+    # --- kube-dns ---
+    #
+    # The namespace MUST be stated. A selector in a namespaced CNP is implicitly
+    # scoped to the policy's own namespace, so `k8s-app: kube-dns` alone matches
+    # nothing and all DNS is denied.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+
+  {{- if .Values.global.monitoring.servicemonitor.enabled }}
+    # --- monitoring namespace, all ports ---
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.environment: {{ .Values.global.monitoring.prometheusNamespace }}
+  {{- end }}
+
+    # --- nodes and API server, all ports ---
+    #
+    # Node addresses resolve to host/remote-node and are never matched by a CIDR
+    # selector. kube-apiserver is its own reserved identity on managed AKS.
+    - toEntities:
+        - host
+        - remote-node
+        - kube-apiserver
+
+    # --- everything outside the cluster, all ports ---
+    #
+    # `world` is any address Cilium has no more specific identity for: the
+    # internet and PaaS private endpoints, not pods or nodes. Outbound traffic is
+    # filtered by Azure Firewall, so no port list here.
+    - toEntities:
+        - world
+{{- end -}}

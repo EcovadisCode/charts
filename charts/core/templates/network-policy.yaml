@@ -1,4 +1,14 @@
-{{- if .Values.global.defaultNetworkPolicyEnabled -}}
+{{- if and .Values.global.defaultNetworkPolicyEnabled (ne (include "charts-core.useCilium" .) "true") -}}
+{{/*
+  Kubernetes NetworkPolicy for clusters running the Azure NPM dataplane.
+
+  On clusters running Azure CNI powered by Cilium this template is skipped and
+  cilium-network-policy.yaml renders instead. Detection is automatic - see the
+  "charts-core.useCilium" helper in _helpers.tpl.
+
+  Do not add Cilium workarounds here. This file is the NPM baseline; rule order
+  is asserted by templates/tests/networkpolicy_test.py.
+*/}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -37,12 +47,6 @@ spec:
     - from: #outside world - sentry, optimizely, etc
       - ipBlock:
           cidr: 0.0.0.0/0
-      # Cilium never matches Pod IPs through ipBlock, so without these peers
-      # in-cluster clients lose access to the ports below. Under NPM they change
-      # nothing: 0.0.0.0/0 already covers Pods. Reference:
-      # https://learn.microsoft.com/en-us/azure/aks/migrate-from-npm-to-cilium-network-policy
-      - namespaceSelector: {}
-      - podSelector: {}
       ports:
         - port: 443
         - port: 80
@@ -88,12 +92,6 @@ spec:
     - to: #outside world - sentry, optimizely, etc
         - ipBlock:
             cidr: 0.0.0.0/0
-        # Cilium never matches Pod IPs through ipBlock, so without these peers
-        # in-cluster destinations lose access to the ports below. Under NPM they
-        # change nothing: 0.0.0.0/0 already covers Pods.
-        # https://learn.microsoft.com/en-us/azure/aks/migrate-from-npm-to-cilium-network-policy
-        - namespaceSelector: {}
-        - podSelector: {}
       ports:
         - port: 443
         - port: 80

@@ -95,3 +95,25 @@ Construct Prometheus host with port
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+Dataplane detection.
+
+Returns "true" when the target cluster runs Cilium, which decides whether
+cilium-network-policy.yaml or network-policy.yaml renders. Detection is
+automatic - there is no value to set and no per-cluster configuration.
+
+A cluster is treated as Cilium when the API server serves the cilium.io/v2 CRD.
+Azure CNI Powered by Cilium registers it, NPM clusters do not, so the same chart
+version deploys correctly to both during the migration.
+
+Caveat: `helm template` runs offline and reports no cluster capabilities, so it
+always renders the Kubernetes NetworkPolicy. Pass --api-versions cilium.io/v2 to
+preview the Cilium output. `helm install` / `helm upgrade` query the live
+cluster, so detection works as intended for real deployments.
+*/}}
+{{- define "charts-core.useCilium" -}}
+{{- if or (.Capabilities.APIVersions.Has "cilium.io/v2") (.Capabilities.APIVersions.Has "cilium.io/v2/CiliumNetworkPolicy") -}}
+true
+{{- end -}}
+{{- end -}}
