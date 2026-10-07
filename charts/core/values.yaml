@@ -62,6 +62,7 @@ global:
   servicebusNetworkPolicyEnabled: true
   redisNetworkPolicyEnabled: true
   cosmosNetworkPolicyEnabled: false
+  memgraphNetworkPolicyEnabled: false
 
   service:
     enabled: true

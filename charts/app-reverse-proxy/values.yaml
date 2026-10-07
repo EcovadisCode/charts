@@ -109,6 +109,7 @@ global:
   redisNetworkPolicyEnabled: true
   sqlNetworkPolicyEnabled: true
   servicebusNetworkPolicyEnabled: true
+  memgraphNetworkPolicyEnabled: false
 
   appConfigFilesEnabled: true
   appConfigFiles:
