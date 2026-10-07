@@ -142,6 +142,20 @@ spec:
             k8s:io.cilium.k8s.namespace.labels.environment: {{ .Values.global.monitoring.prometheusNamespace }}
   {{- end }}
 
+  {{- if .Values.global.memgraphNetworkPolicyEnabled }}
+    # --- memgraph (bolt) ---
+    #
+    # Memgraph runs in its own namespace, outside the environment label scheme,
+    # so the same-environment rule above does not cover it.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: {{ .Values.global.memgraphNamespace | default "memgraph" }}
+      toPorts:
+        - ports:
+            - port: "7687"
+              protocol: TCP
+  {{- end }}
+
     # --- nodes and API server, all ports ---
     #
     # Node addresses resolve to host/remote-node and are never matched by a CIDR

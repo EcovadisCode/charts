@@ -68,6 +68,7 @@ global:
   redisNetworkPolicyEnabled: false
   sqlNetworkPolicyEnabled: true
   servicebusNetworkPolicyEnabled: true
+  memgraphNetworkPolicyEnabled: false
 
   resources: {}
     # limits:
