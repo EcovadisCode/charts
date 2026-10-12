@@ -145,6 +145,7 @@ global:
       path: /metrics
     servicemonitor:
       enabled: false # TODO: Change when worker.template will be updated
+      roleSelectorDiscoveryMechanism: true 
     metricsServer:
       image:
         repository: "cicdcr01weuy01.azurecr.io"

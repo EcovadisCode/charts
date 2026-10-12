@@ -6,6 +6,9 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .Release.Name }}
 spec:
+  {{- if .Values.global.monitoring.servicemonitor.roleSelectorDiscoveryMechanism }}
+  selectorMechanism: RoleSelector
+  {{- end }}
   endpoints:
     - path: {{ .Values.global.monitoring.metrics.path }}
       targetPort: {{ .Values.global.monitoring.metrics.port }}
