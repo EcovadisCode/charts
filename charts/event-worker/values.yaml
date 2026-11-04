@@ -123,6 +123,7 @@ global:
 
   podDisruptionBudget:
     enabled: false
+    # maxUnavailable: 1 # Takes precedence over minAvailable. Renders even at one replica, because it never blocks eviction of a single pod.
   ingressRoutes:
     enabled: false
   canary:
