@@ -1,4 +1,11 @@
-{{- if and (.Values.global.podDisruptionBudget.enabled) (gt (int $.Values.global.replicaCount) 1) -}}
+{{- $replicas := int .Values.global.replicaCount -}}
+{{- if .Values.global.keda -}}
+{{- if .Values.global.keda.enabled -}}
+{{- $replicas = int (.Values.global.keda.minReplicaCount | default 0) -}}
+{{- end -}}
+{{- end -}}
+{{- $pdb := .Values.global.podDisruptionBudget -}}
+{{- if and $pdb.enabled (or $pdb.maxUnavailable (gt $replicas 1)) -}}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -6,7 +13,11 @@ metadata:
   labels:
     {{- include "charts-core.labels" . | nindent 4 }}
 spec:
+  {{- if $pdb.maxUnavailable }}
+  maxUnavailable: {{ $pdb.maxUnavailable }}
+  {{- else }}
   minAvailable: {{ .Values.global.podDisruptionBudget.minAvailable | default 1 }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "charts-core.name" . }}{{ if .Values.global.canary.enabled }}-primary{{ end }}

@@ -84,3 +84,90 @@ class PodDisruptionBudgetTemplateFileTest(unittest.TestCase):
 
         for template in docs:
             self.assertNotRegex(template["kind"], "PodDisruptionBudget")
+
+    def test_poddisruptionbudget_max_unavailable_rendered_at_one_replica(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "podDisruptionBudget": {
+                        "enabled": True,
+                        "maxUnavailable": 1
+                    },
+                    "replicaCount": 1
+                }
+            },
+            name=".",
+            show_only=["templates/pod-disruption-budget.yaml"]
+        )
+
+        self.assertRegex(docs[0]["kind"], "PodDisruptionBudget")
+
+        self.assertEqual(
+            1,
+            jmespath.search("spec.maxUnavailable", docs[0])
+        )
+        self.assertIsNone(jmespath.search("spec.minAvailable", docs[0]))
+
+    def test_poddisruptionbudget_not_rendered_when_keda_min_replica_count_too_low(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "podDisruptionBudget": {
+                        "enabled": True,
+                    },
+                    "keda": {
+                        "enabled": True,
+                        "minReplicaCount": 1
+                    },
+                    "replicaCount": 2
+                }
+            },
+            name="."
+        )
+
+        for template in docs:
+            self.assertNotRegex(template["kind"], "PodDisruptionBudget")
+
+    def test_poddisruptionbudget_rendered_from_keda_min_replica_count(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "podDisruptionBudget": {
+                        "enabled": True,
+                    },
+                    "keda": {
+                        "enabled": True,
+                        "minReplicaCount": 2
+                    }
+                }
+            },
+            name=".",
+            show_only=["templates/pod-disruption-budget.yaml"]
+        )
+
+        self.assertRegex(docs[0]["kind"], "PodDisruptionBudget")
+
+        self.assertEqual(
+            "50%",
+            jmespath.search("spec.minAvailable", docs[0])
+        )
+
+    def test_poddisruptionbudget_uses_replica_count_when_keda_disabled(self):
+        docs = render_chart(
+            values={
+                "global": {
+                    "podDisruptionBudget": {
+                        "enabled": True,
+                    },
+                    "keda": {
+                        "enabled": False,
+                        "minReplicaCount": 1
+                    },
+                    "replicaCount": 2
+                }
+            },
+            name=".",
+            show_only=["templates/pod-disruption-budget.yaml"]
+        )
+
+        self.assertRegex(docs[0]["kind"], "PodDisruptionBudget")
