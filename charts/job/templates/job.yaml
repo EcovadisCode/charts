@@ -14,6 +14,10 @@ spec:
   pollingInterval: {{ .Values.global.keda.pollingInterval }}
   successfulJobsHistoryLimit: {{ .Values.global.keda.successfulJobsHistoryLimit }}
   failedJobsHistoryLimit: {{ .Values.global.keda.failedJobsHistoryLimit }}
+  {{- with .Values.global.keda.rollout }}
+  rollout:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   triggers:
     {{- range .Values.global.keda.triggers.azureServiceBus.triggers }}
     {{- if .enabled }}
@@ -50,6 +54,12 @@ spec:
     backoffLimit: {{ .Values.global.backoffLimit }}
     template:
       metadata:
+        {{- with .Values.global.podAnnotations }}
+        annotations:
+          {{- range $key,$value := . }}
+          {{ $key }}: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
         labels:
           {{- include "charts-job.labels" . | nindent 10 }}
       spec:
@@ -121,6 +131,9 @@ spec:
         {{- end }}
         {{- end }}
         restartPolicy: Never
+        {{- with .Values.global.terminationGracePeriodSeconds }}
+        terminationGracePeriodSeconds: {{ toYaml . }}
+        {{- end }}
         {{- with .Values.global.nodeSelector }}
         nodeSelector:
           {{- toYaml . | nindent 10 }}
