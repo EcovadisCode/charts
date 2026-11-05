@@ -80,6 +80,7 @@ global:
   podDisruptionBudget:
     enabled: true
     minAvailable: "50%"
+    # maxUnavailable: 1 # Takes precedence over minAvailable. Renders even at one replica, because it never blocks eviction of a single pod.
 
   #Algoritgm for creation ingress rule (ingressRoutes.routes.rule)
   #1. If the value ingressRoutes.routes[x].rule is present, use it

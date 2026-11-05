@@ -13,6 +13,13 @@ from tests.helm_template_generator import create_test_json_file
 ROOT_FOLDER = realpath(dirname(realpath(__file__)) + "/..")
 
 
+def outside_world_egress_ports(doc):
+    """Ports of the egress rule that targets 0.0.0.0/0, wherever it sits in the list."""
+    rules = jmespath.search("spec.egress[?to[0].ipBlock.cidr == '0.0.0.0/0']", doc)
+    assert len(rules) == 1, f"expected one 0.0.0.0/0 egress rule, got {len(rules)}"
+    return rules[0]["ports"]
+
+
 class NetworkPolicyTemplateFileTest(unittest.TestCase):
 
     def test_networkpolicy_rendering_zyte(self):
@@ -28,18 +35,10 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
             show_only=["templates/network-policy.yaml"]
         )
         self.assertRegex(docs[0]["kind"], "NetworkPolicy")
-        self.assertEqual(
-            {"port": 8010},
-            jmespath.search("spec.egress[3].ports[7]", docs[0])
-        )
-        self.assertEqual(
-            {"port": 8011},
-            jmespath.search("spec.egress[3].ports[8]", docs[0])
-        )
-        self.assertEqual(
-            {"port": 8014},
-            jmespath.search("spec.egress[3].ports[9]", docs[0])
-        )
+        ports = outside_world_egress_ports(docs[0])
+        self.assertIn({"port": 8010}, ports)
+        self.assertIn({"port": 8011}, ports)
+        self.assertIn({"port": 8014}, ports)
 
     def test_mongodbnetworkpolicy(self):
         docs = render_chart(
@@ -52,11 +51,9 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
         name=".",
         show_only=["templates/network-policy.yaml"]
         )
-        self.assertEqual(
-            {"port": 1024,
-             "endPort": 65535},
-            jmespath.search(
-                "spec.egress[3].ports[7]", docs[0])
+        self.assertIn(
+            {"port": 1024, "endPort": 65535},
+            outside_world_egress_ports(docs[0])
         )
 
     def test_strictmongodbnetworkpolicy(self):
@@ -70,10 +67,9 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
         name=".",
         show_only=["templates/network-policy.yaml"]
         )
-        self.assertEqual(
+        self.assertIn(
             {"port": 27017},
-            jmespath.search(
-                "spec.egress[3].ports[7]", docs[0])
+            outside_world_egress_ports(docs[0])
         )
 
     def test_networkpolicy_rendering(self):
@@ -158,9 +154,9 @@ class NetworkPolicyTemplateFileTest(unittest.TestCase):
             jmespath.search("spec.egress[1].ports[0]", docs[0])
         )
 
-        self.assertEqual(
+        self.assertIn(
             {'port': 5432},
-            jmespath.search("spec.egress[3].ports[7]", docs[0])
+            outside_world_egress_ports(docs[0])
         )
 
         self.assertEqual(
