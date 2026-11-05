@@ -2511,6 +2511,19 @@ entries:
     version: 1.0.0
   charts-job:
   - apiVersion: v2
+    created: "2026-11-05T11:03:33.883027228Z"
+    dependencies:
+    - name: charts-core
+      repository: https://ecovadiscode.github.io/charts/
+      version: 2.12.0
+    description: EcoVadis Helm chart for K8s Event driven Job
+    digest: 7e28444a47d1b372bda22f79812f3c6223c18ef17a328e17ab2256076ac23c84
+    name: charts-job
+    type: application
+    urls:
+    - https://github.com/EcovadisCode/charts/releases/download/charts-job-2.13.0/charts-job-2.13.0.tgz
+    version: 2.13.0
+  - apiVersion: v2
     created: "2026-10-07T09:47:47.790968115Z"
     dependencies:
     - name: charts-core
@@ -2964,4 +2977,4 @@ entries:
     urls:
     - https://github.com/EcovadisCode/charts/releases/download/pact-broker-0.1.0/pact-broker-0.1.0.tgz
     version: 0.1.0
-generated: "2026-11-05T09:56:26.41034209Z"
+generated: "2026-11-05T11:03:33.883829938Z"
